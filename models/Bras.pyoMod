@@ -27,7 +27,7 @@ external_forces	0
 			0.0000000000	0.0000000000	1.0000000000
 		com		0.0000000000		0.0000000000		-0.50000000000
 	endsegment
-	
+
 // Thorax
 	 segment Thorax
 		parent Pelvis
@@ -128,7 +128,7 @@ external_forces	0
 		parent	Scapula
 		position	-0.131943 -0.130753 -0.0881354
 	endmarker
-	
+
 // Arm
 	 segment Arm
 		parent	Scapula
@@ -598,8 +598,8 @@ endmusclegroup
 			  parent 		Arm
 			  muscle 		BicepsLong
 			  musclegroup 	Scapula2LowerArm2
-			  position 		0.0298861 2.17669e-005 0.000163252
-		endviapoint
+			  position 		0.0298861 0.0000217669 0.000163252
+		endviapoint 
 		viapoint via4
 			  parent 		Arm
 			  muscle 		BicepsLong
@@ -753,4 +753,4 @@ endmusclegroup
 		PCSA				1.8
 		maxVelocity 		10
 	endmuscle
-	
+
