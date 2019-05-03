@@ -1,0 +1,117 @@
+
+from pyoviz.BiorbdViz import BiorbdViz
+
+import numpy as np
+
+import biorbd
+
+import scipy.integrate as integrate
+
+import scipy.interpolate as interpolate
+
+import matplotlib.pyplot as plt
+
+##### Load the model
+m = biorbd.s2mMusculoSkeletalModel("/home/lim/Programmation/ViolinOptimalControl/models/Bras.pyoMod")
+bio = BiorbdViz(loaded_model = m)
+n_frames = 500
+t_Max = 1
+
+# Initial state for Q and Qdot
+state_init = np.zeros((m.nbQ() + m.nbQdot())) # stat_init is y0
+nb_muscle_total = m.nbMuscleTotal()
+
+# #### Simple movement
+# Q = np.zeros((n_frames, m.nbQ()))
+# Q[:, 3] = np.linspace(0, np.pi/2, n_frames)
+# T = np.linspace(0, t_Max, n_frames)
+
+#### Movement from excitation
+# Control
+u = np.ones(m.nbQddot())*50
+
+def dyn(t_int, X):
+    states_actual = biorbd.VecS2mMuscleStateActual(m.nbQddot())
+    for i in range(len(states_actual)):
+       states_actual[i] = biorbd.s2mMuscleStateActual(0, u[i])
+    tau = biorbd.s2mMusculoSkeletalModel.muscularJointTorque(m, states_actual, X[:m.nbQ()], X[m.nbQ():])
+
+    QDDot = biorbd.s2mMusculoSkeletalModel.ForwardDynamics(m, X[:m.nbQ()], X[m.nbQ():], tau).get_array()
+    rsh = np.ndarray(m.nbQ() + m.nbQdot())
+    for i in range(m.nbQ()):
+        rsh[i] = X[m.nbQ()+i]
+        rsh[i + m.nbQ()] = QDDot[i]
+
+    return rsh
+
+### Interpolation
+LI = integrate.solve_ivp(dyn, (0, t_Max), state_init)
+Y = list()
+Ydot = list()
+time = LI.t
+T = np.linspace(0, time[len(time)-1], n_frames)
+for i in range(m.nbQ()):
+    # Q
+    tck = interpolate.splrep(time, LI.y[i, :], s=0)
+    Y.append(interpolate.splev(T, tck, der=0))
+    # Qdot
+    tck = interpolate.splrep(time, LI.y[i+m.nbQ(), :], s=0)
+    Ydot.append(interpolate.splev(T, tck, der=0))
+
+Q = np.ndarray((n_frames, m.nbQ()))
+for j in range(m.nbQ()):
+    Q[:, j] = Y[j][:]
+
+Qdot = np.ndarray((n_frames, m.nbQdot()))
+for j in range(m.nbQdot()):
+    Qdot[:, j] = Ydot[j][:]
+
+##### Muscle carac
+n_groupMuscle = m.nbMuscleGroups()
+groupMuscle = list()
+for i in range(n_groupMuscle) :
+    name_muscles = list()
+    for j in range(m.muscleGroup(i).nbMuscles()):
+        a = m.muscleGroup(i).muscle(j)
+        b = biorbd.s2mMuscleHillTypeThelen.getRef(a)
+        if b:
+            name_muscles.append(biorbd.s2mMuscleHillTypeThelen(a).name())
+
+lengthMuscle = np.ndarray((n_frames, m.nbMuscleTotal()))
+for t in range(n_frames) :
+    nbmuscle = 0
+    for i in range(n_groupMuscle) :
+        for j in range(m.muscleGroup(i).nbMuscles()):
+            if biorbd.s2mMuscleHillTypeThelen.getRef(m.muscleGroup(i).muscle(j)):
+                lengthMuscle[t, nbmuscle] = biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).length(m, Q[t,:])
+
+            nbmuscle += 1
+
+
+# ##### Plot length of muscle
+# nbmuscle = 0
+# for i in range(n_groupMuscle):
+#     plt.figure(i)
+#     for j in range(m.muscleGroup(i).nbMuscles()):
+#         muscle = biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).name()
+#         plt.subplot(m.muscleGroup(i).nbMuscles(), 1, j+1)
+#         plt.plot(T, lengthMuscle[:, nbmuscle])
+#         nbmuscle += 1
+#         plt.title("Length of muscle " + muscle)
+#         plt.xlabel('time')
+#         plt.ylabel('length')
+#
+# plt.show()
+
+
+# Pyoviz visualisation
+# Q = np.ndarray((n_frames, m.nbQ()))
+# Q[:, 4] = np.linspace(0, np.pi/2, n_frames)
+
+
+i = 0
+while bio.vtk_window.is_active:
+    bio.set_q(Q[i,:])
+    i = (i+1) % n_frames
+
+print(Q)

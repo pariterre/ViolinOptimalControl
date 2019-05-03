@@ -17,7 +17,8 @@ import matplotlib.pyplot as plt
 
 # Load the biorbd model
 nFrame = 100
-m = biorbd.s2mMusculoSkeletalModel("../models/Bras.pyoMod")
+b = BiorbdViz(model_path="pyomecaman.s2mMod")
+m = biorbd.s2mMusculoSkeletalModel("/home/lim/Programmation/ViolinOptimalControl/models/Bras.pyoMod")
 # all_Q = np.ones((1,100)) * np.linspace(0, np.pi/2, nFrame)
 n_muscle = 18
 
@@ -110,13 +111,27 @@ for i in range(m.nbQ()):
     # Update window
 #    vtkWindow.update_frame()
 #    i = (i + 1) % all_marks.get_num_frames()
-
-
+from pyoviz.BiorbdViz import BiorbdViz
+b = BiorbdViz(loaded_model=m)
+#b.set_q()
 
 n_groupMuscle = m.nbMuscleGroups()
-groupMuscle = np.ndarray((1,n_groupMuscle))
+groupMuscle = list()
 for i in range(n_groupMuscle) :
-    groupMuscle[:,i] = m.muscleGroup(i)
+    groupMuscle.append((m.muscleGroup(i).name(),m.muscleGroup(i).nbMuscles()))
+    print(m.muscleGroup(i).name())
+    print(m.muscleGroup(i).nbMuscles())
+    for j in range(m.muscleGroup(i).nbMuscles()) :
+        muscle = list()
+        a = m.muscleGroup(i).muscle(j)
+        b = biorbd.s2mMuscleHillTypeThelen.getRef(a)
+        if b :
+            print(biorbd.s2mMuscleHillTypeThelen(a).name())
+            print("Optimal Length")
+            print(b.caract().optimalLength())
+        muscle.append(b.caract())
+    print(muscle)
+print(groupMuscle)
 
 #b = biorbd.s2mMusculoSkeletalModel_getMuscleType(a) # b = "HillThelen"
 #c = b.caract()
