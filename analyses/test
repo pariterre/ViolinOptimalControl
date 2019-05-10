@@ -84,7 +84,7 @@ for t in range(n_frames) :
         for j in range(m.muscleGroup(i).nbMuscles()):
             if biorbd.s2mMuscleHillTypeThelen.getRef(m.muscleGroup(i).muscle(j)):
                 lengthMuscle[t, nbmuscle] = biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).length(m, Q[t,:])
-
+                biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).musculoTendonLength(Q[t,:])
             nbmuscle += 1
 
 
