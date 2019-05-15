@@ -7,15 +7,16 @@ import biorbd
 
 import scipy.integrate as integrate
 
+import fatigue as f
+
 import scipy.interpolate as interpolate
 
 import matplotlib.pyplot as plt
 
 ##### Load the model
-m = biorbd.s2mMusculoSkeletalModel("/home/lim/Programmation/ViolinOptimalControl/models/Bras.pyoMod")
-bio = BiorbdViz(loaded_model = m)
+m = biorbd.s2mMusculoSkeletalModel("../models/Bras.pyoMod")
 n_frames = 500
-t_Max = 1
+t_Max = 0.1
 
 # Initial state for Q and Qdot
 state_init = np.zeros((m.nbQ() + m.nbQdot())) # stat_init is y0
@@ -27,22 +28,23 @@ nb_muscle_total = m.nbMuscleTotal()
 # T = np.linspace(0, t_Max, n_frames)
 
 #### Movement from excitation
-# Control
-u = np.ones(m.nbQddot())*50
+# Activation
+a = np.ones(m.nbQddot())*0.5
+
 
 def dyn(t_int, X):
     states_actual = biorbd.VecS2mMuscleStateActual(m.nbQddot())
     for i in range(len(states_actual)):
-       states_actual[i] = biorbd.s2mMuscleStateActual(0, u[i])
+       states_actual[i] = biorbd.s2mMuscleStateActual(0, a[i])
     tau = biorbd.s2mMusculoSkeletalModel.muscularJointTorque(m, states_actual, X[:m.nbQ()], X[m.nbQ():])
-
     QDDot = biorbd.s2mMusculoSkeletalModel.ForwardDynamics(m, X[:m.nbQ()], X[m.nbQ():], tau).get_array()
     rsh = np.ndarray(m.nbQ() + m.nbQdot())
     for i in range(m.nbQ()):
         rsh[i] = X[m.nbQ()+i]
         rsh[i + m.nbQ()] = QDDot[i]
-
+    print(rsh)
     return rsh
+
 
 ### Interpolation
 LI = integrate.solve_ivp(dyn, (0, t_Max), state_init)
@@ -66,6 +68,11 @@ Qdot = np.ndarray((n_frames, m.nbQdot()))
 for j in range(m.nbQdot()):
     Qdot[:, j] = Ydot[j][:]
 
+##### Save movement
+np.save('/home/lim/Programmation/ViolinOptimalControl/analyses/move', Q)
+
+
+
 ##### Muscle carac
 n_groupMuscle = m.nbMuscleGroups()
 groupMuscle = list()
@@ -83,8 +90,8 @@ for t in range(n_frames) :
     for i in range(n_groupMuscle) :
         for j in range(m.muscleGroup(i).nbMuscles()):
             if biorbd.s2mMuscleHillTypeThelen.getRef(m.muscleGroup(i).muscle(j)):
-                lengthMuscle[t, nbmuscle] = biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).length(m, Q[t,:])
-                biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).musculoTendonLength(Q[t,:])
+                lengthMuscle[t, nbmuscle] = biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).length(m, Q[t, :])
+                biorbd.s2mMuscleHillTypeThelen(m.muscleGroup(i).muscle(j)).musculoTendonLength(m, Q[t, :])
             nbmuscle += 1
 
 
@@ -103,15 +110,3 @@ for t in range(n_frames) :
 #
 # plt.show()
 
-
-# Pyoviz visualisation
-# Q = np.ndarray((n_frames, m.nbQ()))
-# Q[:, 4] = np.linspace(0, np.pi/2, n_frames)
-
-
-i = 0
-while bio.vtk_window.is_active:
-    bio.set_q(Q[i,:])
-    i = (i+1) % n_frames
-
-print(Q)
