@@ -2,6 +2,12 @@
 
 from lxml import etree
 
+import xml.sax
+
+import pprint
+
+
+
 # data = etree.parse("../models/Opensim_model/arm26.osim")
 # for body in data.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
 #     print(body.get("name"))
@@ -16,6 +22,7 @@ class ConvertedFromOsim2Biorbd:
         self.originfile = originfile
 
         self.data_origin = etree.parse(self.originfile)
+        self.root = self.data_origin.getroot()
 
         self.file = open(self.path, 'w')
         self.file.write('File extracted from '+ self.originfile)
@@ -31,7 +38,7 @@ class ConvertedFromOsim2Biorbd:
 
         def parent_body(body):
             return self.data_origin.xpath("/OpenSimDocument/Model/BodySet/objects/"
-                                          "Body[name='{}']/CustomJoint/parent_body".format(body))
+                                          "Body[@name='{}']/CustomJoint/parent_body".format(body))
 
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n\n')
@@ -77,7 +84,7 @@ class ConvertedFromOsim2Biorbd:
 
     def parent_body(self, body):
         return self.data_origin.xpath("/OpenSimDocument/Model/BodySet/objects/"
-                                      "Body[name={}]/CustomJoint/parent_body".format(body))
+                                      "Body[@name={}]/CustomJoint/parent_body".format(body))
 
 
 def main():
@@ -96,8 +103,52 @@ print(data.body_list())
 for body in data.body_list():
     parent = data.parent_body(body)
     print(body)
-for par in data.data_origin.xpath("/OpenSimDocument/Model/BodySet/objects"
-                                      'Body'):
-    print(par.get("name"))
-                             #"/CustomJoint[name='r_shoulder']/parent_body")
-print(par)
+    print(parent)
+
+print('******')
+origin = data.data_origin
+root = origin.getroot()
+# root = etree.fromstring('data_as_string')
+print(root.tag)
+print(root.attrib)
+print('******')
+for child in root:
+    print(child.tag, child.attrib)
+print('******')
+print(root[0][8][0][0][0].text)
+print('******')
+for body in root.iter('Body'):
+    print(body.attrib)
+    print(body.tag)
+print('******')
+for body in root.iter('parent_body'):
+    print(body.tag)
+    print(body.attrib)
+    print(body.getchildren())
+    print(body.text)
+print('******')
+print(root.findall("./parent_body"))
+print('******')
+print(root[0].tag)
+
+bodyset = root[0][8][0].tag
+print(bodyset)
+for child in root:
+    print(child.tag)
+print('******')
+def go_to(_root, _tag, index = ''):
+    i = 0
+    for _child in _root:
+        if _child.tag == _tag:
+            return index+'[{}]'.format(i)
+        else:
+            i += 1
+
+    else:
+        j = 0
+        for _child in _root:
+             return go_to(_child, _tag, index+'[{}]'.format(j))
+
+
+index = go_to(root, 'Body')
+print(index)
