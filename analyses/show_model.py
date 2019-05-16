@@ -1,139 +1,59 @@
-"""
-Example script for animating a model
-"""
-
-from pathlib import Path
-import copy
-
-import numpy as np
-import scipy.integrate as integrate
-import scipy.interpolate as interpolate
-
-from pyomeca import Markers3d, RotoTrans, RotoTransCollection
-from pyoviz.vtk import VtkModel, VtkWindow, Mesh, MeshCollection
-import biorbd
-
 import matplotlib.pyplot as plt
+import biorbd
+from pyoviz.BiorbdViz import BiorbdViz
+
+import utils
+
+# Options
+model_name = "SansMuscle"
+fun_dyn = utils.dynamics_from_joint_torque
+nb_nodes = 30
+nb_phases = 1
+nb_frame_inter = 500
 
 # Load the biorbd model
-nFrame = 100
-b = BiorbdViz(model_path="pyomecaman.s2mMod")
-m = biorbd.s2mMusculoSkeletalModel("/home/lim/Programmation/ViolinOptimalControl/models/Bras.pyoMod")
-# all_Q = np.ones((1,100)) * np.linspace(0, np.pi/2, nFrame)
-n_muscle = 18
+m = biorbd.s2mMusculoSkeletalModel(f"../optimal_control/Modeles/Modele{model_name}.bioMod")
+if fun_dyn == utils.dynamics_from_muscles:
+    nb_controls = m.nbMuscleTotal()
+elif fun_dyn == utils.dynamics_from_joint_torque:
+    nb_controls = m.nbTau()
+else:
+    raise NotImplementedError("Dynamic not implemented yet")
 
-##### State from the file
+# Read values
+t, all_q, all_qdot = utils.read_acado_output_states(f"../optimal_control/Results/States{model_name}.txt", m, nb_nodes, nb_phases)
+all_u = utils.read_acado_output_controls(f"../optimal_control/Results/Controls{model_name}.txt", nb_nodes, nb_phases, nb_controls)
 
-state_init = np.zeros((m.nbQ() + m.nbQdot())) # stat_init is y0
+# Integrate
+t_integrate, q_integrate = utils.integrate_states_from_controls(m, t, all_q, all_qdot, all_u, fun_dyn,
+                                                                verbose=False, use_previous_as_init=True)
 
-##### Controls from the file
+# Interpolate
+t_interp, q_interp = utils.interpolate_integration(nb_frames=nb_frame_inter, t_int=t_integrate, y_int=q_integrate)
+qdot_interp = q_interp[:, m.nbQ():]
+q_interp = q_interp[:, :m.nbQ()]
 
-#u = np.ones(n_muscle)*.5
-u = np.ones(m.nbQddot())*5
-
-#### integration
-
-def dyn(t_int, X):
-    #states_actual = biorbd.VecS2mMuscleStateActual(n_muscle)
-    #for i in range(len(states_actual)):
-    #    states_actual[i] = biorbd.s2mMuscleStateActual(0, u[i])
-    #Tau = biorbd.s2mMusculoSkeletalModel.muscularJointTorque(m, states_actual, X[:m.nbQ()], X[m.nbQ():])
-
-    QDDot = biorbd.s2mMusculoSkeletalModel.ForwardDynamics(m, X[:m.nbQ()], X[m.nbQ():], u).get_array()
-    rsh = np.ndarray(m.nbQ() + m.nbQdot())
-    for i in range(m.nbQ()):
-        rsh[i] = X[m.nbQ()+i]
-        rsh[i + m.nbQ()] = QDDot[i]
-
-    return rsh
-
-
-#### Interpolation
-LI = integrate.solve_ivp(dyn, (0, .1), state_init)
-Y = list()
-Ydot = list()
-time = LI.t
-T = np.linspace(0, time[len(time)-1], nFrame)
+# Show data
+plt.figure("States")
 for i in range(m.nbQ()):
-    # Q
-    tck = interpolate.splrep(time, LI.y[i, :], s=0)
-    Y.append(interpolate.splev(T, tck, der=0))
-    # Qdot
-    tck = interpolate.splrep(time, LI.y[i+m.nbQ(), :], s=0)
-    Ydot.append(interpolate.splev(T, tck, der=0))
+    plt.subplot(m.nbQ(), 3, 1+(3*i))
+    plt.plot(t_interp, q_interp[:, i])
+    plt.title("Q %i" %i)
 
-###### visualisation
+    plt.subplot(m.nbQ(), 3, 2+(3*i))
+    plt.plot(t_interp, qdot_interp[:, i])
+    plt.title("Qdot %i" %i)
 
-#plt.figure(1)
-#for i in range(m.nbQ()):
-#    plt.subplot(m.nbQ(), 2, 1+(2*i))
-#    plt.plot(T, Y[i])
-#    plt.title("états %i" %i)
-#    plt.subplot(m.nbQ(), 2, 2+(2*i))
-#    plt.plot(Ydot[i])
-#    plt.title("états dérivés %i" %i)
-#
-#plt.figure(2)
-#for j in range(m.nbTau()):
-#    plt.subplot(m.nbTau(), 1, i+1)
-#    plt.plot(u[i])
-#    plt.title("contrôles %i" %j)
-#plt.show()
+    plt.subplot(m.nbQ(), 3, 3+(3*i))
+    utils.plot_piecewise_constant(t, all_u[i, :])
+    plt.title("Control %i" %i)
+plt.ion()  # Non blocking plt.show
+plt.show()
 
-
-# Path to data
-#nTags = m.nTags()
-#mark_tp = np.ndarray((3,  nTags, nFrame))
-#q_tp = np.ndarray((m.nbQ()))
-#for t in range(nFrame):
-#    for i in range(m.nbQ()):
-#        q_tp[i] = Y[i][t]*0
-#    Q = biorbd.s2mGenCoord(q_tp)
-#    markers_tp = m.Tags(m, Q)
-
-    # Prepare markers
-#    for j in range(nTags):
-#        mark_tp[:, j, t] = markers_tp[j].get_array()
-#all_marks = Markers3d(mark_tp)
-
-# Create a windows with a nice gray background
-#vtkWindow = VtkWindow(background_color=(.5, .5, .5))
-
-# Add marker holders to the window
-#vtkModelReal = VtkModel(vtkWindow, markers_color=(1, 0, 0), markers_size=.005, markers_opacity=1)
-
-# Animate all this
-#i = 0
-#while vtkWindow.is_active:
-    # Update markers
-#    vtkModelReal.update_markers(all_marks.get_frame(i))
-
-    # Update window
-#    vtkWindow.update_frame()
-#    i = (i + 1) % all_marks.get_num_frames()
-from pyoviz.BiorbdViz import BiorbdViz
-b = BiorbdViz(loaded_model=m)
-#b.set_q()
-
-n_groupMuscle = m.nbMuscleGroups()
-groupMuscle = list()
-for i in range(n_groupMuscle) :
-    groupMuscle.append((m.muscleGroup(i).name(),m.muscleGroup(i).nbMuscles()))
-    print(m.muscleGroup(i).name())
-    print(m.muscleGroup(i).nbMuscles())
-    for j in range(m.muscleGroup(i).nbMuscles()) :
-        muscle = list()
-        a = m.muscleGroup(i).muscle(j)
-        b = biorbd.s2mMuscleHillTypeThelen.getRef(a)
-        if b :
-            print(biorbd.s2mMuscleHillTypeThelen(a).name())
-            print("Optimal Length")
-            print(b.caract().optimalLength())
-        muscle.append(b.caract())
-    print(muscle)
-print(groupMuscle)
-
-#b = biorbd.s2mMusculoSkeletalModel_getMuscleType(a) # b = "HillThelen"
-#c = b.caract()
-#print(b)
+# Animate the model
+b = BiorbdViz(loaded_model=m, show_muscles=False)
+frame = 0
+while b.vtk_window.is_active:
+    b.set_q(q_interp[frame, :])
+    frame = (frame+1) % nb_frame_inter
 
