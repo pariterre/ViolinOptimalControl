@@ -6,7 +6,7 @@ import xml.sax
 
 import pprint
 
-
+import inspect
 
 # data = etree.parse("../models/Opensim_model/arm26.osim")
 # for body in data.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
@@ -38,9 +38,7 @@ class ConvertedFromOsim2Biorbd:
             return L
 
         def parent_body(body):
-            return self.data_origin.xpath(
-                    "/OpenSimDocument/Model/BodySet/objects/"
-                    "Body[@name='{}']/CustomJoint/parent_body".format(body))
+            return go_to(go_to(self.root, 'Body', 'name', body), 'parent_body').text
 
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n\n')
@@ -87,10 +85,6 @@ class ConvertedFromOsim2Biorbd:
             L.append(body.get("name"))
         return L
 
-    def parent_body(self, body):
-        return self.data_origin.xpath(
-                "/OpenSimDocument/Model/BodySet/objects/"
-                "Body[@name={}]/CustomJoint/parent_body".format(body))
 
 
 def main():
@@ -110,8 +104,12 @@ print('******')
 origin = data.data_origin
 root = origin.getroot()
 print('******')
+
+
 def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
     #return index to go to _tag which can have condition on its attribute
+    if index == '':
+        print('root : '+retrieve_name(_root))
     i = 0
     for _child in _root:
         if _attrib != False:
@@ -134,15 +132,27 @@ def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
             else:
                 j += 1
 
-def go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
+def retrieve_name(var):
+        """
+        Gets the name of var. Does it from the out most frame inner-wards.
+        :param var: variable to get name from.
+        :return: string
+        """
+        for fi in reversed(inspect.stack()):
+            names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
+            if len(names) > 0:
+                return names[0]
+
+def go_to(_root, _tag, _attrib=False, _attribvalue=''):
     #return element corresponding to _tag 
     #which can have condition on its attribute
-    _index = index_go_to(_root, _tag, _attrib=False, _attribvalue='', index='')
-#    return eval("%s" % (_root)+_index)
+    _index = index_go_to(_root, _tag, _attrib, _attribvalue)
+    
+    return eval(retrieve_name(_root)+_index)
 
 
 index = index_go_to(root, 'Body', 'name', 'r_humerus')
 print(index)
 print(eval('root'+index).get("name"))
-#print(go_to(root, 'Body', 'name', 'r_humerus'))
-print(root.__name__)
+print(go_to(root, 'Body', 'name', 'r_humerus').get("name"))
+print(retrieve_name(root))
