@@ -105,46 +105,13 @@ if __name__ == "__main__":
 data = ConvertedFromOsim2Biorbd(
         '../models/testconversion0.biomod', 
         "../models/Opensim_model/arm26.osim")
-print(data.credits())
-print(data.publications())
-print(data.body_list())
-for body in data.body_list():
-    parent = data.parent_body(body)
-    print(body)
-    print(parent)
 
 print('******')
 origin = data.data_origin
 root = origin.getroot()
-# root = etree.fromstring('data_as_string')
-print(root.tag)
-print(root.attrib)
 print('******')
-for child in root:
-    print(child.tag, child.attrib)
-print('******')
-print(root[0][8][0][0][0].text)
-print('******')
-for body in root.iter('Body'):
-    print(body.attrib)
-    print(body.tag)
-print('******')
-for body in root.iter('parent_body'):
-    print(body.tag)
-    print(body.attrib)
-    print(body.getchildren())
-    print(body.text)
-print('******')
-print(root.findall("./parent_body"))
-print('******')
-print(root[0].tag)
-
-bodyset = root[0][8][0].tag
-print(bodyset)
-for child in root:
-    print(child.tag)
-print('******')
-def go_to(_root, _tag, _attrib=False, _attribvalue='', index=''): 
+def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
+    #return index to go to _tag which can have condition on its attribute
     i = 0
     for _child in _root:
         if _attrib != False:
@@ -156,19 +123,26 @@ def go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
             if _child.tag == _tag:
                 return index+'[{}]'.format(i)
             else:
-                i += 1
-            
+                i += 1 
+    #not found in children, go to grand children
     else:
         j = 0
         for _child in _root:
-            a = go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+            a = index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
             if a:
-             return go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+             return index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
             else:
                 j += 1
-            
 
-index = go_to(root, 'Body', 'name', 'r_humerus')
+def go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
+    #return element corresponding to _tag 
+    #which can have condition on its attribute
+    _index = index_go_to(_root, _tag, _attrib=False, _attribvalue='', index='')
+#    return eval("%s" % (_root)+_index)
+
+
+index = index_go_to(root, 'Body', 'name', 'r_humerus')
 print(index)
-print(root[0][8][0][2].get("name"))
 print(eval('root'+index).get("name"))
+#print(go_to(root, 'Body', 'name', 'r_humerus'))
+print(root.__name__)
