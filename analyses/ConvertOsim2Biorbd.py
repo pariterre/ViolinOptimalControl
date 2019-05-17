@@ -39,15 +39,75 @@ class ConvertedFromOsim2Biorbd:
 
         def parent_body(body):
             return go_to(go_to(self.root, 'Body', 'name', body), 'parent_body').text
+        
+        def mass_body(body):
+            return go_to(go_to(self.root, 'Body', 'name', body), 'mass').text
+        
+        def matrix_inertia(body):
+            return [go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xx').text,
+                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yy').text,
+                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_zz').text,
+                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xy').text,
+                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xz').text,
+                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yz').text]
+            
+        def center_of_mass(body):
+            return go_to(go_to(self.root, 'Body', 'name', body), 'mass_center').text
+        
+        def extremities(body):
+            return [go_to(go_to(self.root, 'Body', 'name', body), 'mass_center').text,
+                    go_to(go_to(self.root, 'Body', 'name', body), 'mass_center').text]
 
         # Segment definition
-        self.write('\n// SEGMENT DEFINITION\n\n')
+        self.write('\n// SEGMENT DEFINITION\n')
         for body in body_list(self)[1:]:
+            #segment data
             parent = parent_body(body)
-            self.write('// Informations about {} segment\n'
-                       '    //Segment\n'
+            rt_in_matrix = 1
+            [r11, r12, r13, r14,
+            r21, r22, r23, r24,
+            r31, r32, r33, r34,
+            r41, r42, r43, r44] = [0, 0, 0, 0,
+                              0, 0, 0, 0,
+                              0, 0, 0, 0,
+                              0, 0, 0, 0]
+            [i11, i22, i33, i12, i13, i23] = matrix_inertia(body)
+            mass = mass_body(body)
+            com = center_of_mass(body)
+            mesh = extremities(body)
+            #writing data                  
+            self.write('\n// Informations about {} segment\n'
+                       '    // Segment\n'
                        '    segment {}\n'
-                       '        parent {} \n'.format(body, body, parent))
+                       '        parent {} \n'
+                       '        RTinMatrix    {}\n'
+                       '        RT\n'.format(body, body, parent, rt_in_matrix))
+            self.write(
+                       '            {}    {}    {}    {}\n'
+                       '            {}    {}    {}    {}\n'
+                       '            {}    {}    {}    {}\n'
+                       '            {}    {}    {}    {}\n'
+                       .format(r11, r12, r13, r14,
+                               r21, r22, r23, r24,
+                               r31, r32, r33, r34,
+                               r41, r42, r43, r44))
+            self.write('        //translations xyz\n')
+            self.write('        //rotations xyz\n')
+            self.write('        mass {}\n'.format(mass))
+            self.write('        inertia\n')
+            self.write(
+                       '            {}    {}    {}\n'
+                       '            {}    {}    {}\n'
+                       '            {}    {}    {}\n'
+                       .format(i11, i12, i13,
+                               i12, i22, i23,
+                               i13, i23, i33))
+            self.write('        com    {}\n'.format(com))#center of mass
+            self.write('        mesh    {}\n'.format(mesh[0]))#center of mass
+            self.write('        mesh    {}\n'.format(mesh[1]))#center of mass
+            self.write('    endsegment\n')
+            
+            
 
     def __getattr__(self, attr):
         print('Error : {} is not an attribute of this class'.format(attr))
@@ -89,27 +149,20 @@ class ConvertedFromOsim2Biorbd:
 
 def main():
     #Segment definition
-    pass
+    data = ConvertedFromOsim2Biorbd(
+        '../models/testconversion0.biomod', 
+        "../models/Opensim_model/arm26.osim")
+
+    origin = data.data_origin
+    root = origin.getroot()
 
 
 if __name__ == "__main__":
     main()
 
 
-data = ConvertedFromOsim2Biorbd(
-        '../models/testconversion0.biomod', 
-        "../models/Opensim_model/arm26.osim")
-
-print('******')
-origin = data.data_origin
-root = origin.getroot()
-print('******')
-
-
 def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
     #return index to go to _tag which can have condition on its attribute
-    if index == '':
-        print('root : '+retrieve_name(_root))
     i = 0
     for _child in _root:
         if _attrib != False:
@@ -149,10 +202,3 @@ def go_to(_root, _tag, _attrib=False, _attribvalue=''):
     _index = index_go_to(_root, _tag, _attrib, _attribvalue)
     
     return eval(retrieve_name(_root)+_index)
-
-
-index = index_go_to(root, 'Body', 'name', 'r_humerus')
-print(index)
-print(eval('root'+index).get("name"))
-print(go_to(root, 'Body', 'name', 'r_humerus').get("name"))
-print(retrieve_name(root))
