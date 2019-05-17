@@ -32,13 +32,15 @@ class ConvertedFromOsim2Biorbd:
 
         def body_list(self):
             L = []
-            for body in self.data_origin.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
+            for body in self.data_origin.xpath(
+                    '/OpenSimDocument/Model/BodySet/objects/Body'):
                 L.append(body.get("name"))
             return L
 
         def parent_body(body):
-            return self.data_origin.xpath("/OpenSimDocument/Model/BodySet/objects/"
-                                          "Body[@name='{}']/CustomJoint/parent_body".format(body))
+            return self.data_origin.xpath(
+                    "/OpenSimDocument/Model/BodySet/objects/"
+                    "Body[@name='{}']/CustomJoint/parent_body".format(body))
 
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n\n')
@@ -71,20 +73,24 @@ class ConvertedFromOsim2Biorbd:
         return self.originfile
 
     def credits(self):
-        return self.data_origin.xpath('/OpenSimDocument/Model/credits')[0].text
+        return self.data_origin.xpath(
+                '/OpenSimDocument/Model/credits')[0].text
 
     def publications(self):
-        return self.data_origin.xpath('/OpenSimDocument/Model/publications')[0].text
+        return self.data_origin.xpath(
+                '/OpenSimDocument/Model/publications')[0].text
 
     def body_list(self):
         L = []
-        for body in self.data_origin.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
+        for body in self.data_origin.xpath(
+                '/OpenSimDocument/Model/BodySet/objects/Body'):
             L.append(body.get("name"))
         return L
 
     def parent_body(self, body):
-        return self.data_origin.xpath("/OpenSimDocument/Model/BodySet/objects/"
-                                      "Body[@name={}]/CustomJoint/parent_body".format(body))
+        return self.data_origin.xpath(
+                "/OpenSimDocument/Model/BodySet/objects/"
+                "Body[@name={}]/CustomJoint/parent_body".format(body))
 
 
 def main():
@@ -96,7 +102,9 @@ if __name__ == "__main__":
     main()
 
 
-data = ConvertedFromOsim2Biorbd('../models/testconversion0.biomod', "../models/Opensim_model/arm26.osim")
+data = ConvertedFromOsim2Biorbd(
+        '../models/testconversion0.biomod', 
+        "../models/Opensim_model/arm26.osim")
 print(data.credits())
 print(data.publications())
 print(data.body_list())
@@ -136,19 +144,31 @@ print(bodyset)
 for child in root:
     print(child.tag)
 print('******')
-def go_to(_root, _tag, index = ''):
+def go_to(_root, _tag, _attrib=False, _attribvalue='', index=''): 
     i = 0
     for _child in _root:
-        if _child.tag == _tag:
-            return index+'[{}]'.format(i)
+        if _attrib != False:
+            if _child.tag == _tag and _child.get(_attrib) == _attribvalue:
+                return index+'[{}]'.format(i)
+            else:
+                i += 1
         else:
-            i += 1
-
+            if _child.tag == _tag:
+                return index+'[{}]'.format(i)
+            else:
+                i += 1
+            
     else:
         j = 0
         for _child in _root:
-             return go_to(_child, _tag, index+'[{}]'.format(j))
+            a = go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+            if a:
+             return go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+            else:
+                j += 1
+            
 
-
-index = go_to(root, 'Body')
+index = go_to(root, 'Body', 'name', 'r_humerus')
 print(index)
+print(root[0][8][0][2].get("name"))
+print(eval('root'+index).get("name"))
