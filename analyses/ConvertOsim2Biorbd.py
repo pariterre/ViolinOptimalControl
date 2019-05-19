@@ -14,6 +14,54 @@ import inspect
 #     for i in range(len(body.getchildren())):
 #         print(body.getchildren()[i].text)
 
+def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
+    #return index to go to _tag which can have condition on its attribute
+    i = 0
+    for _child in _root:
+        if type(_child) == str:
+            return ''
+        if _attrib != False:
+            if _child.tag == _tag and _child.get(_attrib) == _attribvalue:
+                return index+'[{}]'.format(i)
+            else:
+                i += 1
+        else:
+            if _child.tag == _tag:
+                return index+'[{}]'.format(i)
+            else:
+                i += 1 
+    #not found in children, go to grand children
+    else:
+        j = 0
+        if _root is not None:
+            for _child in _root:
+                a = index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+                if a:
+                 return index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+                else:
+                    j += 1
+
+def retrieve_name(var):
+        """
+        Gets the name of var. Does it from the out most frame inner-wards.
+        :param var: variable to get name from.
+        :return: string
+        """
+        for fi in reversed(inspect.stack()):
+            names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
+            if len(names) > 0:
+                return names[0]
+
+def go_to(_root, _tag, _attrib=False, _attribvalue=''):
+    #return element corresponding to _tag 
+    #which can have condition on its attribute
+    _index = index_go_to(_root, _tag, _attrib, _attribvalue)
+    if _index == None:
+        return 'None'
+    else:
+        _index = index_go_to(_root, _tag, _attrib, _attribvalue)
+        return eval(retrieve_name(_root)+_index)
+
 
 class ConvertedFromOsim2Biorbd:
     def __init__(self, path, originfile):
@@ -30,6 +78,12 @@ class ConvertedFromOsim2Biorbd:
 
         self.file.close()
 
+        def new_text(element):
+            if type(element) == str:
+                return element
+            else:
+                return element.text
+
         def body_list(self):
             L = []
             for body in self.data_origin.xpath(
@@ -38,29 +92,29 @@ class ConvertedFromOsim2Biorbd:
             return L
 
         def parent_body(body):
-            return go_to(go_to(self.root, 'Body', 'name', body), 'parent_body').text
+            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
         
         def mass_body(body):
-            return go_to(go_to(self.root, 'Body', 'name', body), 'mass').text
+            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass'))
         
         def matrix_inertia(body):
-            return [go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xx').text,
-                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yy').text,
-                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_zz').text,
-                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xy').text,
-                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xz').text,
-                    go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yz').text]
+            return [new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xx')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yy')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_zz')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xy')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xz')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yz'))]
             
         def center_of_mass(body):
-            return go_to(go_to(self.root, 'Body', 'name', body), 'mass_center').text
+            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center'))
         
         def extremities(body):
-            return [go_to(go_to(self.root, 'Body', 'name', body), 'mass_center').text,
-                    go_to(go_to(self.root, 'Body', 'name', body), 'mass_center').text]
+            return [new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center'))]
 
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n')
-        for body in body_list(self)[1:]:
+        for body in body_list(self)[:]:
             #segment data
             parent = parent_body(body)
             rt_in_matrix = 1
@@ -160,45 +214,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
-    #return index to go to _tag which can have condition on its attribute
-    i = 0
-    for _child in _root:
-        if _attrib != False:
-            if _child.tag == _tag and _child.get(_attrib) == _attribvalue:
-                return index+'[{}]'.format(i)
-            else:
-                i += 1
-        else:
-            if _child.tag == _tag:
-                return index+'[{}]'.format(i)
-            else:
-                i += 1 
-    #not found in children, go to grand children
-    else:
-        j = 0
-        for _child in _root:
-            a = index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
-            if a:
-             return index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
-            else:
-                j += 1
-
-def retrieve_name(var):
-        """
-        Gets the name of var. Does it from the out most frame inner-wards.
-        :param var: variable to get name from.
-        :return: string
-        """
-        for fi in reversed(inspect.stack()):
-            names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
-            if len(names) > 0:
-                return names[0]
-
-def go_to(_root, _tag, _attrib=False, _attribvalue=''):
-    #return element corresponding to _tag 
-    #which can have condition on its attribute
-    _index = index_go_to(_root, _tag, _attrib, _attribvalue)
-    
-    return eval(retrieve_name(_root)+_index)
