@@ -72,7 +72,7 @@ class ConvertedFromOsim2Biorbd:
         self.root = self.data_origin.getroot()
 
         self.file = open(self.path, 'w')
-        self.file.write('File extracted from '+ self.originfile)
+        self.file.write('// File extracted from '+ self.originfile)
         self.file.write('\n')
 
         def new_text(element):
@@ -144,15 +144,22 @@ class ConvertedFromOsim2Biorbd:
         def get_body_pathpoint(pathpoint):
             return go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body')
         
-        # Credits
-        self.write('\n// CREDITS')
-        _credits = print_credits()
-        self.write('\n'+_credits+'\n')
+        def muscle_group_reference(muscle, ref_group):
+            for el in ref_group:
+                if muscle == el[0]:
+                    return el[1]
+            else:
+                return 'None'
         
-         # Publications
-        self.write('\n// PUBLICATIONS\n')
-        _publications = print_publications()
-        self.write('\n'+_publications+'\n')
+#        # Credits
+#        self.write('\n// CREDITS')
+#        _credits = print_credits()
+#        self.write('\n'+_credits+'\n')
+#        
+#         # Publications
+#        self.write('\n// PUBLICATIONS\n')
+#        _publications = print_publications()
+#        self.write('\n'+_publications+'\n')
 
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n')
@@ -205,24 +212,75 @@ class ConvertedFromOsim2Biorbd:
             
         # Muscle definition
         self.write('\n// MUSCLE DEFINIION\n')
+        sort_muscle = []
+        muscle_ref_group = []
         for muscle in muscle_list(self):
-            #muscle data
             viapoint = list_pathpoint_muscle(muscle)
             bodies_viapoint = []
             for pathpoint in viapoint:
                 bodies_viapoint.append(get_body_pathpoint(pathpoint))
+            # it is supposed that viapoints are organized in order 
+            # from the parent body to the child body
             body_start = bodies_viapoint[0]
             body_end = bodies_viapoint[len(bodies_viapoint)-1]
-#            for bodies in bodies_viapoint[2:]:
-#                if bodies == parent_body(body_start):
-#                    body_start = bodies
-#                    print('*')
-#                elif parent_body(bodies) == body_end:
-#                    body_end = bodies
-#                    print('**')
-            print(body_start.text, body_end.text)
-            
-            
+            sort_muscle.append([body_start.text, body_end.text])
+            muscle_ref_group.append([muscle, body_start.text+'2'+body_end.text])
+        # selecting muscle group
+        group_muscle = []
+        for ext_muscle in sort_muscle:
+            if ext_muscle not in group_muscle:
+                group_muscle.append(ext_muscle)        
+        # print muscle group
+        for muscle_group in group_muscle:
+            self.write('\n// {} > {}\n'.format(muscle_group[0], muscle_group[1]))
+            self.write('musclegroup {}\n'.format(muscle_group[0]+'2'+muscle_group[1]))
+            self.write('    OriginParent        {}\n'.format(muscle_group[0]))
+            self.write('    InsertionParent        {}\n'.format(muscle_group[1]))
+            self.write('endmusclegroup\n')
+            # muscle
+            for muscle in muscle_list(self):
+                # muscle data
+                m_ref = muscle_group_reference(muscle, muscle_ref_group)
+                if m_ref == muscle_group[0]+'2'+muscle_group[1]:
+                    muscle_type = 'hillthelen'
+                    state_type = 'buchanan'
+                    start_pos = '0'
+                    insert_pos = '0'
+                    opt_length = '0'
+                    max_force = '0'
+                    tendon_slack_length = '0'
+                    pennation_angle = '0'
+                    pcsa = '0'
+                    max_velocity = '0'
+                    
+                # print muscle data
+                    self.write('\n    muscle    {}'.format(muscle))
+                    self.write('\n        Type    {}'.format(muscle_type)) if muscle_type != 'None' else self.write('')
+                    self.write('\n        statetype    {}'.format(state_type)) if state_type!= 'None' else self.write('')
+                    self.write('\n        musclegroup    {}'.format(m_ref)) if m_ref != 'None' else self.write('')
+                    self.write('\n        OriginPosition    {}'.format(start_pos)) if start_pos != 'None' else self.write('')
+                    self.write('\n        InsertionPosition    {}'.format(insert_pos)) if insert_pos != 'None' else self.write('')
+                    self.write('\n        optimalLength    {}'.format(opt_length)) if  opt_length != 'None' else self.write('')
+                    self.write('\n        maximalForce    {}'.format(max_force)) if max_force != 'None' else self.write('')
+                    self.write('\n        tendonSlackLength    {}'.format(tendon_slack_length)) if tendon_slack_length != 'None' else self.write('')
+                    self.write('\n        pennationAngle    {}'.format(pennation_angle)) if pennation_angle != 'None' else self.write('')
+                    self.write('\n        PCSA    {}'.format(pcsa)) if pcsa != 'None' else self.write('')
+                    self.write('\n        maxVelocity    {}'.format(max_velocity)) if max_velocity != 'None' else self.write('')
+                    self.write('\n    endmuscle\n')
+                    # viapoint
+                    for viapoint in list_pathpoint_muscle(muscle):
+                        # viapoint data
+                        parent_viapoint = get_body_pathpoint(viapoint).text
+                        viapoint_pos = '0'
+                        # print viapoint data
+                        self.write('\n        viapoint    {}'.format(viapoint))
+                        self.write('\n            parent    {}'.format(parent_viapoint)) if parent_viapoint != 'None' else self.write('')
+                        self.write('\n            muscle    {}'.format(muscle))
+                        self.write('\n            musclegroup    {}'.format(m_ref)) if m_ref != 'None' else self.write('')
+                        self.write('\n            position    {}'.format(viapoint_pos)) if viapoint_pos != 'None' else self.write('')
+                        self.write('\n        endviapoint')
+                    self.write('\n')
+                    
         self.file.close()
 
     def __getattr__(self, attr):
