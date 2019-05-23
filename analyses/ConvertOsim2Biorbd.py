@@ -246,12 +246,12 @@ class ConvertedFromOsim2Biorbd:
                     state_type = 'buchanan'
                     start_pos = '0'
                     insert_pos = '0'
-                    opt_length = '0'
-                    max_force = '0'
-                    tendon_slack_length = '0'
-                    pennation_angle = '0'
-                    pcsa = '0'
-                    max_velocity = '0'
+                    opt_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'optimal_fiber_length'))
+                    max_force = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'max_isometric_force'))
+                    tendon_slack_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'tendon_slack_length'))
+                    pennation_angle = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'pennation_angle_at_optimal'))
+                    pcsa = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'pcsa'))
+                    max_velocity = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'max_contraction_velocity'))
                     
                 # print muscle data
                     self.write('\n    muscle    {}'.format(muscle))
@@ -271,7 +271,7 @@ class ConvertedFromOsim2Biorbd:
                     for viapoint in list_pathpoint_muscle(muscle):
                         # viapoint data
                         parent_viapoint = get_body_pathpoint(viapoint).text
-                        viapoint_pos = '0'
+                        viapoint_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', viapoint), 'location'))
                         # print viapoint data
                         self.write('\n        viapoint    {}'.format(viapoint))
                         self.write('\n            parent    {}'.format(parent_viapoint)) if parent_viapoint != 'None' else self.write('')
@@ -321,8 +321,7 @@ def main():
 
     origin = data.data_origin
     root = origin.getroot()
-
+    print(retrieve_name(root))
 
 if __name__ == "__main__":
     main()
-
