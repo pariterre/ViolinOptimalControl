@@ -96,7 +96,7 @@ def coord_sys(axis):
     return [x, y, z]
                     
 class OrthoMatrix:
-    def __init__(self, translation, rotation_1, rotation_2, rotation_3):
+    def __init__(self, translation, rotation_1=[0, 0, 0], rotation_2=[0, 0, 0], rotation_3=[0, 0, 0]):
         self.trans = np.transpose(np.array([translation]))
         self.axe_1 = rotation_1 #axis of rotation for theta_1
         self.axe_2 = rotation_2 #axis of rotation for theta_2
@@ -104,7 +104,7 @@ class OrthoMatrix:
         self.rot_1 = np.transpose(np.array(coord_sys(self.axe_1)))#rotation matrix for theta_1
         self.rot_2 = np.transpose(np.array(coord_sys(self.axe_2)))#rotation matrix for theta_2
         self.rot_3 = np.transpose(np.array(coord_sys(self.axe_3)))#rotation matrix for theta_3
-        self.rotation_matrix = self.rot_3.dot(self.rot_2.dot(self.rot_1))
+        self.rotation_matrix = self.rot_3.dot(self.rot_2.dot(self.rot_1)) #rotation matrix for 
         self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
     
     def get_rotation_matrix(self):
@@ -121,6 +121,7 @@ class OrthoMatrix:
         self.trans = -self.rotation_matrix.dot(self.trans)
         self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
         return self.matrix
+
 
 class ConvertedFromOsim2Biorbd:
     def __init__(self, path, originfile):
@@ -170,10 +171,6 @@ class ConvertedFromOsim2Biorbd:
             
         def center_of_mass(body):
             return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center'))
-        
-        def extremities(body):
-            return [new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center'))]
 
         def muscle_list(self):
             L = []
@@ -200,6 +197,29 @@ class ConvertedFromOsim2Biorbd:
                 except:
                     break  
             return viapoint
+        
+        def list_transform_body(body):
+            #return list of transformation for each body
+            transformation = []
+            index_transformation = index_go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis')
+            if index_transformation == None:
+                return []
+            else:
+                list_index = list(index_transformation)
+                tronc_list_index = list_index[:len(list_index)-2]
+                tronc_index = ''.join(tronc_list_index)
+                index_root = index_go_to(self.root, 'Body', 'name', body)
+                index_tronc_total = index_root+tronc_index
+
+                i = 0
+                while True:
+                    try:
+                        child = eval('self.root'+index_tronc_total+str(i)+']')
+                        transformation.append(child.get("name")) if child.get('name') != None else True
+                        i += 1
+                    except:
+                        break  
+                return transformation
 
         def get_body_pathpoint(pathpoint):
             return go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body')
@@ -224,51 +244,62 @@ class ConvertedFromOsim2Biorbd:
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n')
         for body in body_list(self):
-            # segment data
+            self.write('\n// Information about {} segment\n'.format(body))
             parent = parent_body(body)
-            rt_in_matrix = 1
-            [r11, r12, r13, r14,
-            r21, r22, r23, r24,
-            r31, r32, r33, r34,
-            r41, r42, r43, r44] = [0, 0, 0, 0,
-                              0, 0, 0, 0,
-                              0, 0, 0, 0,
-                              0, 0, 0, 0]
-            [i11, i22, i33, i12, i13, i23] = matrix_inertia(body)
-            mass = mass_body(body)
-            com = center_of_mass(body)
-            mesh = extremities(body)
-            # writing data                  
-            self.write('\n// Information about {} segment\n'
-                       '    // Segment\n'
-                       '    segment {}\n'
-                       '        parent {} \n'
-                       '        RTinMatrix    {}\n'
-                       '        RT\n'.format(body, body, parent, rt_in_matrix))
-            self.write(
-                       '            {}    {}    {}    {}\n'
-                       '            {}    {}    {}    {}\n'
-                       '            {}    {}    {}    {}\n'
-                       '            {}    {}    {}    {}\n'
-                       .format(r11, r12, r13, r14,
-                               r21, r22, r23, r24,
-                               r31, r32, r33, r34,
-                               r41, r42, r43, r44))
-            self.write('        //translations {}{}{}\n'.format('x','y','z'))
-            self.write('        //rotations {}{}{}\n'.format('x','y','z'))
-            self.write('        mass {}\n'.format(mass))
-            self.write('        inertia\n')
-            self.write(
-                       '            {}    {}    {}\n'
-                       '            {}    {}    {}\n'
-                       '            {}    {}    {}\n'
-                       .format(i11, i12, i13,
-                               i12, i22, i23,
-                               i13, i23, i33))
-            self.write('        com    {}\n'.format(com))#center of mass
-            self.write('        mesh    {}\n'.format(mesh[0]))#center of mass
-            self.write('        mesh    {}\n'.format(mesh[1]))#center of mass
-            self.write('    endsegment\n')
+            list_transform = list_transform_body(body)
+            # segment data
+            if list_transform == []:
+                list_transform = ['']
+            for transformation in list_transform:
+                print(list_transform)
+                if transformation == '':    
+                    rotomatrix = OrthoMatrix([0, 0, 0])
+                    body_child = body
+                else:
+                    body_child = body+'_'+transformation
+                    axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', transformation), 'axis'))
+                    axis = [float(s) for s in axis_str.split(' ')]
+                    if transformation.find('rotation') != 0:
+                        rotomatrix = OrthoMatrix([0, 0, 0], axis)
+                    elif transformation.find('translation') != 0:
+                        rotomatrix = OrthoMatrix(axis)
+                rt_in_matrix = 1
+                [[r11, r12, r13, r14],
+                [r21, r22, r23, r24],
+                [r31, r32, r33, r34],
+                [r41, r42, r43, r44]] = rotomatrix.get_matrix().tolist()
+                [i11, i22, i33, i12, i13, i23] = matrix_inertia(body)
+                mass = mass_body(body)
+                com = center_of_mass(body)
+                #TO DO add mesh files
+                # writing data                  
+                self.write('    // Segment\n'
+                           '    segment {}\n'
+                           '        parent {} \n'
+                           '        RTinMatrix    {}\n'
+                           '        RT\n'.format(body_child, parent, rt_in_matrix))
+                self.write(
+                           '            {}    {}    {}    {}\n'
+                           '            {}    {}    {}    {}\n'
+                           '            {}    {}    {}    {}\n'
+                           '            {}    {}    {}    {}\n'
+                           .format(r11, r12, r13, r14,
+                                   r21, r22, r23, r24,
+                                   r31, r32, r33, r34,
+                                   r41, r42, r43, r44))
+                self.write('        //translations {}{}{}\n'.format('x','y','z'))
+                self.write('        //rotations {}\n'.format('z'))
+                self.write('        mass {}\n'.format(mass))
+                self.write('        inertia\n')
+                self.write(
+                           '            {}    {}    {}\n'
+                           '            {}    {}    {}\n'
+                           '            {}    {}    {}\n'
+                           .format(i11, i12, i13,
+                                   i12, i22, i23,
+                                   i13, i23, i33))
+                self.write('        com    {}\n'.format(com))#center of mass
+                self.write('    endsegment\n')
             
         # Muscle definition
         self.write('\n// MUSCLE DEFINIION\n')
