@@ -115,7 +115,12 @@ class OrthoMatrix:
     
     def get_matrix(self):
         return self.matrix
-
+    
+    def transpose(self):
+        self.rotation_matrix = np.transpose(self.rotation_matrix)
+        self.trans = -self.rotation_matrix.dot(self.trans)
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
+        return self.matrix
 
 class ConvertedFromOsim2Biorbd:
     def __init__(self, path, originfile):
