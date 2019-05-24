@@ -8,6 +8,8 @@ import pprint
 
 import inspect
 
+import numpy as np
+
 # data = etree.parse("../models/Opensim_model/arm26.osim")
 # for body in data.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
 #     print(body.get("name"))
@@ -60,7 +62,60 @@ def go_to(_root, _tag, _attrib=False, _attribvalue=''):
         return 'None'
     else:
         _index = index_go_to(_root, _tag, _attrib, _attribvalue)
-        return eval(retrieve_name(_root)+_index)
+        return eval(retrieve_name(_root)+_index)   
+    
+def coord_sys(axis):
+    # define orthonormal coordinate system with given z-axis
+    [a, b, c] = axis
+    if a == 0:
+        if b == 0:
+            if c == 0:
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+            else:
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        else:
+            if c == 0:
+                return [[0, 0, 1], [1, 0, 0], [0, 1, 0]]
+            else:
+                y_temp = [0, -c/b, 1]
+    else:
+        if b == 0:
+            if c == 0:
+                return [[0, 1, 0], [0, 0, 1], [1, 0, 0]]
+            else:
+                y_temp = [-c/a, 0, 1]
+        else:
+            y_temp = [-b/a, 1, 0]
+    z_temp = [a, b, c]
+    x_temp = np.cross(y_temp, z_temp)
+    norm_x_temp = np.linalg.norm(x_temp)
+    norm_z_temp = np.linalg.norm(z_temp)
+    x = [1/norm_x_temp*x_el for x_el in x_temp]
+    z = [1/norm_z_temp*z_el for z_el in z_temp]
+    y = [y_el for y_el in np.cross(z, x)]
+    return [x, y, z]
+                    
+class OrthoMatrix:
+    def __init__(self, translation, rotation_1, rotation_2, rotation_3):
+        self.trans = np.transpose(np.array([translation]))
+        self.axe_1 = rotation_1 #axis of rotation for theta_1
+        self.axe_2 = rotation_2 #axis of rotation for theta_2
+        self.axe_3 = rotation_3 #axis of rotation for theta_3
+        self.rot_1 = np.transpose(np.array(coord_sys(self.axe_1)))#rotation matrix for theta_1
+        self.rot_2 = np.transpose(np.array(coord_sys(self.axe_2)))#rotation matrix for theta_2
+        self.rot_3 = np.transpose(np.array(coord_sys(self.axe_3)))#rotation matrix for theta_3
+        self.rotation_matrix = self.rot_3.dot(self.rot_2.dot(self.rot_1))
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
+    
+    def get_rotation_matrix(self):
+        return self.rotation_matrix
+    
+    def get_translation(self):
+        return self.trans
+    
+    def get_matrix(self):
+        return self.matrix
+
 
 class ConvertedFromOsim2Biorbd:
     def __init__(self, path, originfile):
@@ -321,7 +376,6 @@ def main():
 
     origin = data.data_origin
     root = origin.getroot()
-    print(retrieve_name(root))
 
 if __name__ == "__main__":
     main()
