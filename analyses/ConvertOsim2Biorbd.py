@@ -124,7 +124,7 @@ class OrthoMatrix:
 
 
 class ConvertedFromOsim2Biorbd:
-    def __init__(self, path, originfile,version=0):
+    def __init__(self, path, originfile,version=3):
 
         self.path = path
         self.originfile = originfile
