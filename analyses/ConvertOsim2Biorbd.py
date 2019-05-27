@@ -135,7 +135,7 @@ class ConvertedFromOsim2Biorbd:
 
         self.file = open(self.path, 'w')
         self.file.write('version '+self.version+'\n')
-        self.file.write('// File extracted from '+ self.originfile)
+        self.file.write('\n// File extracted from '+ self.originfile)
         self.file.write('\n')
 
         def new_text(element):
@@ -144,11 +144,11 @@ class ConvertedFromOsim2Biorbd:
             else:
                 return element.text
             
-        def print_credits():
-            return new_text(go_to(self.root, 'credits'))
-        
-        def print_publications():
-            return new_text(go_to(self.root, 'publications'))
+#        def print_credits():
+#            return new_text(go_to(self.root, 'credits'))
+#        
+#        def print_publications():
+#            return new_text(go_to(self.root, 'publications'))
 
         def body_list(self):
             L = []
