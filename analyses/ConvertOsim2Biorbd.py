@@ -124,15 +124,17 @@ class OrthoMatrix:
 
 
 class ConvertedFromOsim2Biorbd:
-    def __init__(self, path, originfile):
+    def __init__(self, path, originfile,version=0):
 
         self.path = path
         self.originfile = originfile
+        self.version = str(version)
 
         self.data_origin = etree.parse(self.originfile)
         self.root = self.data_origin.getroot()
 
         self.file = open(self.path, 'w')
+        self.file.write('version '+self.version+'\n')
         self.file.write('// File extracted from '+ self.originfile)
         self.file.write('\n')
 
@@ -210,7 +212,6 @@ class ConvertedFromOsim2Biorbd:
                 tronc_index = ''.join(tronc_list_index)
                 index_root = index_go_to(self.root, 'Body', 'name', body)
                 index_tronc_total = index_root+tronc_index
-
                 i = 0
                 while True:
                     try:
@@ -251,7 +252,6 @@ class ConvertedFromOsim2Biorbd:
             if list_transform == []:
                 list_transform = ['']
             for transformation in list_transform:
-                print(list_transform)
                 if transformation == '':    
                     rotomatrix = OrthoMatrix([0, 0, 0])
                     body_child = body
@@ -408,7 +408,7 @@ def main():
     #Segment definition
     data = ConvertedFromOsim2Biorbd(
         '../models/testconversion0.biomod', 
-        "../models/Opensim_model/arm26.osim")
+        "../models/Opensim_model/arm26.osim",0)
 
     origin = data.data_origin
     root = origin.getroot()
