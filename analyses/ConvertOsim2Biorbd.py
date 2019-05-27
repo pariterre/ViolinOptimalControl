@@ -157,8 +157,13 @@ class ConvertedFromOsim2Biorbd:
                 L.append(body.get("name"))
             return L
 
-        def parent_body(body):
-            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
+        def parent_body(body, list_actuated):
+            ref = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
+            body_actu = ref
+            for _body in list_actuated:
+                    if _body.find(ref) != 0:
+                        body_actu = _body                        
+            return body_actu
         
         def mass_body(body):
             return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass'))
@@ -222,8 +227,13 @@ class ConvertedFromOsim2Biorbd:
                         break  
                 return transformation
 
-        def get_body_pathpoint(pathpoint):
-            return go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body')
+        def get_body_pathpoint(pathpoint, list_actuated):
+            ref = new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
+            body_path = ref
+            for _body in list_actuated:
+                if _body.find(ref) == 0:
+                    body_path = _body
+            return body_path
         
         def muscle_group_reference(muscle, ref_group):
             for el in ref_group:
@@ -243,10 +253,11 @@ class ConvertedFromOsim2Biorbd:
 #        self.write('\n'+_publications+'\n')
 
         # Segment definition
+        body_list_actuated =  []
         self.write('\n// SEGMENT DEFINITION\n')
         for body in body_list(self):
             self.write('\n// Information about {} segment\n'.format(body))
-            parent = parent_body(body)
+            parent = parent_body(body, body_list_actuated)
             list_transform = list_transform_body(body)
             # segment data
             if list_transform == []:
@@ -273,11 +284,11 @@ class ConvertedFromOsim2Biorbd:
                 com = center_of_mass(body)
                 #TO DO add mesh files
                 # writing data                  
-                self.write('    // Segment\n'
-                           '    segment {}\n'
-                           '        parent {} \n'
-                           '        RTinMatrix    {}\n'
-                           '        RT\n'.format(body_child, parent, rt_in_matrix))
+                self.write('    // Segment\n')
+                self.write('    segment {}\n'.format(body_child)) if body_child != 'None' else self.write('')
+                self.write('        parent {} \n'.format(parent)) if parent != 'None' else self.write('')
+                self.write('        RTinMatrix    {}\n'.format(rt_in_matrix)) if rt_in_matrix != 'None' else self.write('')
+                self.write('        RT\n')
                 self.write(
                            '            {}    {}    {}    {}\n'
                            '            {}    {}    {}    {}\n'
@@ -300,7 +311,7 @@ class ConvertedFromOsim2Biorbd:
                                    i13, i23, i33))
                 self.write('        com    {}\n'.format(com))#center of mass
                 self.write('    endsegment\n')
-            
+            body_list_actuated.append(body_child)
         # Muscle definition
         self.write('\n// MUSCLE DEFINIION\n')
         sort_muscle = []
@@ -309,13 +320,13 @@ class ConvertedFromOsim2Biorbd:
             viapoint = list_pathpoint_muscle(muscle)
             bodies_viapoint = []
             for pathpoint in viapoint:
-                bodies_viapoint.append(get_body_pathpoint(pathpoint))
+                bodies_viapoint.append(get_body_pathpoint(pathpoint, body_list_actuated))
             # it is supposed that viapoints are organized in order 
             # from the parent body to the child body
             body_start = bodies_viapoint[0]
             body_end = bodies_viapoint[len(bodies_viapoint)-1]
-            sort_muscle.append([body_start.text, body_end.text])
-            muscle_ref_group.append([muscle, body_start.text+'2'+body_end.text])
+            sort_muscle.append([body_start, body_end])
+            muscle_ref_group.append([muscle, body_start+'_to_'+body_end])
         # selecting muscle group
         group_muscle = []
         for ext_muscle in sort_muscle:
@@ -332,11 +343,13 @@ class ConvertedFromOsim2Biorbd:
             for muscle in muscle_list(self):
                 # muscle data
                 m_ref = muscle_group_reference(muscle, muscle_ref_group)
-                if m_ref == muscle_group[0]+'2'+muscle_group[1]:
+                if m_ref == muscle_group[0]+'_to_'+muscle_group[1]:
                     muscle_type = 'hillthelen'
                     state_type = 'buchanan'
-                    start_pos = '0'
-                    insert_pos = '0'
+                    start_point = list_pathpoint_muscle(muscle)[0]
+                    end_point = list_pathpoint_muscle(muscle)[len(list_pathpoint_muscle(muscle))-1]
+                    start_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', start_point), 'location'))
+                    insert_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', end_point), 'location'))
                     opt_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'optimal_fiber_length'))
                     max_force = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'max_isometric_force'))
                     tendon_slack_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'tendon_slack_length'))
@@ -361,7 +374,7 @@ class ConvertedFromOsim2Biorbd:
                     # viapoint
                     for viapoint in list_pathpoint_muscle(muscle):
                         # viapoint data
-                        parent_viapoint = get_body_pathpoint(viapoint).text
+                        parent_viapoint = get_body_pathpoint(viapoint,  body_list_actuated)
                         viapoint_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', viapoint), 'location'))
                         # print viapoint data
                         self.write('\n        viapoint    {}'.format(viapoint))
