@@ -335,7 +335,7 @@ class ConvertedFromOsim2Biorbd:
         # print muscle group
         for muscle_group in group_muscle:
             self.write('\n// {} > {}\n'.format(muscle_group[0], muscle_group[1]))
-            self.write('musclegroup {}\n'.format(muscle_group[0]+'2'+muscle_group[1]))
+            self.write('musclegroup {}\n'.format(muscle_group[0]+'_to_'+muscle_group[1]))
             self.write('    OriginParent        {}\n'.format(muscle_group[0]))
             self.write('    InsertionParent        {}\n'.format(muscle_group[1]))
             self.write('endmusclegroup\n')
@@ -421,7 +421,7 @@ def main():
     #Segment definition
     data = ConvertedFromOsim2Biorbd(
         '../models/testconversion0.biomod', 
-        "../models/Opensim_model/arm26.osim",0)
+        "../models/Opensim_model/arm26.osim")
 
     origin = data.data_origin
     root = origin.getroot()
