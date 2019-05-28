@@ -201,8 +201,9 @@ class ConvertedFromOsim2Biorbd:
                     child = eval('self.root'+index_tronc_total+str(i)+']')
                     viapoint.append(child.get("name"))
                     i += 1
-                except:
-                    break  
+                except Exception as e:
+                        #print('Error', e)
+                        break  
             return viapoint
         
         def list_transform_body(body):
@@ -223,9 +224,33 @@ class ConvertedFromOsim2Biorbd:
                         child = eval('self.root'+index_tronc_total+str(i)+']')
                         transformation.append(child.get("name")) if child.get('name') != None else True
                         i += 1
-                    except:
+                    except Exception as e:
+                        #print('Error', e)
                         break  
                 return transformation
+        
+        def list_markers_body(body):
+            #return list of transformation for each body
+            markers = []
+            index_markers = index_go_to(self.root, 'Marker')
+            if index_markers == None:
+                return []
+            else:
+                list_index = list(index_markers)
+                tronc_list_index = list_index[:len(list_index)-2]
+                tronc_index = ''.join(tronc_list_index)
+                i = 0
+                while True:
+                    try:
+                        child = eval('self.root'+tronc_index+str(i)+']').get('name')
+                        which_body = new_text(go_to(go_to(self.root, 'Marker', 'name', child), 'body'))
+                        if which_body == body:
+                            markers.append(child) if child != None else True
+                        i += 1
+                    except Exception as e:
+                        #print('Error', e)
+                        break  
+                return markers
 
         def get_body_pathpoint(pathpoint, list_actuated):
             ref = new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
@@ -255,6 +280,7 @@ class ConvertedFromOsim2Biorbd:
         # Segment definition
         body_list_actuated =  []
         self.write('\n// SEGMENT DEFINITION\n')
+        
         for body in body_list(self):
             self.write('\n// Information about {} segment\n'.format(body))
             parent = parent_body(body, body_list_actuated)
@@ -313,6 +339,18 @@ class ConvertedFromOsim2Biorbd:
                 self.write('    endsegment\n')
                 parent = body_child
             body_list_actuated.append(body_child)
+            # Markers
+            _list_markers = list_markers_body(body)
+            if _list_markers != []:
+                self.write('\n    // Markers')
+                for marker in _list_markers:
+                    position = new_text(go_to(go_to(self.root, 'Marker', 'name', marker), 'location'))
+                    parent_marker = parent
+                    self.write('\n    marker    {}'.format(marker))
+                    self.write('\n        parent    {}'.format(parent_marker))
+                    self.write('\n        position    {}'.format(position))
+                    self.write('\n    endmarker\n')
+            
         # Muscle definition
         self.write('\n// MUSCLE DEFINIION\n')
         sort_muscle = []
