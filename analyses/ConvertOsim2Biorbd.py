@@ -165,9 +165,6 @@ class ConvertedFromOsim2Biorbd:
                         body_actu = _body                        
             return body_actu
         
-        def mass_body(body):
-            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass'))
-        
         def matrix_inertia(body):
             return [new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xx')),
                     new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yy')),
@@ -175,9 +172,6 @@ class ConvertedFromOsim2Biorbd:
                     new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xy')),
                     new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xz')),
                     new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yz'))]
-            
-        def center_of_mass(body):
-            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center'))
 
         def muscle_list(self):
             L = []
@@ -306,8 +300,8 @@ class ConvertedFromOsim2Biorbd:
                 [r31, r32, r33, r34],
                 [r41, r42, r43, r44]] = rotomatrix.get_matrix().tolist()
                 [i11, i22, i33, i12, i13, i23] = matrix_inertia(body)
-                mass = mass_body(body)
-                com = center_of_mass(body)
+                mass = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass'))
+                com = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'mass_center'))
                 #TO DO add mesh files
                 # writing data                  
                 self.write('    // Segment\n')
