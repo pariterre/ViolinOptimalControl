@@ -70,18 +70,18 @@ def coord_sys(axis):
     if a == 0:
         if b == 0:
             if c == 0:
-                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'None'
             else:
-                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'z'
         else:
             if c == 0:
-                return [[0, 0, 1], [1, 0, 0], [0, 1, 0]]
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'y'
             else:
                 y_temp = [0, -c/b, 1]
     else:
         if b == 0:
             if c == 0:
-                return [[0, 1, 0], [0, 0, 1], [1, 0, 0]]
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'x'
             else:
                 y_temp = [-c/a, 0, 1]
         else:
@@ -93,7 +93,7 @@ def coord_sys(axis):
     x = [1/norm_x_temp*x_el for x_el in x_temp]
     z = [1/norm_z_temp*z_el for z_el in z_temp]
     y = [y_el for y_el in np.cross(z, x)]
-    return [x, y, z]
+    return [x, y, z],'None'
                     
 class OrthoMatrix:
     def __init__(self, translation, rotation_1=[0, 0, 0], rotation_2=[0, 0, 0], rotation_3=[0, 0, 0]):
@@ -101,9 +101,9 @@ class OrthoMatrix:
         self.axe_1 = rotation_1 #axis of rotation for theta_1
         self.axe_2 = rotation_2 #axis of rotation for theta_2
         self.axe_3 = rotation_3 #axis of rotation for theta_3
-        self.rot_1 = np.transpose(np.array(coord_sys(self.axe_1)))#rotation matrix for theta_1
-        self.rot_2 = np.transpose(np.array(coord_sys(self.axe_2)))#rotation matrix for theta_2
-        self.rot_3 = np.transpose(np.array(coord_sys(self.axe_3)))#rotation matrix for theta_3
+        self.rot_1 = np.transpose(np.array(coord_sys(self.axe_1)[0]))#rotation matrix for theta_1
+        self.rot_2 = np.transpose(np.array(coord_sys(self.axe_2)[0]))#rotation matrix for theta_2
+        self.rot_3 = np.transpose(np.array(coord_sys(self.axe_3)[0]))#rotation matrix for theta_3
         self.rotation_matrix = self.rot_3.dot(self.rot_2.dot(self.rot_1)) #rotation matrix for 
         self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
     
@@ -202,7 +202,8 @@ class ConvertedFromOsim2Biorbd:
         
         def list_transform_body(body):
             #return list of transformation for each body
-            transformation = []
+            translation = []
+            rotation = []
             index_transformation = index_go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis')
             if index_transformation == None:
                 return []
@@ -216,11 +217,15 @@ class ConvertedFromOsim2Biorbd:
                 while True:
                     try:
                         child = eval('self.root'+index_tronc_total+str(i)+']')
-                        transformation.append(child.get("name")) if child.get('name') != None else True
+                        if child.get('name') != None:
+                            translation.append(child.get("name")) if child.get('name').find('translation') == 0 else True
+                            rotation.append(child.get("name")) if child.get('name').find('rotation') == 0 else True
                         i += 1
                     except Exception as e:
                         #print('Error', e)
                         break  
+                transformation = translation + rotation
+                print(transformation)
                 return transformation
         
         def list_markers_body(body):
@@ -290,10 +295,12 @@ class ConvertedFromOsim2Biorbd:
                     body_child = body+'_'+transformation
                     axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', transformation), 'axis'))
                     axis = [float(s) for s in axis_str.split(' ')]
-                    if transformation.find('rotation') != 0:
+                    if transformation.find('rotation') == 0:
                         rotomatrix = OrthoMatrix([0, 0, 0], axis)
-                    elif transformation.find('translation') != 0:
+                    elif transformation.find('translation') == 0:
                         rotomatrix = OrthoMatrix(axis)
+                print('translation',rotomatrix.get_translation())
+                print(rotomatrix.get_matrix())
                 rt_in_matrix = 1
                 [[r11, r12, r13, r14],
                 [r21, r22, r23, r24],
