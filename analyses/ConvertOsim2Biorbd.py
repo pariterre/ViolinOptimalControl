@@ -311,6 +311,7 @@ class ConvertedFromOsim2Biorbd:
                                    i13, i23, i33))
                 self.write('        com    {}\n'.format(com))#center of mass
                 self.write('    endsegment\n')
+                parent = body_child
             body_list_actuated.append(body_child)
         # Muscle definition
         self.write('\n// MUSCLE DEFINIION\n')
