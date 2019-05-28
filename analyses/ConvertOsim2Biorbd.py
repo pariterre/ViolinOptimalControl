@@ -10,6 +10,8 @@ import inspect
 
 import numpy as np
 
+from numpy.linalg import inv
+
 # data = etree.parse("../models/Opensim_model/arm26.osim")
 # for body in data.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
 #     print(body.get("name"))
@@ -173,7 +175,6 @@ class ConvertedFromOsim2Biorbd:
 
         def parent_body(body, list_actuated):
             ref = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
-            print(body, ref, '*')
             body_actu = ref
             for _body in list_actuated:
                     if _body.find(ref) == 0:
@@ -331,21 +332,22 @@ class ConvertedFromOsim2Biorbd:
                                i13, i23, i33))
             self.write('        com    {}\n'.format(com))#center of mass
             self.write('    endsegment\n')
+        rotomatrix = OrthoMatrix([0, 0, 0])
         # Division of body in segment depending of transformation
         for body in body_list(self):
             self.write('\n// Information about {} segment\n'.format(body))
             parent = parent_body(body, body_list_actuated)
-            print(body, parent)
             list_transform = list_transform_body(body)
+            rotation_for_markers = rotomatrix.get_rotation_matrix()
             # segment data
             if list_transform[0] == []:
                 if list_transform[1] == []:    
-                    rotomatrix = OrthoMatrix([0, 0, 0])
+                    #rotomatrix = OrthoMatrix([0, 0, 0])
                     printing_segment(body, body, parent, rotomatrix)
                     body_list_actuated.append(body)
                     parent = body
             else:
-                rotomatrix = OrthoMatrix([0, 0, 0])
+                #rotomatrix = OrthoMatrix([0, 0, 0])
                 body_trans = body+'_translation'
                 for translation in list_transform[0]:
                     if translation.find('translation') == 0:
@@ -358,6 +360,7 @@ class ConvertedFromOsim2Biorbd:
                     if s != '':
                         trans_value.append(float(s))
                 rotomatrix.product(OrthoMatrix(trans_value))
+                rotation_for_markers = rotomatrix.get_rotation_matrix()
                 printing_segment(body, body_trans, parent, rotomatrix, 'translation')
                 parent = body_trans
                 body_list_actuated.append(body_trans)
@@ -366,24 +369,33 @@ class ConvertedFromOsim2Biorbd:
                     if rotation.find('rotation') == 0:
                         axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', rotation), 'axis'))
                         axis = [float(s) for s in axis_str.split(' ')]
-                        rotomatrix = OrthoMatrix([0,0,0], axis)
+                        #rotomatrix = OrthoMatrix([0,0,0], axis)
                         rotation_axis = rotomatrix.get_axis()
                         if rotation_axis == '':
                             rotation_axis = 'z'
                         printing_segment(body, body+'_'+rotation, parent, rotomatrix, 'rotation', rotation_axis)
                         parent = body+'_'+rotation
                         body_list_actuated.append(body+'_'+rotation)
+                        rotomatrix.product(OrthoMatrix([0,0,0], axis))
                 
             # Markers
             _list_markers = list_markers_body(body)
             if _list_markers != []:
                 self.write('\n    // Markers')
                 for marker in _list_markers:
-                    position = new_text(go_to(go_to(self.root, 'Marker', 'name', marker), 'location'))
+                    str_position = new_text(go_to(go_to(self.root, 'Marker', 'name', marker), 'location'))
+                    # position must be changed to prevent rotation effect
+                    position_value = []
+                    for s in str_position.split(' '):
+                        if s != '':
+                            position_value.append([float(s)])
+                    inverse_rotation_for_markers = inv(rotation_for_markers)
+                    corrected_position = inverse_rotation_for_markers.dot(np.array(position_value))
+                    
                     parent_marker = parent
                     self.write('\n    marker    {}'.format(marker))
                     self.write('\n        parent    {}'.format(parent_marker))
-                    self.write('\n        position    {}'.format(position))
+                    self.write('\n        position    {} {} {}'.format(corrected_position[0][0], corrected_position[1][0], corrected_position[2][0]))
                     self.write('\n    endmarker\n')
             
         # Muscle definition
