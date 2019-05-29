@@ -182,13 +182,13 @@ class ConvertedFromOsim2Biorbd:
                 L.append(body.get("name"))
             return L
 
-        def parent_body(body, list_actuated):
-            ref = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
-            body_actu = ref
-            for _body in list_actuated:
-                    if _body.find(ref) == 0:
-                        body_actu = _body                        
-            return body_actu
+        def parent_body(body):
+            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
+            # body_actu = ref
+            # for _body in list_actuated:
+            #         if _body.find(ref) == 0:
+            #             body_actu = _body
+            # return body_actu
         
         def matrix_inertia(body):
             return [new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xx')),
@@ -274,6 +274,29 @@ class ConvertedFromOsim2Biorbd:
                         break  
                 return markers
 
+        def list_dof_body(body):
+            #return list of generalizes coordinates for given body
+            dof = []
+            index_markers = index_go_to(go_to(self.root, 'Body', 'name', body), 'Coordinate')
+            if index_markers == None:
+                return []
+            else:
+                list_index = list(index_markers)
+                tronc_list_index = list_index[:len(list_index)-2]
+                tronc_index = ''.join(tronc_list_index)
+                index_root = index_go_to(self.root, 'Body', 'name', body)
+                index_tronc_total = index_root + tronc_index
+                i = 0
+                while True:
+                    try:
+                       new_dof = eval('self.root'+index_tronc_total+str(i)+']').get('name')
+                       dof.append(new_dof)
+                       i += 1
+                    except Exception as e:
+                        #print('Error', e)
+                        break
+                return dof
+
         def get_body_pathpoint(pathpoint, list_actuated):
             ref = new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
             body_path = ref
@@ -299,11 +322,12 @@ class ConvertedFromOsim2Biorbd:
 #        _publications = print_publications()
 #        self.write('\n'+_publications+'\n')
 
+
         # Segment definition
         body_list_actuated =  []
         self.write('\n// SEGMENT DEFINITION\n')
-        
-        def printing_segment(_body, _name, parent_name, _rotomatrix, transformation_type = '', rotation_axis = 'z'):        
+
+        def printing_segment(_body, _name, parent_name, _rotomatrix, transformation_type='', _is_dof='None'):
             rt_in_matrix = 1
             [[r11, r12, r13, r14],
             [r21, r22, r23, r24],
@@ -312,8 +336,9 @@ class ConvertedFromOsim2Biorbd:
             [i11, i22, i33, i12, i13, i23] = matrix_inertia(_body)
             mass = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'mass'))
             com = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'mass_center'))
-            #TO DO add mesh files
-            # writing data                  
+            # TODO add mesh files
+
+            # writing data
             self.write('    // Segment\n')
             self.write('    segment {}\n'.format(_name)) if _name != 'None' else self.write('')
             self.write('        parent {} \n'.format(parent_name)) if parent_name != 'None' else self.write('')
@@ -328,8 +353,8 @@ class ConvertedFromOsim2Biorbd:
                                r21, r22, r23, r24,
                                r31, r32, r33, r34,
                                r41, r42, r43, r44))
-            self.write('        translations {}{}{}\n'.format('x','y','z')) if transformation_type == 'translation' else True
-            self.write('        rotations {}\n'.format(rotation_axis)) if transformation_type == 'rotation' else True
+            self.write('        translations {}{}{}\n'.format('x', 'y', 'z')) if transformation_type == 'translation' else True
+            self.write('        rotations {}\n'.format('z')) if _is_dof != 'None' else True
             self.write('        mass {}\n'.format(mass))
             self.write('        inertia\n')
             self.write(
@@ -339,25 +364,23 @@ class ConvertedFromOsim2Biorbd:
                        .format(i11, i12, i13,
                                i12, i22, i23,
                                i13, i23, i33))
-            self.write('        com    {}\n'.format(com))#center of mass
+            self.write('        com    {}\n'.format(com))
             self.write('    endsegment\n')
         
         # Division of body in segment depending of transformation
         for body in body_list(self):
             rotomatrix = OrthoMatrix([0, 0, 0])
             self.write('\n// Information about {} segment\n'.format(body))
-            parent = parent_body(body, body_list_actuated)
+            parent = parent_body(body)
             list_transform = list_transform_body(body)
             rotation_for_markers = rotomatrix.get_rotation_matrix()
             # segment data
             if list_transform[0] == []:
-                if list_transform[1] == []:    
-                    #rotomatrix = OrthoMatrix([0, 0, 0])
+                if list_transform[1] == []:
                     printing_segment(body, body, parent, rotomatrix)
                     body_list_actuated.append(body)
                     parent = body
             else:
-                #rotomatrix = OrthoMatrix([0, 0, 0])
                 body_trans = body+'_translation'
                 for translation in list_transform[0]:
                     if translation.find('translation') == 0:
@@ -373,40 +396,41 @@ class ConvertedFromOsim2Biorbd:
                 rotation_for_markers = rotomatrix.get_rotation_matrix()
                 printing_segment(body, body_trans, parent, rotomatrix, 'translation')
                 parent = body_trans
-                body_list_actuated.append(body_trans)
+                #body_list_actuated.append(body_trans)
             if list_transform[1] != []:
                 rotomatrix = OrthoMatrix([0, 0, 0])
                 for rotation in list_transform[1]:
                     if rotation.find('rotation') == 0:
                         axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', rotation), 'axis'))
                         axis = [float(s) for s in axis_str.split(' ')]
-                        #rotomatrix = OrthoMatrix([0,0,0], axis)
                         rotation_axis = rotomatrix.get_axis()
                         if rotation_axis == '':
                             rotation_axis = 'z'
-                        rotomatrix_rot = out_product(rotomatrix,OrthoMatrix([0,0,0], axis))
-                        printing_segment(body, body+'_'+rotation, parent, rotomatrix, 'rotation', rotation_axis)
+                        rotomatrix = OrthoMatrix([0, 0, 0], axis)
+                        is_dof = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', rotation), 'coordinates'))
+                        if is_dof in list_dof_body(body):
+                            is_dof = 'True'
+                        else:
+                            is_dof = 'None'
+                        printing_segment(body, body+'_'+rotation, parent, rotomatrix, 'rotation', is_dof)
+                        rotation_for_markers = rotation_for_markers.dot(rotomatrix.get_rotation_matrix())
                         parent = body+'_'+rotation
-                        body_list_actuated.append(parent)       
+                        #body_list_actuated.append(parent)
+
+                # segment to cancel axis effects
+                rotomatrix.set_rotation_matrix(inv(rotation_for_markers))
+                printing_segment(body, body, parent, rotomatrix)
+                parent = body
                 
             # Markers
             _list_markers = list_markers_body(body)
             if _list_markers != []:
                 self.write('\n    // Markers')
                 for marker in _list_markers:
-                    str_position = new_text(go_to(go_to(self.root, 'Marker', 'name', marker), 'location'))
-                    # position must be changed to prevent rotation effect
-                    position_value = []
-                    for s in str_position.split(' '):
-                        if s != '':
-                            position_value.append([float(s)])
-                    inverse_rotation_for_markers = inv(rotation_for_markers)
-                    corrected_position = inverse_rotation_for_markers.dot(np.array(position_value))
-                    
-                    parent_marker = parent
+                    position = new_text(go_to(go_to(self.root, 'Marker', 'name', marker), 'location'))
                     self.write('\n    marker    {}'.format(marker))
-                    self.write('\n        parent    {}'.format(parent_marker))
-                    self.write('\n        position    {} {} {}'.format(corrected_position[0][0], corrected_position[1][0], corrected_position[2][0]))
+                    self.write('\n        parent    {}'.format(parent))
+                    self.write('\n        position    {}'.format(position))
                     self.write('\n    endmarker\n')
             
         # Muscle definition
