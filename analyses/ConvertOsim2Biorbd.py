@@ -297,13 +297,19 @@ class ConvertedFromOsim2Biorbd:
                         break
                 return dof
 
-        def get_body_pathpoint(pathpoint, list_actuated):
-            ref = new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
-            body_path = ref
-            for _body in list_actuated:
-                if _body.find(ref) == 0:
-                    body_path = _body
-            return body_path
+        def get_body_pathpoint(pathpoint):
+            while True:
+                try:
+                    return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
+                except Exception as e:
+                    try:
+                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body'))
+                    except Exception as e:
+                        try:
+                            return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body'))
+                        except:
+                            break
+
         
         def muscle_group_reference(muscle, ref_group):
             for el in ref_group:
@@ -441,11 +447,12 @@ class ConvertedFromOsim2Biorbd:
             viapoint = list_pathpoint_muscle(muscle)
             bodies_viapoint = []
             for pathpoint in viapoint:
-                bodies_viapoint.append(get_body_pathpoint(pathpoint, body_list_actuated))
+                bodies_viapoint.append(get_body_pathpoint(pathpoint))
             # it is supposed that viapoints are organized in order 
             # from the parent body to the child body
             body_start = bodies_viapoint[0]
             body_end = bodies_viapoint[len(bodies_viapoint)-1]
+            print(body_end)
             sort_muscle.append([body_start, body_end])
             muscle_ref_group.append([muscle, body_start+'_to_'+body_end])
         # selecting muscle group
@@ -495,7 +502,7 @@ class ConvertedFromOsim2Biorbd:
                     # viapoint
                     for viapoint in list_pathpoint_muscle(muscle):
                         # viapoint data
-                        parent_viapoint = get_body_pathpoint(viapoint,  body_list_actuated)
+                        parent_viapoint = get_body_pathpoint(viapoint)
                         viapoint_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', viapoint), 'location'))
                         # print viapoint data
                         self.write('\n        viapoint    {}'.format(viapoint))
