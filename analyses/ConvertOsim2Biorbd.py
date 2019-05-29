@@ -353,12 +353,14 @@ class ConvertedFromOsim2Biorbd:
                     if translation.find('translation') == 0:
                         axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', translation), 'axis'))
                         axis = [float(s) for s in axis_str.split(' ')]
+                        rotomatrix.transpose()
                         rotomatrix.product(OrthoMatrix([0,0,0], axis))
                 trans_str = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'location_in_parent'))
                 trans_value = []
                 for s in trans_str.split(' '):
                     if s != '':
                         trans_value.append(float(s))
+                rotomatrix.transpose()
                 rotomatrix.product(OrthoMatrix(trans_value))
                 rotation_for_markers = rotomatrix.get_rotation_matrix()
                 printing_segment(body, body_trans, parent, rotomatrix, 'translation')
@@ -376,6 +378,7 @@ class ConvertedFromOsim2Biorbd:
                         printing_segment(body, body+'_'+rotation, parent, rotomatrix, 'rotation', rotation_axis)
                         parent = body+'_'+rotation
                         body_list_actuated.append(body+'_'+rotation)
+                        rotomatrix.transpose()
                         rotomatrix.product(OrthoMatrix([0,0,0], axis))
                 
             # Markers
