@@ -12,6 +12,8 @@ import numpy as np
 
 from numpy.linalg import inv
 
+import copy
+
 # data = etree.parse("../models/Opensim_model/arm26.osim")
 # for body in data.xpath('/OpenSimDocument/Model/BodySet/objects/Body'):
 #     print(body.get("name"))
@@ -98,7 +100,7 @@ def coord_sys(axis):
     return [x, y, z],''
                     
 class OrthoMatrix:
-    def __init__(self, translation, rotation_1=[0, 0, 0], rotation_2=[0, 0, 0], rotation_3=[0, 0, 0]):
+    def __init__(self, translation=[0, 0, 0], rotation_1=[0, 0, 0], rotation_2=[0, 0, 0], rotation_3=[0, 0, 0]):
         self.trans = np.transpose(np.array([translation]))
         self.axe_1 = rotation_1 #axis of rotation for theta_1
         self.axe_2 = rotation_2 #axis of rotation for theta_2
@@ -122,6 +124,7 @@ class OrthoMatrix:
         self.trans = trans
     
     def get_matrix(self):
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
         return self.matrix
     
     def transpose(self):
@@ -138,6 +141,12 @@ class OrthoMatrix:
     def get_axis(self):
         return coord_sys(self.axe_1)[1]+coord_sys(self.axe_2)[1]+coord_sys(self.axe_3)[1]
 
+def out_product(rotomatrix_1, rotomatrix_2):
+    rotomatrix_prod = OrthoMatrix()
+    rotomatrix_prod.set_translation(rotomatrix_1.get_translation() + rotomatrix_2.get_translation())
+    rotomatrix_prod.set_rotation_matrix(rotomatrix_1.get_rotation_matrix().dot(rotomatrix_2.get_rotation_matrix()))
+    rotomatrix_prod.get_matrix()
+    return rotomatrix_prod
 
 class ConvertedFromOsim2Biorbd:
     def __init__(self, path, originfile,version=3):
@@ -332,9 +341,10 @@ class ConvertedFromOsim2Biorbd:
                                i13, i23, i33))
             self.write('        com    {}\n'.format(com))#center of mass
             self.write('    endsegment\n')
-        rotomatrix = OrthoMatrix([0, 0, 0])
+        
         # Division of body in segment depending of transformation
         for body in body_list(self):
+            rotomatrix = OrthoMatrix([0, 0, 0])
             self.write('\n// Information about {} segment\n'.format(body))
             parent = parent_body(body, body_list_actuated)
             list_transform = list_transform_body(body)
@@ -353,20 +363,19 @@ class ConvertedFromOsim2Biorbd:
                     if translation.find('translation') == 0:
                         axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', translation), 'axis'))
                         axis = [float(s) for s in axis_str.split(' ')]
-                        rotomatrix.transpose()
                         rotomatrix.product(OrthoMatrix([0,0,0], axis))
                 trans_str = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'location_in_parent'))
                 trans_value = []
                 for s in trans_str.split(' '):
                     if s != '':
                         trans_value.append(float(s))
-                rotomatrix.transpose()
                 rotomatrix.product(OrthoMatrix(trans_value))
                 rotation_for_markers = rotomatrix.get_rotation_matrix()
                 printing_segment(body, body_trans, parent, rotomatrix, 'translation')
                 parent = body_trans
                 body_list_actuated.append(body_trans)
             if list_transform[1] != []:
+                rotomatrix = OrthoMatrix([0, 0, 0])
                 for rotation in list_transform[1]:
                     if rotation.find('rotation') == 0:
                         axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', rotation), 'axis'))
@@ -375,11 +384,10 @@ class ConvertedFromOsim2Biorbd:
                         rotation_axis = rotomatrix.get_axis()
                         if rotation_axis == '':
                             rotation_axis = 'z'
+                        rotomatrix_rot = out_product(rotomatrix,OrthoMatrix([0,0,0], axis))
                         printing_segment(body, body+'_'+rotation, parent, rotomatrix, 'rotation', rotation_axis)
                         parent = body+'_'+rotation
-                        body_list_actuated.append(body+'_'+rotation)
-                        rotomatrix.transpose()
-                        rotomatrix.product(OrthoMatrix([0,0,0], axis))
+                        body_list_actuated.append(parent)       
                 
             # Markers
             _list_markers = list_markers_body(body)
