@@ -304,36 +304,28 @@ class ConvertedFromOsim2Biorbd:
             while True:
                 try:
                     if index_go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body') != '':
-                        print('*', pathpoint)
                         return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
                     elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body') != '':
-                        print('Conditional', pathpoint)
                         return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body'))
                     elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body') !=  '':
-                        print('Moving', pathpoint)
                         return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body'))
                     else:
                         return 'None'  
                 except Exception as e:
-                    print('******',e)
                     break
         
         def get_pos(pathpoint):
             while True:
                 try:
                     if index_go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'location') != '':
-                        print('*', pathpoint)
                         return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'location'))
                     elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'location') != '':
-                        print('Conditional', pathpoint)
                         return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'location'))
                     elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'location') !=  '':
-                        print('Moving', pathpoint)
                         return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'location'))
                     else:
                         return 'None'  
                 except Exception as e:
-                    print('******',e)
                     break
         
         def muscle_group_reference(muscle, ref_group):
@@ -358,7 +350,7 @@ class ConvertedFromOsim2Biorbd:
         body_list_actuated =  []
         self.write('\n// SEGMENT DEFINITION\n')
 
-        def printing_segment(_body, _name, parent_name, _rotomatrix, transformation_type='', _is_dof='None'):
+        def printing_segment(_body, _name, parent_name, _rotomatrix, transformation_type='', _is_dof='None', true_segment=False, dof_total_trans=''):
             rt_in_matrix = 1
             [[r11, r12, r13, r14],
             [r21, r22, r23, r24],
@@ -384,18 +376,17 @@ class ConvertedFromOsim2Biorbd:
                                r21, r22, r23, r24,
                                r31, r32, r33, r34,
                                r41, r42, r43, r44))
-            self.write('        translations {}{}{}\n'.format('x', 'y', 'z')) if transformation_type == 'translation' else True
-            self.write('        rotations {}\n'.format('z')) if _is_dof != 'None' else True
-            self.write('        mass {}\n'.format(mass))
-            self.write('        inertia\n')
-            self.write(
+            self.write('        translations {}\n'.format(dof_total_trans)) if transformation_type == 'translation' and dof_total_trans != '' else True
+            self.write('        rotations {}\n'.format('z')) if _is_dof == 'True' else True
+            self.write('        mass {}\n'.format(mass)) if true_segment == True else True
+            self.write('        inertia\n'
                        '            {}    {}    {}\n'
                        '            {}    {}    {}\n'
                        '            {}    {}    {}\n'
                        .format(i11, i12, i13,
                                i12, i22, i23,
-                               i13, i23, i33))
-            self.write('        com    {}\n'.format(com))
+                               i13, i23, i33)) if true_segment == True else True
+            self.write('        com    {}\n'.format(com)) if true_segment == True else True
             self.write('    endsegment\n')
         
         # Division of body in segment depending of transformation
@@ -408,16 +399,23 @@ class ConvertedFromOsim2Biorbd:
             # segment data
             if list_transform[0] == []:
                 if list_transform[1] == []:
-                    printing_segment(body, body, parent, rotomatrix)
+                    printing_segment(body, body, parent, rotomatrix, true_segment=True)
                     body_list_actuated.append(body)
                     parent = body
             else:
                 body_trans = body+'_translation'
+                dof_total_trans = ''
+                j = 0
+                list_trans_dof = ['x', 'y', 'z']
                 for translation in list_transform[0]:
                     if translation.find('translation') == 0:
                         axis_str = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', translation), 'axis'))
                         axis = [float(s) for s in axis_str.split(' ')]
                         rotomatrix.product(OrthoMatrix([0,0,0], axis))
+                        is_dof = new_text(go_to(go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis', 'name', translation), 'coordinates'))
+                        if is_dof in list_dof_body(body):
+                            dof_total_trans += list_trans_dof[j]
+                    j += 1
                 trans_str = new_text(go_to(go_to(self.root, 'Body', 'name', body), 'location_in_parent'))
                 trans_value = []
                 for s in trans_str.split(' '):
@@ -425,7 +423,11 @@ class ConvertedFromOsim2Biorbd:
                         trans_value.append(float(s))
                 rotomatrix.product(OrthoMatrix(trans_value))
                 rotation_for_markers = rotomatrix.get_rotation_matrix()
-                printing_segment(body, body_trans, parent, rotomatrix, 'translation')
+                if list_transform[1] == []:
+                    is_true_segment = True
+                else:
+                    is_true_segment = False
+                printing_segment(body, body_trans, parent, rotomatrix, 'translation', dof_total_trans, true_segment=is_true_segment)
                 parent = body_trans
                 #body_list_actuated.append(body_trans)
             if list_transform[1] != []:
@@ -450,7 +452,7 @@ class ConvertedFromOsim2Biorbd:
 
                 # segment to cancel axis effects
                 rotomatrix.set_rotation_matrix(inv(rotation_for_markers))
-                printing_segment(body, body, parent, rotomatrix)
+                printing_segment(body, body, parent, rotomatrix, true_segment = True)
                 parent = body
                 
             # Markers
@@ -473,7 +475,6 @@ class ConvertedFromOsim2Biorbd:
             bodies_viapoint = []
             for pathpoint in viapoint:
                 bodies_viapoint.append(get_body_pathpoint(pathpoint))
-                print(pathpoint, get_body_pathpoint(pathpoint))
             # it is supposed that viapoints are organized in order 
             # from the parent body to the child body
             body_start = bodies_viapoint[0]
@@ -573,8 +574,8 @@ class ConvertedFromOsim2Biorbd:
 def main():
     #Segment definition
     data = ConvertedFromOsim2Biorbd(
-        '../models/testconversion0.biomod', 
-        "../models/Opensim_model/gait2392_simbody.osim")
+        '../models/conv-arm26.biomod',
+        "../models/Opensim_model/arm26.osim")
 
     origin = data.data_origin
     root = origin.getroot()
