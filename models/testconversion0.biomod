@@ -1,0 +1,4338 @@
+version 3
+
+// File extracted from ../models/Opensim_model/gait2392_simbody.osim
+
+// SEGMENT DEFINITION
+
+// Information about ground segment
+    // Segment
+    segment ground
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 0
+        inertia
+            0    0    0
+            0    0    0
+            0    0    0
+        com     0 0 0
+    endsegment
+
+// Information about pelvis segment
+    // Segment
+    segment pelvis_translation
+        parent ground 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 11.777
+        inertia
+            0.1028    0    0
+            0    0.0871    0
+            0    0    0.0579
+        com     -0.0707 0 0
+    endsegment
+    // Segment
+    segment pelvis_rotation1
+        parent pelvis_translation 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 11.777
+        inertia
+            0.1028    0    0
+            0    0.0871    0
+            0    0    0.0579
+        com     -0.0707 0 0
+    endsegment
+    // Segment
+    segment pelvis_rotation2
+        parent pelvis_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 11.777
+        inertia
+            0.1028    0    0
+            0    0.0871    0
+            0    0    0.0579
+        com     -0.0707 0 0
+    endsegment
+    // Segment
+    segment pelvis_rotation3
+        parent pelvis_rotation2 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 11.777
+        inertia
+            0.1028    0    0
+            0    0.0871    0
+            0    0    0.0579
+        com     -0.0707 0 0
+    endsegment
+    // Segment
+    segment pelvis
+        parent pelvis_rotation3 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        mass 11.777
+        inertia
+            0.1028    0    0
+            0    0.0871    0
+            0    0    0.0579
+        com     -0.0707 0 0
+    endsegment
+
+// Information about femur_r segment
+    // Segment
+    segment femur_r_translation
+        parent pelvis 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    -0.0707
+            0.0    1.0    0.0    -0.0661
+            0.0    0.0    1.0    0.0835
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_r_rotation1
+        parent femur_r_translation 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_r_rotation2
+        parent femur_r_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_r_rotation3
+        parent femur_r_rotation2 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_r
+        parent femur_r_rotation3 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+
+// Information about tibia_r segment
+    // Segment
+    segment tibia_r_translation
+        parent femur_r 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_r_rotation1
+        parent tibia_r_translation 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_r_rotation2
+        parent tibia_r_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_r_rotation3
+        parent tibia_r_rotation2 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_r
+        parent tibia_r_rotation3 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+
+// Information about talus_r segment
+    // Segment
+    segment talus_r_translation
+        parent tibia_r 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    -0.43
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_r_rotation1
+        parent talus_r_translation 
+        RTinMatrix    1
+        RT
+            0.5058802754569379    -0.8561876554369477    -0.10501354951145873    0.0
+            0.8383158643974155    0.5166649772119096    -0.17402244919041737    0.0
+            0.20325269593101833    1.3877787807814457e-17    0.9791263154449344    0.0
+            0.0    0.0    0.0    1.0
+        rotations z
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_r_rotation2
+        parent talus_r_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_r_rotation3
+        parent talus_r_rotation2 
+        RTinMatrix    1
+        RT
+            0.0    -0.10664070695580541    0.994297621248269    0.0
+            1.0    0.0    0.0    0.0
+            0.0    0.994297621248269    0.10664070695580541    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_r
+        parent talus_r_rotation3 
+        RTinMatrix    1
+        RT
+            -0.8561876554369473    0.5166649772119093    -1.4451816276762004e-18    0.0
+            -0.1583621526878061    -0.26242870370543714    0.951867955163723    0.0
+            0.4917968353634118    0.8149775928171894    0.3065083945545898    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+
+// Information about calcn_r segment
+    // Segment
+    segment calcn_r_translation
+        parent talus_r 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    -0.04877
+            0.0    1.0    0.0    -0.04195
+            0.0    0.0    1.0    0.00792
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_r_rotation1
+        parent calcn_r_translation 
+        RTinMatrix    1
+        RT
+            -0.0959131020315802    -0.6092199466192824    0.7871796068877029    0.0
+            -0.0736848415500993    0.7930012967462278    0.6047474576089907    0.0
+            -0.9926586628768301    0.0    -0.12094948952179817    0.0
+            0.0    0.0    0.0    1.0
+        rotations z
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_r_rotation2
+        parent calcn_r_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_r_rotation3
+        parent calcn_r_rotation2 
+        RTinMatrix    1
+        RT
+            0.0    -0.9884009411751646    -0.15186697957109963    0.0
+            -1.0    0.0    0.0    0.0
+            0.0    0.15186697957109963    -0.9884009411751646    0.0
+            0.0    0.0    0.0    1.0
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_r
+        parent calcn_r_rotation3 
+        RTinMatrix    1
+        RT
+            0.6092199466192825    -0.7930012967462277    -4.382017285306638e-17    0.0
+            0.21434718959704452    0.16467133652884008    0.9627765229987976    0.0
+            -0.7634830312148708    -0.5865426619476257    0.2702986621541916    0.0
+            0.0    0.0    0.0    1.0
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+
+// Information about toes_r segment
+    // Segment
+    segment toes_r_translation
+        parent calcn_r 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.1788
+            0.0    1.0    0.0    -0.002
+            0.0    0.0    1.0    0.00108
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 -0.0175
+    endsegment
+    // Segment
+    segment toes_r_rotation1
+        parent toes_r_translation 
+        RTinMatrix    1
+        RT
+            0.0    0.8139361075413871    -0.5809543982451424    0.0
+            -1.0    0.0    0.0    0.0
+            0.0    0.5809543982451424    0.8139361075413871    0.0
+            0.0    0.0    0.0    1.0
+        rotations z
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 -0.0175
+    endsegment
+    // Segment
+    segment toes_r_rotation2
+        parent toes_r_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 -0.0175
+    endsegment
+    // Segment
+    segment toes_r_rotation3
+        parent toes_r_rotation2 
+        RTinMatrix    1
+        RT
+            0.0    -0.5809543982451424    0.8139361075413871    0.0
+            1.0    0.0    0.0    0.0
+            0.0    0.8139361075413871    0.5809543982451424    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 -0.0175
+    endsegment
+    // Segment
+    segment toes_r
+        parent toes_r_rotation3 
+        RTinMatrix    1
+        RT
+            0.8139361075413871    1.0154474393418302e-17    0.5809543982451424    0.0
+            -0.4728597615667    0.5809543982451424    0.6624919871596245    0.0
+            -0.3375080128403755    -0.8139361075413871    0.47285976156670007    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 -0.0175
+    endsegment
+
+// Information about femur_l segment
+    // Segment
+    segment femur_l_translation
+        parent pelvis 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    -0.0707
+            0.0    1.0    0.0    -0.0661
+            0.0    0.0    1.0    -0.0835
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_l_rotation1
+        parent femur_l_translation 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_l_rotation2
+        parent femur_l_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_l_rotation3
+        parent femur_l_rotation2 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+    // Segment
+    segment femur_l
+        parent femur_l_rotation3 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        mass 9.3014
+        inertia
+            0.1339    0    0
+            0    0.0351    0
+            0    0    0.1412
+        com     0 -0.17 0
+    endsegment
+
+// Information about tibia_l segment
+    // Segment
+    segment tibia_l_translation
+        parent femur_l 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_l_rotation1
+        parent tibia_l_translation 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_l_rotation2
+        parent tibia_l_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_l_rotation3
+        parent tibia_l_rotation2 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+    // Segment
+    segment tibia_l
+        parent tibia_l_rotation3 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        mass 3.7075
+        inertia
+            0.0504    0    0
+            0    0.0051    0
+            0    0    0.0511
+        com     0 -0.1867 0
+    endsegment
+
+// Information about talus_l segment
+    // Segment
+    segment talus_l_translation
+        parent tibia_l 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    -0.43
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_l_rotation1
+        parent talus_l_translation 
+        RTinMatrix    1
+        RT
+            0.5058802754569379    -0.8561876554369477    0.10501354951145873    0.0
+            0.8383158643974155    0.5166649772119096    0.17402244919041737    0.0
+            -0.20325269593101833    -1.3877787807814457e-17    0.9791263154449344    0.0
+            0.0    0.0    0.0    1.0
+        rotations z
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_l_rotation2
+        parent talus_l_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_l_rotation3
+        parent talus_l_rotation2 
+        RTinMatrix    1
+        RT
+            0.0    0.10664070695580541    0.994297621248269    0.0
+            1.0    0.0    0.0    0.0
+            0.0    0.994297621248269    -0.10664070695580541    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+    // Segment
+    segment talus_l
+        parent talus_l_rotation3 
+        RTinMatrix    1
+        RT
+            -0.8561876554369473    0.5166649772119093    1.4451816276762004e-18    0.0
+            0.1583621526878061    0.26242870370543714    0.951867955163723    0.0
+            0.4917968353634118    0.8149775928171894    -0.3065083945545898    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.1
+        inertia
+            0.001    0    0
+            0    0.001    0
+            0    0    0.001
+        com     0 0 0
+    endsegment
+
+// Information about calcn_l segment
+    // Segment
+    segment calcn_l_translation
+        parent talus_l 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    -0.04877
+            0.0    1.0    0.0    -0.04195
+            0.0    0.0    1.0    -0.00792
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_l_rotation1
+        parent calcn_l_translation 
+        RTinMatrix    1
+        RT
+            -0.0959131020315802    -0.6092199466192824    -0.7871796068877029    0.0
+            -0.0736848415500993    0.7930012967462278    -0.6047474576089907    0.0
+            0.9926586628768301    0.0    -0.12094948952179817    0.0
+            0.0    0.0    0.0    1.0
+        rotations z
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_l_rotation2
+        parent calcn_l_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_l_rotation3
+        parent calcn_l_rotation2 
+        RTinMatrix    1
+        RT
+            0.0    0.9884009411751646    -0.15186697957109963    0.0
+            -1.0    0.0    0.0    0.0
+            0.0    0.15186697957109963    0.9884009411751646    0.0
+            0.0    0.0    0.0    1.0
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+    // Segment
+    segment calcn_l
+        parent calcn_l_rotation3 
+        RTinMatrix    1
+        RT
+            0.6092199466192825    -0.7930012967462277    4.382017285306638e-17    0.0
+            -0.21434718959704452    -0.16467133652884008    0.9627765229987976    0.0
+            -0.7634830312148708    -0.5865426619476257    -0.2702986621541916    0.0
+            0.0    0.0    0.0    1.0
+        mass 1.25
+        inertia
+            0.0014    0    0
+            0    0.0039    0
+            0    0    0.0041
+        com     0.1 0.03 0
+    endsegment
+
+// Information about toes_l segment
+    // Segment
+    segment toes_l_translation
+        parent calcn_l 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.1788
+            0.0    1.0    0.0    -0.002
+            0.0    0.0    1.0    -0.00108
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 0.0175
+    endsegment
+    // Segment
+    segment toes_l_rotation1
+        parent toes_l_translation 
+        RTinMatrix    1
+        RT
+            0.0    -0.8139361075413871    0.5809543982451424    0.0
+            1.0    0.0    0.0    0.0
+            0.0    0.5809543982451424    0.8139361075413871    0.0
+            0.0    0.0    0.0    1.0
+        rotations z
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 0.0175
+    endsegment
+    // Segment
+    segment toes_l_rotation2
+        parent toes_l_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 0.0175
+    endsegment
+    // Segment
+    segment toes_l_rotation3
+        parent toes_l_rotation2 
+        RTinMatrix    1
+        RT
+            0.0    0.5809543982451424    0.8139361075413871    0.0
+            1.0    0.0    0.0    0.0
+            0.0    0.8139361075413871    -0.5809543982451424    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 0.0175
+    endsegment
+    // Segment
+    segment toes_l
+        parent toes_l_rotation3 
+        RTinMatrix    1
+        RT
+            -0.8139361075413871    1.0154474393418302e-17    0.5809543982451424    0.0
+            0.4728597615667    0.5809543982451424    0.6624919871596245    0.0
+            -0.3375080128403755    0.8139361075413871    -0.47285976156670007    0.0
+            0.0    0.0    0.0    1.0
+        mass 0.2166
+        inertia
+            0.0001    0    0
+            0    0.0002    0
+            0    0    0.0001
+        com     0.0346 0.006 0.0175
+    endsegment
+
+// Information about torso segment
+    // Segment
+    segment torso_translation
+        parent pelvis 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    -0.1007
+            0.0    1.0    0.0    0.0815
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        translations xyz
+        mass 34.2366
+        inertia
+            1.4745    0    0
+            0    0.7555    0
+            0    0    1.4314
+        com     -0.03 0.32 0
+    endsegment
+    // Segment
+    segment torso_rotation1
+        parent torso_translation 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 34.2366
+        inertia
+            1.4745    0    0
+            0    0.7555    0
+            0    0    1.4314
+        com     -0.03 0.32 0
+    endsegment
+    // Segment
+    segment torso_rotation2
+        parent torso_rotation1 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 34.2366
+        inertia
+            1.4745    0    0
+            0    0.7555    0
+            0    0    1.4314
+        com     -0.03 0.32 0
+    endsegment
+    // Segment
+    segment torso_rotation3
+        parent torso_rotation2 
+        RTinMatrix    1
+        RT
+            1    0    0    0
+            0    1    0    0
+            0    0    1    0
+            0    0    0    1
+        rotations z
+        mass 34.2366
+        inertia
+            1.4745    0    0
+            0    0.7555    0
+            0    0    1.4314
+        com     -0.03 0.32 0
+    endsegment
+    // Segment
+    segment torso
+        parent torso_rotation3 
+        RTinMatrix    1
+        RT
+            1.0    0.0    0.0    0.0
+            0.0    1.0    0.0    0.0
+            0.0    0.0    1.0    0.0
+            0.0    0.0    0.0    1.0
+        mass 34.2366
+        inertia
+            1.4745    0    0
+            0    0.7555    0
+            0    0    1.4314
+        com     -0.03 0.32 0
+    endsegment
+
+// MUSCLE DEFINIION
+
+// pelvis > femur_r
+musclegroup pelvis_to_femur_r
+    OriginParent        pelvis
+    InsertionParent        femur_r
+endmusclegroup
+
+    muscle    glut_med1_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0408 0.0304 0.1209
+        InsertionPosition     -0.0218 -0.0117 0.0555
+        optimalLength    0.0535
+        maximalForce    819
+        tendonSlackLength    0.078
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_med1_r-P1
+            parent    pelvis
+            muscle    glut_med1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0408 0.0304 0.1209
+        endviapoint
+        viapoint    glut_med1_r-P2
+            parent    femur_r
+            muscle    glut_med1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0218 -0.0117 0.0555
+        endviapoint
+
+    muscle    glut_med2_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0855 0.0445 0.0766
+        InsertionPosition     -0.0258 -0.0058 0.0527
+        optimalLength    0.0845
+        maximalForce    573
+        tendonSlackLength    0.053
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_med2_r-P1
+            parent    pelvis
+            muscle    glut_med2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0855 0.0445 0.0766
+        endviapoint
+        viapoint    glut_med2_r-P2
+            parent    femur_r
+            muscle    glut_med2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0258 -0.0058 0.0527
+        endviapoint
+
+    muscle    glut_med3_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1223 0.0105 0.0648
+        InsertionPosition     -0.0309 -0.0047 0.0518
+        optimalLength    0.0646
+        maximalForce    653
+        tendonSlackLength    0.053
+        pennationAngle    0.33161256
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_med3_r-P1
+            parent    pelvis
+            muscle    glut_med3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1223 0.0105 0.0648
+        endviapoint
+        viapoint    glut_med3_r-P2
+            parent    femur_r
+            muscle    glut_med3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0309 -0.0047 0.0518
+        endviapoint
+
+    muscle    glut_min1_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0467 -0.008 0.1056
+        InsertionPosition     -0.0072 -0.0104 0.056
+        optimalLength    0.068
+        maximalForce    270
+        tendonSlackLength    0.016
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_min1_r-P1
+            parent    pelvis
+            muscle    glut_min1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0467 -0.008 0.1056
+        endviapoint
+        viapoint    glut_min1_r-P2
+            parent    femur_r
+            muscle    glut_min1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0072 -0.0104 0.056
+        endviapoint
+
+    muscle    glut_min2_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0633 -0.0065 0.0991
+        InsertionPosition     -0.0096 -0.0104 0.056
+        optimalLength    0.056
+        maximalForce    285
+        tendonSlackLength    0.026
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_min2_r-P1
+            parent    pelvis
+            muscle    glut_min2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0633 -0.0065 0.0991
+        endviapoint
+        viapoint    glut_min2_r-P2
+            parent    femur_r
+            muscle    glut_min2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0096 -0.0104 0.056
+        endviapoint
+
+    muscle    glut_min3_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0834 -0.0063 0.0856
+        InsertionPosition     -0.0135 -0.0083 0.055
+        optimalLength    0.038
+        maximalForce    323
+        tendonSlackLength    0.051
+        pennationAngle    0.01745329
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_min3_r-P1
+            parent    pelvis
+            muscle    glut_min3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0834 -0.0063 0.0856
+        endviapoint
+        viapoint    glut_min3_r-P2
+            parent    femur_r
+            muscle    glut_min3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0135 -0.0083 0.055
+        endviapoint
+
+    muscle    add_long_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0316 -0.0836 0.0169
+        InsertionPosition     0.005 -0.2111 0.0234
+        optimalLength    0.138
+        maximalForce    627
+        tendonSlackLength    0.11
+        pennationAngle    0.10471976
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_long_r-P1
+            parent    pelvis
+            muscle    add_long_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0316 -0.0836 0.0169
+        endviapoint
+        viapoint    add_long_r-P2
+            parent    femur_r
+            muscle    add_long_r
+            musclegroup    pelvis_to_femur_r
+            position     0.005 -0.2111 0.0234
+        endviapoint
+
+    muscle    add_brev_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0587 -0.0915 0.0164
+        InsertionPosition     0.0009 -0.1196 0.0294
+        optimalLength    0.133
+        maximalForce    429
+        tendonSlackLength    0.02
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_brev_r-P1
+            parent    pelvis
+            muscle    add_brev_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0587 -0.0915 0.0164
+        endviapoint
+        viapoint    add_brev_r-P2
+            parent    femur_r
+            muscle    add_brev_r
+            musclegroup    pelvis_to_femur_r
+            position     0.0009 -0.1196 0.0294
+        endviapoint
+
+    muscle    add_mag1_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0732 -0.1174 0.0255
+        InsertionPosition     -0.0045 -0.1211 0.0339
+        optimalLength    0.087
+        maximalForce    381
+        tendonSlackLength    0.06
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_mag1_r-P1
+            parent    pelvis
+            muscle    add_mag1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0732 -0.1174 0.0255
+        endviapoint
+        viapoint    add_mag1_r-P2
+            parent    femur_r
+            muscle    add_mag1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0045 -0.1211 0.0339
+        endviapoint
+
+    muscle    add_mag2_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0831 -0.1192 0.0308
+        InsertionPosition     0.0054 -0.2285 0.0227
+        optimalLength    0.121
+        maximalForce    343
+        tendonSlackLength    0.12
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_mag2_r-P1
+            parent    pelvis
+            muscle    add_mag2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0831 -0.1192 0.0308
+        endviapoint
+        viapoint    add_mag2_r-P2
+            parent    femur_r
+            muscle    add_mag2_r
+            musclegroup    pelvis_to_femur_r
+            position     0.0054 -0.2285 0.0227
+        endviapoint
+
+    muscle    add_mag3_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.11108 -0.11413 0.04882
+        InsertionPosition     0.007 -0.3837 -0.0266
+        optimalLength    0.131
+        maximalForce    488
+        tendonSlackLength    0.249
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_mag3_r-P1
+            parent    pelvis
+            muscle    add_mag3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.11108 -0.11413 0.04882
+        endviapoint
+        viapoint    add_mag3_r-P2
+            parent    femur_r
+            muscle    add_mag3_r
+            musclegroup    pelvis_to_femur_r
+            position     0.007 -0.3837 -0.0266
+        endviapoint
+
+    muscle    pect_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0431 -0.0768 0.0451
+        InsertionPosition     -0.0122 -0.0822 0.0253
+        optimalLength    0.1
+        maximalForce    266
+        tendonSlackLength    0.033
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    pect_r-P1
+            parent    pelvis
+            muscle    pect_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0431 -0.0768 0.0451
+        endviapoint
+        viapoint    pect_r-P2
+            parent    femur_r
+            muscle    pect_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0122 -0.0822 0.0253
+        endviapoint
+
+    muscle    glut_max1_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1195 0.0612 0.07
+        InsertionPosition     -0.0277 -0.0566 0.047
+        optimalLength    0.142
+        maximalForce    573
+        tendonSlackLength    0.125
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_max1_r-P1
+            parent    pelvis
+            muscle    glut_max1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1195 0.0612 0.07
+        endviapoint
+        viapoint    glut_max1_r-P2
+            parent    pelvis
+            muscle    glut_max1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1291 0.0012 0.0886
+        endviapoint
+        viapoint    glut_max1_r-P3
+            parent    femur_r
+            muscle    glut_max1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0457 -0.0248 0.0392
+        endviapoint
+        viapoint    glut_max1_r-P4
+            parent    femur_r
+            muscle    glut_max1_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0277 -0.0566 0.047
+        endviapoint
+
+    muscle    glut_max2_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1349 0.0176 0.0563
+        InsertionPosition     -0.0156 -0.1016 0.0419
+        optimalLength    0.147
+        maximalForce    819
+        tendonSlackLength    0.127
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_max2_r-P1
+            parent    pelvis
+            muscle    glut_max2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1349 0.0176 0.0563
+        endviapoint
+        viapoint    glut_max2_r-P2
+            parent    pelvis
+            muscle    glut_max2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1376 -0.052 0.0914
+        endviapoint
+        viapoint    glut_max2_r-P3
+            parent    femur_r
+            muscle    glut_max2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0426 -0.053 0.0293
+        endviapoint
+        viapoint    glut_max2_r-P4
+            parent    femur_r
+            muscle    glut_max2_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0156 -0.1016 0.0419
+        endviapoint
+
+    muscle    glut_max3_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1556 -0.0314 0.0058
+        InsertionPosition     -0.006 -0.1419 0.0411
+        optimalLength    0.144
+        maximalForce    552
+        tendonSlackLength    0.145
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_max3_r-P1
+            parent    pelvis
+            muscle    glut_max3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1556 -0.0314 0.0058
+        endviapoint
+        viapoint    glut_max3_r-P2
+            parent    pelvis
+            muscle    glut_max3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1529 -0.1052 0.0403
+        endviapoint
+        viapoint    glut_max3_r-P3
+            parent    femur_r
+            muscle    glut_max3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0299 -0.1041 0.0135
+        endviapoint
+        viapoint    glut_max3_r-P4
+            parent    femur_r
+            muscle    glut_max3_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.006 -0.1419 0.0411
+        endviapoint
+
+    muscle    iliacus_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0674 0.0365 0.0854
+        InsertionPosition     -0.0193 -0.0621 0.0129
+        optimalLength    0.1
+        maximalForce    1073
+        tendonSlackLength    0.1
+        pennationAngle    0.12217305
+        maxVelocity    10
+    endmuscle
+
+        viapoint    iliacus_r-P1
+            parent    pelvis
+            muscle    iliacus_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0674 0.0365 0.0854
+        endviapoint
+        viapoint    iliacus_r-P2
+            parent    pelvis
+            muscle    iliacus_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0258 -0.055 0.0811
+        endviapoint
+        viapoint    iliacus_r-P3
+            parent    pelvis
+            muscle    iliacus_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0288 -0.0805 0.0816
+        endviapoint
+        viapoint    iliacus_r-P4
+            parent    femur_r
+            muscle    iliacus_r
+            musclegroup    pelvis_to_femur_r
+            position     0.0017 -0.0543 0.0057
+        endviapoint
+        viapoint    iliacus_r-P5
+            parent    femur_r
+            muscle    iliacus_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0193 -0.0621 0.0129
+        endviapoint
+
+    muscle    psoas_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.0647 0.0887 0.0289
+        InsertionPosition     -0.0188 -0.0597 0.0104
+        optimalLength    0.1
+        maximalForce    1113
+        tendonSlackLength    0.16
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    psoas_r-P1
+            parent    pelvis
+            muscle    psoas_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0647 0.0887 0.0289
+        endviapoint
+        viapoint    psoas_r-P2
+            parent    pelvis
+            muscle    psoas_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0238 -0.057 0.0759
+        endviapoint
+        viapoint    psoas_r-P3
+            parent    pelvis
+            muscle    psoas_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0288 -0.0805 0.0816
+        endviapoint
+        viapoint    psoas_r-P4
+            parent    femur_r
+            muscle    psoas_r
+            musclegroup    pelvis_to_femur_r
+            position     0.0016 -0.0507 0.0038
+        endviapoint
+        viapoint    psoas_r-P5
+            parent    femur_r
+            muscle    psoas_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0188 -0.0597 0.0104
+        endviapoint
+
+    muscle    quad_fem_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1143 -0.1151 0.052
+        InsertionPosition     -0.0381 -0.0359 0.0366
+        optimalLength    0.054
+        maximalForce    381
+        tendonSlackLength    0.024
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    quad_fem_r-P1
+            parent    pelvis
+            muscle    quad_fem_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1143 -0.1151 0.052
+        endviapoint
+        viapoint    quad_fem_r-P2
+            parent    femur_r
+            muscle    quad_fem_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0381 -0.0359 0.0366
+        endviapoint
+
+    muscle    gem_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1133 -0.082 0.0714
+        InsertionPosition     -0.0142 -0.0033 0.0443
+        optimalLength    0.024
+        maximalForce    164
+        tendonSlackLength    0.039
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    gem_r-P1
+            parent    pelvis
+            muscle    gem_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1133 -0.082 0.0714
+        endviapoint
+        viapoint    gem_r-P2
+            parent    femur_r
+            muscle    gem_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0142 -0.0033 0.0443
+        endviapoint
+
+    muscle    peri_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_r
+        OriginPosition     -0.1396 0.0003 0.0235
+        InsertionPosition     -0.0148 -0.0036 0.0437
+        optimalLength    0.026
+        maximalForce    444
+        tendonSlackLength    0.115
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    peri_r-P1
+            parent    pelvis
+            muscle    peri_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1396 0.0003 0.0235
+        endviapoint
+        viapoint    peri_r-P2
+            parent    pelvis
+            muscle    peri_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.1193 -0.0276 0.0657
+        endviapoint
+        viapoint    peri_r-P3
+            parent    femur_r
+            muscle    peri_r
+            musclegroup    pelvis_to_femur_r
+            position     -0.0148 -0.0036 0.0437
+        endviapoint
+
+// pelvis > tibia_r
+musclegroup pelvis_to_tibia_r
+    OriginParent        pelvis
+    InsertionParent        tibia_r
+endmusclegroup
+
+    muscle    semimem_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.1192 -0.09747 0.07151
+        InsertionPosition     -0.027 -0.04771 -0.01957
+        optimalLength    0.08
+        maximalForce    1288
+        tendonSlackLength    0.359
+        pennationAngle    0.26179939
+        maxVelocity    10
+    endmuscle
+
+        viapoint    semimem_r-P1
+            parent    pelvis
+            muscle    semimem_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.1192 -0.09747 0.07151
+        endviapoint
+        viapoint    semimem_r-P2
+            parent    tibia_r
+            muscle    semimem_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0348 -0.03519 -0.01891
+        endviapoint
+        viapoint    semimem_r-P3
+            parent    tibia_r
+            muscle    semimem_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.027 -0.04771 -0.01957
+        endviapoint
+
+    muscle    semiten_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.12635 -0.10988 0.06039
+        InsertionPosition     0.0027 -0.0956 -0.0193
+        optimalLength    0.201
+        maximalForce    410
+        tendonSlackLength    0.2555
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    semiten_r-P1
+            parent    pelvis
+            muscle    semiten_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.12635 -0.10988 0.06039
+        endviapoint
+        viapoint    semiten_r-P2
+            parent    tibia_r
+            muscle    semiten_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.04203 -0.02859 -0.02277
+        endviapoint
+        viapoint    semiten_r-P3
+            parent    tibia_r
+            muscle    semiten_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.03322 -0.05282 -0.02288
+        endviapoint
+        viapoint    semiten_r-P4
+            parent    tibia_r
+            muscle    semiten_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0113 -0.0746 -0.0245
+        endviapoint
+        viapoint    semiten_r-P5
+            parent    tibia_r
+            muscle    semiten_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.0027 -0.0956 -0.0193
+        endviapoint
+
+    muscle    bifemlh_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.12596 -0.10257 0.06944
+        InsertionPosition     -0.0234 -0.0563 0.0343
+        optimalLength    0.109
+        maximalForce    896
+        tendonSlackLength    0.326
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    bifemlh_r-P1
+            parent    pelvis
+            muscle    bifemlh_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.12596 -0.10257 0.06944
+        endviapoint
+        viapoint    bifemlh_r-P2
+            parent    tibia_r
+            muscle    bifemlh_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0301 -0.036 0.02943
+        endviapoint
+        viapoint    bifemlh_r-P3
+            parent    tibia_r
+            muscle    bifemlh_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0234 -0.0563 0.0343
+        endviapoint
+
+    muscle    sar_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.0153 -0.0013 0.1242
+        InsertionPosition     0.0243 -0.084 -0.0252
+        optimalLength    0.52
+        maximalForce    156
+        tendonSlackLength    0.1
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    sar_r-P1
+            parent    pelvis
+            muscle    sar_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0153 -0.0013 0.1242
+        endviapoint
+        viapoint    sar_r-P2
+            parent    femur_r
+            muscle    sar_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.003 -0.3568 -0.0421
+        endviapoint
+        viapoint    sar_r-P3
+            parent    tibia_r
+            muscle    sar_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0056 -0.0419 -0.0399
+        endviapoint
+        viapoint    sar_r-P4
+            parent    tibia_r
+            muscle    sar_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.006 -0.0589 -0.0383
+        endviapoint
+        viapoint    sar_r-P5
+            parent    tibia_r
+            muscle    sar_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.0243 -0.084 -0.0252
+        endviapoint
+
+    muscle    tfl_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.0311 0.0214 0.1241
+        InsertionPosition     0.006 -0.0487 0.0297
+        optimalLength    0.095
+        maximalForce    233
+        tendonSlackLength    0.425
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    tfl_r-P1
+            parent    pelvis
+            muscle    tfl_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0311 0.0214 0.1241
+        endviapoint
+        viapoint    tfl_r-P2
+            parent    femur_r
+            muscle    tfl_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.0294 -0.0995 0.0597
+        endviapoint
+        viapoint    tfl_r-P3
+            parent    femur_r
+            muscle    tfl_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.0054 -0.4049 0.0357
+        endviapoint
+        viapoint    tfl_r-P4
+            parent    tibia_r
+            muscle    tfl_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.006 -0.0487 0.0297
+        endviapoint
+
+    muscle    grac_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.07401 -0.1187 0.02794
+        InsertionPosition     0.006 -0.0836 -0.0228
+        optimalLength    0.352
+        maximalForce    162
+        tendonSlackLength    0.126
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    grac_r-P1
+            parent    pelvis
+            muscle    grac_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.07401 -0.1187 0.02794
+        endviapoint
+        viapoint    grac_r-P2
+            parent    tibia_r
+            muscle    grac_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.02657 -0.0319 -0.03774
+        endviapoint
+        viapoint    grac_r-P3
+            parent    tibia_r
+            muscle    grac_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.01943 -0.05153 -0.0358
+        endviapoint
+        viapoint    grac_r-P4
+            parent    tibia_r
+            muscle    grac_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.006 -0.0836 -0.0228
+        endviapoint
+
+    muscle    rect_fem_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_r
+        OriginPosition     -0.0295 -0.0311 0.0968
+        InsertionPosition     0.0617576 0.020984 0.0014
+        optimalLength    0.114
+        maximalForce    1169
+        tendonSlackLength    0.31
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    rect_fem_r-P1
+            parent    pelvis
+            muscle    rect_fem_r
+            musclegroup    pelvis_to_tibia_r
+            position     -0.0295 -0.0311 0.0968
+        endviapoint
+        viapoint    rect_fem_r-P2
+            parent    femur_r
+            muscle    rect_fem_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.0334 -0.403 0.0019
+        endviapoint
+        viapoint    rect_fem_r-P3
+            parent    tibia_r
+            muscle    rect_fem_r
+            musclegroup    pelvis_to_tibia_r
+            position     0.0617576 0.020984 0.0014
+        endviapoint
+
+// femur_r > tibia_r
+musclegroup femur_r_to_tibia_r
+    OriginParent        femur_r
+    InsertionParent        tibia_r
+endmusclegroup
+
+    muscle    bifemsh_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_r_to_tibia_r
+        OriginPosition     0.005 -0.2111 0.0234
+        InsertionPosition     -0.0234 -0.0563 0.0343
+        optimalLength    0.173
+        maximalForce    804
+        tendonSlackLength    0.089
+        pennationAngle    0.40142573
+        maxVelocity    10
+    endmuscle
+
+        viapoint    bifemsh_r-P1
+            parent    femur_r
+            muscle    bifemsh_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.005 -0.2111 0.0234
+        endviapoint
+        viapoint    bifemsh_r-P2
+            parent    tibia_r
+            muscle    bifemsh_r
+            musclegroup    femur_r_to_tibia_r
+            position     -0.0301 -0.036 0.02943
+        endviapoint
+        viapoint    bifemsh_r-P3
+            parent    tibia_r
+            muscle    bifemsh_r
+            musclegroup    femur_r_to_tibia_r
+            position     -0.0234 -0.0563 0.0343
+        endviapoint
+
+    muscle    vas_med_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_r_to_tibia_r
+        OriginPosition     0.014 -0.2099 0.0188
+        InsertionPosition     0.0559586 0.0217917 -0.0146
+        optimalLength    0.089
+        maximalForce    1294
+        tendonSlackLength    0.126
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    vas_med_r-P1
+            parent    femur_r
+            muscle    vas_med_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.014 -0.2099 0.0188
+        endviapoint
+        viapoint    vas_med_r-P2
+            parent    femur_r
+            muscle    vas_med_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0356 -0.2769 0.0009
+        endviapoint
+        viapoint    vas_med_r-P3
+            parent    femur_r
+            muscle    vas_med_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.037 -0.4048 -0.0125
+        endviapoint
+        viapoint    vas_med_r-P4
+            parent    femur_r
+            muscle    vas_med_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0274 -0.4255 -0.0131
+        endviapoint
+        viapoint    vas_med_r-P5
+            parent    tibia_r
+            muscle    vas_med_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0559586 0.0217917 -0.0146
+        endviapoint
+
+    muscle    vas_int_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_r_to_tibia_r
+        OriginPosition     0.029 -0.1924 0.031
+        InsertionPosition     0.0554632 0.0252923 0.0018
+        optimalLength    0.087
+        maximalForce    1365
+        tendonSlackLength    0.136
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    vas_int_r-P1
+            parent    femur_r
+            muscle    vas_int_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.029 -0.1924 0.031
+        endviapoint
+        viapoint    vas_int_r-P2
+            parent    femur_r
+            muscle    vas_int_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0335 -0.2084 0.0285
+        endviapoint
+        viapoint    vas_int_r-P3
+            parent    femur_r
+            muscle    vas_int_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0343 -0.403 0.0055
+        endviapoint
+        viapoint    vas_int_r-P4
+            parent    tibia_r
+            muscle    vas_int_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0554632 0.0252923 0.0018
+        endviapoint
+
+    muscle    vas_lat_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_r_to_tibia_r
+        OriginPosition     0.0048 -0.1854 0.0349
+        InsertionPosition     0.0599557 0.0195864 0.0165
+        optimalLength    0.084
+        maximalForce    1871
+        tendonSlackLength    0.157
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    vas_lat_r-P1
+            parent    femur_r
+            muscle    vas_lat_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0048 -0.1854 0.0349
+        endviapoint
+        viapoint    vas_lat_r-P2
+            parent    femur_r
+            muscle    vas_lat_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0269 -0.2591 0.0409
+        endviapoint
+        viapoint    vas_lat_r-P3
+            parent    femur_r
+            muscle    vas_lat_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0361 -0.403 0.0205
+        endviapoint
+        viapoint    vas_lat_r-P4
+            parent    femur_r
+            muscle    vas_lat_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0253 -0.4243 0.0184
+        endviapoint
+        viapoint    vas_lat_r-P5
+            parent    tibia_r
+            muscle    vas_lat_r
+            musclegroup    femur_r_to_tibia_r
+            position     0.0599557 0.0195864 0.0165
+        endviapoint
+
+// femur_r > calcn_r
+musclegroup femur_r_to_calcn_r
+    OriginParent        femur_r
+    InsertionParent        calcn_r
+endmusclegroup
+
+    muscle    med_gas_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_r_to_calcn_r
+        OriginPosition     -0.019 -0.3929 -0.0235
+        InsertionPosition     0 0.031 -0.0053
+        optimalLength    0.06
+        maximalForce    1558
+        tendonSlackLength    0.39
+        pennationAngle    0.29670597
+        maxVelocity    10
+    endmuscle
+
+        viapoint    med_gas_r-P1
+            parent    femur_r
+            muscle    med_gas_r
+            musclegroup    femur_r_to_calcn_r
+            position     -0.019 -0.3929 -0.0235
+        endviapoint
+        viapoint    med_gas_r-P2
+            parent    femur_r
+            muscle    med_gas_r
+            musclegroup    femur_r_to_calcn_r
+            position     -0.03 -0.4022 -0.0258
+        endviapoint
+        viapoint    med_gas_r-P3
+            parent    calcn_r
+            muscle    med_gas_r
+            musclegroup    femur_r_to_calcn_r
+            position     0 0.031 -0.0053
+        endviapoint
+
+    muscle    lat_gas_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_r_to_calcn_r
+        OriginPosition     -0.022 -0.3946 0.0272
+        InsertionPosition     0 0.031 -0.0053
+        optimalLength    0.064
+        maximalForce    683
+        tendonSlackLength    0.38
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    lat_gas_r-P1
+            parent    femur_r
+            muscle    lat_gas_r
+            musclegroup    femur_r_to_calcn_r
+            position     -0.022 -0.3946 0.0272
+        endviapoint
+        viapoint    lat_gas_r-P2
+            parent    femur_r
+            muscle    lat_gas_r
+            musclegroup    femur_r_to_calcn_r
+            position     -0.03 -0.4018 0.0274
+        endviapoint
+        viapoint    lat_gas_r-P3
+            parent    calcn_r
+            muscle    lat_gas_r
+            musclegroup    femur_r_to_calcn_r
+            position     0 0.031 -0.0053
+        endviapoint
+
+// tibia_r > calcn_r
+musclegroup tibia_r_to_calcn_r
+    OriginParent        tibia_r
+    InsertionParent        calcn_r
+endmusclegroup
+
+    muscle    soleus_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_calcn_r
+        OriginPosition     -0.0024 -0.1533 0.0071
+        InsertionPosition     0 0.031 -0.0053
+        optimalLength    0.05
+        maximalForce    3549
+        tendonSlackLength    0.25
+        pennationAngle    0.43633231
+        maxVelocity    10
+    endmuscle
+
+        viapoint    soleus_r-P1
+            parent    tibia_r
+            muscle    soleus_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0024 -0.1533 0.0071
+        endviapoint
+        viapoint    soleus_r-P2
+            parent    calcn_r
+            muscle    soleus_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0 0.031 -0.0053
+        endviapoint
+
+    muscle    tib_post_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_calcn_r
+        OriginPosition     -0.0094 -0.1348 0.0019
+        InsertionPosition     0.0772 0.0159 -0.0281
+        optimalLength    0.031
+        maximalForce    1588
+        tendonSlackLength    0.31
+        pennationAngle    0.20943951
+        maxVelocity    10
+    endmuscle
+
+        viapoint    tib_post_r-P1
+            parent    tibia_r
+            muscle    tib_post_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0094 -0.1348 0.0019
+        endviapoint
+        viapoint    tib_post_r-P2
+            parent    tibia_r
+            muscle    tib_post_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0144 -0.4051 -0.0229
+        endviapoint
+        viapoint    tib_post_r-P3
+            parent    calcn_r
+            muscle    tib_post_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0417 0.0334 -0.0286
+        endviapoint
+        viapoint    tib_post_r-P4
+            parent    calcn_r
+            muscle    tib_post_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0772 0.0159 -0.0281
+        endviapoint
+
+    muscle    tib_ant_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_calcn_r
+        OriginPosition     0.0179 -0.1624 0.0115
+        InsertionPosition     0.1166 0.0178 -0.0305
+        optimalLength    0.098
+        maximalForce    905
+        tendonSlackLength    0.223
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    tib_ant_r-P1
+            parent    tibia_r
+            muscle    tib_ant_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0179 -0.1624 0.0115
+        endviapoint
+        viapoint    tib_ant_r-P2
+            parent    tibia_r
+            muscle    tib_ant_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0329 -0.3951 -0.0177
+        endviapoint
+        viapoint    tib_ant_r-P3
+            parent    calcn_r
+            muscle    tib_ant_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.1166 0.0178 -0.0305
+        endviapoint
+
+    muscle    per_brev_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_calcn_r
+        OriginPosition     -0.007 -0.2646 0.0325
+        InsertionPosition     0.0677 0.0219 0.0343
+        optimalLength    0.05
+        maximalForce    435
+        tendonSlackLength    0.161
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    per_brev_r-P1
+            parent    tibia_r
+            muscle    per_brev_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.007 -0.2646 0.0325
+        endviapoint
+        viapoint    per_brev_r-P2
+            parent    tibia_r
+            muscle    per_brev_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0198 -0.4184 0.0283
+        endviapoint
+        viapoint    per_brev_r-P3
+            parent    tibia_r
+            muscle    per_brev_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0144 -0.4295 0.0289
+        endviapoint
+        viapoint    per_brev_r-P4
+            parent    calcn_r
+            muscle    per_brev_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0471 0.027 0.0233
+        endviapoint
+        viapoint    per_brev_r-P5
+            parent    calcn_r
+            muscle    per_brev_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0677 0.0219 0.0343
+        endviapoint
+
+    muscle    per_long_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_calcn_r
+        OriginPosition     0.0005 -0.1568 0.0362
+        InsertionPosition     0.1203 0.0085 -0.0184
+        optimalLength    0.049
+        maximalForce    943
+        tendonSlackLength    0.345
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    per_long_r-P1
+            parent    tibia_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0005 -0.1568 0.0362
+        endviapoint
+        viapoint    per_long_r-P2
+            parent    tibia_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0207 -0.4205 0.0286
+        endviapoint
+        viapoint    per_long_r-P3
+            parent    tibia_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     -0.0162 -0.4319 0.0289
+        endviapoint
+        viapoint    per_long_r-P4
+            parent    calcn_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0438 0.023 0.0221
+        endviapoint
+        viapoint    per_long_r-P5
+            parent    calcn_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0681 0.0106 0.0284
+        endviapoint
+        viapoint    per_long_r-P6
+            parent    calcn_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0852 0.0069 0.0118
+        endviapoint
+        viapoint    per_long_r-P7
+            parent    calcn_r
+            muscle    per_long_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.1203 0.0085 -0.0184
+        endviapoint
+
+    muscle    per_tert_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_calcn_r
+        OriginPosition     0.001 -0.2804 0.0231
+        InsertionPosition     0.0857 0.0228 0.0299
+        optimalLength    0.079
+        maximalForce    180
+        tendonSlackLength    0.1
+        pennationAngle    0.2268928
+        maxVelocity    10
+    endmuscle
+
+        viapoint    per_tert_r-P1
+            parent    tibia_r
+            muscle    per_tert_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.001 -0.2804 0.0231
+        endviapoint
+        viapoint    per_tert_r-P2
+            parent    tibia_r
+            muscle    per_tert_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0229 -0.4069 0.0159
+        endviapoint
+        viapoint    per_tert_r-P3
+            parent    calcn_r
+            muscle    per_tert_r
+            musclegroup    tibia_r_to_calcn_r
+            position     0.0857 0.0228 0.0299
+        endviapoint
+
+// tibia_r > toes_r
+musclegroup tibia_r_to_toes_r
+    OriginParent        tibia_r
+    InsertionParent        toes_r
+endmusclegroup
+
+    muscle    flex_dig_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_toes_r
+        OriginPosition     -0.0083 -0.2046 -0.0018
+        InsertionPosition     0.0441 -0.006 0.0242
+        optimalLength    0.034
+        maximalForce    310
+        tendonSlackLength    0.4
+        pennationAngle    0.12217305
+        maxVelocity    10
+    endmuscle
+
+        viapoint    flex_dig_r-P1
+            parent    tibia_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     -0.0083 -0.2046 -0.0018
+        endviapoint
+        viapoint    flex_dig_r-P2
+            parent    tibia_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     -0.0154 -0.4051 -0.0196
+        endviapoint
+        viapoint    flex_dig_r-P3
+            parent    calcn_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0436 0.0315 -0.028
+        endviapoint
+        viapoint    flex_dig_r-P4
+            parent    calcn_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0708 0.0176 -0.0263
+        endviapoint
+        viapoint    flex_dig_r-P5
+            parent    calcn_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.1658 -0.0081 0.0116
+        endviapoint
+        viapoint    flex_dig_r-P6
+            parent    toes_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     -0.0019 -0.0078 0.0147
+        endviapoint
+        viapoint    flex_dig_r-P7
+            parent    toes_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0285 -0.0071 0.0215
+        endviapoint
+        viapoint    flex_dig_r-P8
+            parent    toes_r
+            muscle    flex_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0441 -0.006 0.0242
+        endviapoint
+
+    muscle    flex_hal_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_toes_r
+        OriginPosition     -0.0079 -0.2334 0.0244
+        InsertionPosition     0.0562 -0.0102 -0.0181
+        optimalLength    0.043
+        maximalForce    322
+        tendonSlackLength    0.38
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    flex_hal_r-P1
+            parent    tibia_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     -0.0079 -0.2334 0.0244
+        endviapoint
+        viapoint    flex_hal_r-P2
+            parent    tibia_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     -0.0186 -0.4079 -0.0174
+        endviapoint
+        viapoint    flex_hal_r-P3
+            parent    calcn_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0374 0.0276 -0.0241
+        endviapoint
+        viapoint    flex_hal_r-P4
+            parent    calcn_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.1038 0.0068 -0.0256
+        endviapoint
+        viapoint    flex_hal_r-P5
+            parent    calcn_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.1726 -0.0053 -0.0269
+        endviapoint
+        viapoint    flex_hal_r-P6
+            parent    toes_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0155 -0.0064 -0.0265
+        endviapoint
+        viapoint    flex_hal_r-P7
+            parent    toes_r
+            muscle    flex_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0562 -0.0102 -0.0181
+        endviapoint
+
+    muscle    ext_dig_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_toes_r
+        OriginPosition     0.0032 -0.1381 0.0276
+        InsertionPosition     0.0443 -0.0004 0.025
+        optimalLength    0.102
+        maximalForce    512
+        tendonSlackLength    0.345
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    ext_dig_r-P1
+            parent    tibia_r
+            muscle    ext_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0032 -0.1381 0.0276
+        endviapoint
+        viapoint    ext_dig_r-P2
+            parent    tibia_r
+            muscle    ext_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0289 -0.4007 0.0072
+        endviapoint
+        viapoint    ext_dig_r-P3
+            parent    calcn_r
+            muscle    ext_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0922 0.0388 -0.0001
+        endviapoint
+        viapoint    ext_dig_r-P4
+            parent    calcn_r
+            muscle    ext_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.1616 0.0055 0.013
+        endviapoint
+        viapoint    ext_dig_r-P5
+            parent    toes_r
+            muscle    ext_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0003 0.0047 0.0153
+        endviapoint
+        viapoint    ext_dig_r-P6
+            parent    toes_r
+            muscle    ext_dig_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0443 -0.0004 0.025
+        endviapoint
+
+    muscle    ext_hal_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_r_to_toes_r
+        OriginPosition     0.0012 -0.1767 0.0228
+        InsertionPosition     0.0563 0.0034 -0.0186
+        optimalLength    0.111
+        maximalForce    162
+        tendonSlackLength    0.305
+        pennationAngle    0.10471976
+        maxVelocity    10
+    endmuscle
+
+        viapoint    ext_hal_r-P1
+            parent    tibia_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0012 -0.1767 0.0228
+        endviapoint
+        viapoint    ext_hal_r-P2
+            parent    tibia_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0326 -0.3985 -0.0085
+        endviapoint
+        viapoint    ext_hal_r-P3
+            parent    calcn_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.097 0.0389 -0.0211
+        endviapoint
+        viapoint    ext_hal_r-P4
+            parent    calcn_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.1293 0.0309 -0.0257
+        endviapoint
+        viapoint    ext_hal_r-P5
+            parent    calcn_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.1734 0.0139 -0.028
+        endviapoint
+        viapoint    ext_hal_r-P6
+            parent    toes_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0298 0.0041 -0.0245
+        endviapoint
+        viapoint    ext_hal_r-P7
+            parent    toes_r
+            muscle    ext_hal_r
+            musclegroup    tibia_r_to_toes_r
+            position     0.0563 0.0034 -0.0186
+        endviapoint
+
+// pelvis > femur_l
+musclegroup pelvis_to_femur_l
+    OriginParent        pelvis
+    InsertionParent        femur_l
+endmusclegroup
+
+    muscle    glut_med1_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0408 0.0304 -0.1209
+        InsertionPosition     -0.0218 -0.0117 -0.0555
+        optimalLength    0.0535
+        maximalForce    819
+        tendonSlackLength    0.078
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_med1_l-P1
+            parent    pelvis
+            muscle    glut_med1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0408 0.0304 -0.1209
+        endviapoint
+        viapoint    glut_med1_l-P2
+            parent    femur_l
+            muscle    glut_med1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0218 -0.0117 -0.0555
+        endviapoint
+
+    muscle    glut_med2_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0855 0.0445 -0.0766
+        InsertionPosition     -0.0258 -0.0058 -0.0527
+        optimalLength    0.0845
+        maximalForce    573
+        tendonSlackLength    0.053
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_med2_l-P1
+            parent    pelvis
+            muscle    glut_med2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0855 0.0445 -0.0766
+        endviapoint
+        viapoint    glut_med2_l-P2
+            parent    femur_l
+            muscle    glut_med2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0258 -0.0058 -0.0527
+        endviapoint
+
+    muscle    glut_med3_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1223 0.0105 -0.0648
+        InsertionPosition     -0.0309 -0.0047 -0.0518
+        optimalLength    0.0646
+        maximalForce    653
+        tendonSlackLength    0.053
+        pennationAngle    0.33161256
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_med3_l-P1
+            parent    pelvis
+            muscle    glut_med3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1223 0.0105 -0.0648
+        endviapoint
+        viapoint    glut_med3_l-P2
+            parent    femur_l
+            muscle    glut_med3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0309 -0.0047 -0.0518
+        endviapoint
+
+    muscle    glut_min1_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0467 -0.008 -0.1056
+        InsertionPosition     -0.0072 -0.0104 -0.056
+        optimalLength    0.068
+        maximalForce    270
+        tendonSlackLength    0.016
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_min1_l-P1
+            parent    pelvis
+            muscle    glut_min1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0467 -0.008 -0.1056
+        endviapoint
+        viapoint    glut_min1_l-P2
+            parent    femur_l
+            muscle    glut_min1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0072 -0.0104 -0.056
+        endviapoint
+
+    muscle    glut_min2_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0633 -0.0065 -0.0991
+        InsertionPosition     -0.0096 -0.0104 -0.056
+        optimalLength    0.056
+        maximalForce    285
+        tendonSlackLength    0.026
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_min2_l-P1
+            parent    pelvis
+            muscle    glut_min2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0633 -0.0065 -0.0991
+        endviapoint
+        viapoint    glut_min2_l-P2
+            parent    femur_l
+            muscle    glut_min2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0096 -0.0104 -0.056
+        endviapoint
+
+    muscle    glut_min3_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0834 -0.0063 -0.0856
+        InsertionPosition     -0.0135 -0.0083 -0.055
+        optimalLength    0.038
+        maximalForce    323
+        tendonSlackLength    0.051
+        pennationAngle    0.01745329
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_min3_l-P1
+            parent    pelvis
+            muscle    glut_min3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0834 -0.0063 -0.0856
+        endviapoint
+        viapoint    glut_min3_l-P2
+            parent    femur_l
+            muscle    glut_min3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0135 -0.0083 -0.055
+        endviapoint
+
+    muscle    add_long_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0316 -0.0836 -0.0169
+        InsertionPosition     0.005 -0.2111 -0.0234
+        optimalLength    0.138
+        maximalForce    627
+        tendonSlackLength    0.11
+        pennationAngle    0.10471976
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_long_l-P1
+            parent    pelvis
+            muscle    add_long_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0316 -0.0836 -0.0169
+        endviapoint
+        viapoint    add_long_l-P2
+            parent    femur_l
+            muscle    add_long_l
+            musclegroup    pelvis_to_femur_l
+            position     0.005 -0.2111 -0.0234
+        endviapoint
+
+    muscle    add_brev_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0587 -0.0915 -0.0164
+        InsertionPosition     0.0009 -0.1196 -0.0294
+        optimalLength    0.133
+        maximalForce    429
+        tendonSlackLength    0.02
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_brev_l-P1
+            parent    pelvis
+            muscle    add_brev_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0587 -0.0915 -0.0164
+        endviapoint
+        viapoint    add_brev_l-P2
+            parent    femur_l
+            muscle    add_brev_l
+            musclegroup    pelvis_to_femur_l
+            position     0.0009 -0.1196 -0.0294
+        endviapoint
+
+    muscle    add_mag1_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0732 -0.1174 -0.0255
+        InsertionPosition     -0.0045 -0.1211 -0.0339
+        optimalLength    0.087
+        maximalForce    381
+        tendonSlackLength    0.06
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_mag1_l-P1
+            parent    pelvis
+            muscle    add_mag1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0732 -0.1174 -0.0255
+        endviapoint
+        viapoint    add_mag1_l-P2
+            parent    femur_l
+            muscle    add_mag1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0045 -0.1211 -0.0339
+        endviapoint
+
+    muscle    add_mag2_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0831 -0.1192 -0.0308
+        InsertionPosition     0.0054 -0.2285 -0.0227
+        optimalLength    0.121
+        maximalForce    343
+        tendonSlackLength    0.12
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_mag2_l-P1
+            parent    pelvis
+            muscle    add_mag2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0831 -0.1192 -0.0308
+        endviapoint
+        viapoint    add_mag2_l-P2
+            parent    femur_l
+            muscle    add_mag2_l
+            musclegroup    pelvis_to_femur_l
+            position     0.0054 -0.2285 -0.0227
+        endviapoint
+
+    muscle    add_mag3_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.11108 -0.11413 -0.04882
+        InsertionPosition     0.007 -0.3837 0.0266
+        optimalLength    0.131
+        maximalForce    488
+        tendonSlackLength    0.249
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    add_mag3_l-P1
+            parent    pelvis
+            muscle    add_mag3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.11108 -0.11413 -0.04882
+        endviapoint
+        viapoint    add_mag3_l-P2
+            parent    femur_l
+            muscle    add_mag3_l
+            musclegroup    pelvis_to_femur_l
+            position     0.007 -0.3837 0.0266
+        endviapoint
+
+    muscle    pect_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0431 -0.0768 -0.0451
+        InsertionPosition     -0.0122 -0.0822 -0.0253
+        optimalLength    0.1
+        maximalForce    266
+        tendonSlackLength    0.033
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    pect_l-P1
+            parent    pelvis
+            muscle    pect_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0431 -0.0768 -0.0451
+        endviapoint
+        viapoint    pect_l-P2
+            parent    femur_l
+            muscle    pect_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0122 -0.0822 -0.0253
+        endviapoint
+
+    muscle    glut_max1_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1195 0.0612 -0.07
+        InsertionPosition     -0.0277 -0.0566 -0.047
+        optimalLength    0.142
+        maximalForce    573
+        tendonSlackLength    0.125
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_max1_l-P1
+            parent    pelvis
+            muscle    glut_max1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1195 0.0612 -0.07
+        endviapoint
+        viapoint    glut_max1_l-P2
+            parent    pelvis
+            muscle    glut_max1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1291 0.0012 -0.0886
+        endviapoint
+        viapoint    glut_max1_l-P3
+            parent    femur_l
+            muscle    glut_max1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0457 -0.0248 -0.0392
+        endviapoint
+        viapoint    glut_max1_l-P4
+            parent    femur_l
+            muscle    glut_max1_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0277 -0.0566 -0.047
+        endviapoint
+
+    muscle    glut_max2_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1349 0.0176 -0.0563
+        InsertionPosition     -0.0156 -0.1016 -0.0419
+        optimalLength    0.147
+        maximalForce    819
+        tendonSlackLength    0.127
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_max2_l-P1
+            parent    pelvis
+            muscle    glut_max2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1349 0.0176 -0.0563
+        endviapoint
+        viapoint    glut_max2_l-P2
+            parent    pelvis
+            muscle    glut_max2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1376 -0.052 -0.0914
+        endviapoint
+        viapoint    glut_max2_l-P3
+            parent    femur_l
+            muscle    glut_max2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0426 -0.053 -0.0293
+        endviapoint
+        viapoint    glut_max2_l-P4
+            parent    femur_l
+            muscle    glut_max2_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0156 -0.1016 -0.0419
+        endviapoint
+
+    muscle    glut_max3_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1556 -0.0314 -0.0058
+        InsertionPosition     -0.006 -0.1419 -0.0411
+        optimalLength    0.144
+        maximalForce    552
+        tendonSlackLength    0.145
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    glut_max3_l-P1
+            parent    pelvis
+            muscle    glut_max3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1556 -0.0314 -0.0058
+        endviapoint
+        viapoint    glut_max3_l-P2
+            parent    pelvis
+            muscle    glut_max3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1529 -0.1052 -0.0403
+        endviapoint
+        viapoint    glut_max3_l-P3
+            parent    femur_l
+            muscle    glut_max3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0299 -0.1041 -0.0135
+        endviapoint
+        viapoint    glut_max3_l-P4
+            parent    femur_l
+            muscle    glut_max3_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.006 -0.1419 -0.0411
+        endviapoint
+
+    muscle    iliacus_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0674 0.0365 -0.0854
+        InsertionPosition     -0.0193 -0.0621 -0.0129
+        optimalLength    0.1
+        maximalForce    1073
+        tendonSlackLength    0.1
+        pennationAngle    0.12217305
+        maxVelocity    10
+    endmuscle
+
+        viapoint    iliacus_l-P1
+            parent    pelvis
+            muscle    iliacus_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0674 0.0365 -0.0854
+        endviapoint
+        viapoint    iliacus_l-P2
+            parent    pelvis
+            muscle    iliacus_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0258 -0.055 -0.0811
+        endviapoint
+        viapoint    iliacus_l-P3
+            parent    pelvis
+            muscle    iliacus_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0288 -0.0805 -0.0816
+        endviapoint
+        viapoint    iliacus_l-P4
+            parent    femur_l
+            muscle    iliacus_l
+            musclegroup    pelvis_to_femur_l
+            position     0.0017 -0.0543 -0.0057
+        endviapoint
+        viapoint    iliacus_l-P5
+            parent    femur_l
+            muscle    iliacus_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0193 -0.0621 -0.0129
+        endviapoint
+
+    muscle    psoas_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.0647 0.0887 -0.0289
+        InsertionPosition     -0.0188 -0.0597 -0.0104
+        optimalLength    0.1
+        maximalForce    1113
+        tendonSlackLength    0.16
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    psoas_l-P1
+            parent    pelvis
+            muscle    psoas_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0647 0.0887 -0.0289
+        endviapoint
+        viapoint    psoas_l-P2
+            parent    pelvis
+            muscle    psoas_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0238 -0.057 -0.0759
+        endviapoint
+        viapoint    psoas_l-P3
+            parent    pelvis
+            muscle    psoas_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0288 -0.0805 -0.0816
+        endviapoint
+        viapoint    psoas_l-P4
+            parent    femur_l
+            muscle    psoas_l
+            musclegroup    pelvis_to_femur_l
+            position     0.0016 -0.0507 -0.0038
+        endviapoint
+        viapoint    psoas_l-P5
+            parent    femur_l
+            muscle    psoas_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0188 -0.0597 -0.0104
+        endviapoint
+
+    muscle    quad_fem_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1143 -0.1151 -0.052
+        InsertionPosition     -0.0381 -0.0359 -0.0366
+        optimalLength    0.054
+        maximalForce    381
+        tendonSlackLength    0.024
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    quad_fem_l-P1
+            parent    pelvis
+            muscle    quad_fem_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1143 -0.1151 -0.052
+        endviapoint
+        viapoint    quad_fem_l-P2
+            parent    femur_l
+            muscle    quad_fem_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0381 -0.0359 -0.0366
+        endviapoint
+
+    muscle    gem_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1133 -0.082 -0.0714
+        InsertionPosition     -0.0142 -0.0033 -0.0443
+        optimalLength    0.024
+        maximalForce    164
+        tendonSlackLength    0.039
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    gem_l-P1
+            parent    pelvis
+            muscle    gem_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1133 -0.082 -0.0714
+        endviapoint
+        viapoint    gem_l-P2
+            parent    femur_l
+            muscle    gem_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0142 -0.0033 -0.0443
+        endviapoint
+
+    muscle    peri_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_femur_l
+        OriginPosition     -0.1396 0.0003 -0.0235
+        InsertionPosition     -0.0148 -0.0036 -0.0437
+        optimalLength    0.026
+        maximalForce    444
+        tendonSlackLength    0.115
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    peri_l-P1
+            parent    pelvis
+            muscle    peri_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1396 0.0003 -0.0235
+        endviapoint
+        viapoint    peri_l-P2
+            parent    pelvis
+            muscle    peri_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.1193 -0.0276 -0.0657
+        endviapoint
+        viapoint    peri_l-P3
+            parent    femur_l
+            muscle    peri_l
+            musclegroup    pelvis_to_femur_l
+            position     -0.0148 -0.0036 -0.0437
+        endviapoint
+
+// pelvis > tibia_l
+musclegroup pelvis_to_tibia_l
+    OriginParent        pelvis
+    InsertionParent        tibia_l
+endmusclegroup
+
+    muscle    semimem_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.1192 -0.09747 -0.07151
+        InsertionPosition     -0.027 -0.04771 0.01957
+        optimalLength    0.08
+        maximalForce    1288
+        tendonSlackLength    0.359
+        pennationAngle    0.26179939
+        maxVelocity    10
+    endmuscle
+
+        viapoint    semimem_l-P1
+            parent    pelvis
+            muscle    semimem_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.1192 -0.09747 -0.07151
+        endviapoint
+        viapoint    semimem_l-P2
+            parent    tibia_l
+            muscle    semimem_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0348 -0.03519 0.01891
+        endviapoint
+        viapoint    semimem_l-P3
+            parent    tibia_l
+            muscle    semimem_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.027 -0.04771 0.01957
+        endviapoint
+
+    muscle    semiten_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.12635 -0.10988 -0.06039
+        InsertionPosition     0.0027 -0.0956 0.0193
+        optimalLength    0.201
+        maximalForce    410
+        tendonSlackLength    0.2555
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    semiten_l-P1
+            parent    pelvis
+            muscle    semiten_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.12635 -0.10988 -0.06039
+        endviapoint
+        viapoint    semiten_l-P2
+            parent    tibia_l
+            muscle    semiten_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.04203 -0.02859 0.02277
+        endviapoint
+        viapoint    semiten_l-P3
+            parent    tibia_l
+            muscle    semiten_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.03322 -0.05282 0.02288
+        endviapoint
+        viapoint    semiten_l-P4
+            parent    tibia_l
+            muscle    semiten_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0113 -0.0746 0.0245
+        endviapoint
+        viapoint    semiten_l-P5
+            parent    tibia_l
+            muscle    semiten_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.0027 -0.0956 0.0193
+        endviapoint
+
+    muscle    bifemlh_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.12596 -0.10257 -0.06944
+        InsertionPosition     -0.0234 -0.0563 -0.0343
+        optimalLength    0.109
+        maximalForce    896
+        tendonSlackLength    0.326
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    bifemlh_l-P1
+            parent    pelvis
+            muscle    bifemlh_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.12596 -0.10257 -0.06944
+        endviapoint
+        viapoint    bifemlh_l-P2
+            parent    tibia_l
+            muscle    bifemlh_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0301 -0.036 -0.02943
+        endviapoint
+        viapoint    bifemlh_l-P3
+            parent    tibia_l
+            muscle    bifemlh_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0234 -0.0563 -0.0343
+        endviapoint
+
+    muscle    sar_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.0153 -0.0013 -0.1242
+        InsertionPosition     0.0243 -0.084 0.0252
+        optimalLength    0.52
+        maximalForce    156
+        tendonSlackLength    0.1
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    sar_l-P1
+            parent    pelvis
+            muscle    sar_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0153 -0.0013 -0.1242
+        endviapoint
+        viapoint    sar_l-P2
+            parent    femur_l
+            muscle    sar_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.003 -0.3568 0.0421
+        endviapoint
+        viapoint    sar_l-P3
+            parent    tibia_l
+            muscle    sar_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0056 -0.0419 0.0399
+        endviapoint
+        viapoint    sar_l-P4
+            parent    tibia_l
+            muscle    sar_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.006 -0.0589 0.0383
+        endviapoint
+        viapoint    sar_l-P5
+            parent    tibia_l
+            muscle    sar_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.0243 -0.084 0.0252
+        endviapoint
+
+    muscle    tfl_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.0311 0.0214 -0.1241
+        InsertionPosition     0.006 -0.0487 -0.0297
+        optimalLength    0.095
+        maximalForce    233
+        tendonSlackLength    0.425
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    tfl_l-P1
+            parent    pelvis
+            muscle    tfl_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0311 0.0214 -0.1241
+        endviapoint
+        viapoint    tfl_l-P2
+            parent    femur_l
+            muscle    tfl_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.0294 -0.0995 -0.0597
+        endviapoint
+        viapoint    tfl_l-P3
+            parent    femur_l
+            muscle    tfl_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.0054 -0.4049 -0.0357
+        endviapoint
+        viapoint    tfl_l-P4
+            parent    tibia_l
+            muscle    tfl_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.006 -0.0487 -0.0297
+        endviapoint
+
+    muscle    grac_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.07401 -0.1187 -0.02794
+        InsertionPosition     0.006 -0.0836 0.0228
+        optimalLength    0.352
+        maximalForce    162
+        tendonSlackLength    0.126
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    grac_l-P1
+            parent    pelvis
+            muscle    grac_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.07401 -0.1187 -0.02794
+        endviapoint
+        viapoint    grac_l-P2
+            parent    tibia_l
+            muscle    grac_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.02657 -0.0319 0.03774
+        endviapoint
+        viapoint    grac_l-P3
+            parent    tibia_l
+            muscle    grac_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.01943 -0.05153 0.0358
+        endviapoint
+        viapoint    grac_l-P4
+            parent    tibia_l
+            muscle    grac_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.006 -0.0836 0.0228
+        endviapoint
+
+    muscle    rect_fem_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_tibia_l
+        OriginPosition     -0.0295 -0.0311 -0.0968
+        InsertionPosition     0.0617576 0.020984 -0.0014
+        optimalLength    0.114
+        maximalForce    1169
+        tendonSlackLength    0.31
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    rect_fem_l-P1
+            parent    pelvis
+            muscle    rect_fem_l
+            musclegroup    pelvis_to_tibia_l
+            position     -0.0295 -0.0311 -0.0968
+        endviapoint
+        viapoint    rect_fem_l-P2
+            parent    femur_l
+            muscle    rect_fem_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.0334 -0.403 -0.0019
+        endviapoint
+        viapoint    rect_fem_l-P3
+            parent    tibia_l
+            muscle    rect_fem_l
+            musclegroup    pelvis_to_tibia_l
+            position     0.0617576 0.020984 -0.0014
+        endviapoint
+
+// femur_l > tibia_l
+musclegroup femur_l_to_tibia_l
+    OriginParent        femur_l
+    InsertionParent        tibia_l
+endmusclegroup
+
+    muscle    bifemsh_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_l_to_tibia_l
+        OriginPosition     0.005 -0.2111 -0.0234
+        InsertionPosition     -0.0234 -0.0563 -0.0343
+        optimalLength    0.173
+        maximalForce    804
+        tendonSlackLength    0.089
+        pennationAngle    0.40142573
+        maxVelocity    10
+    endmuscle
+
+        viapoint    bifemsh_l-P1
+            parent    femur_l
+            muscle    bifemsh_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.005 -0.2111 -0.0234
+        endviapoint
+        viapoint    bifemsh_l-P2
+            parent    tibia_l
+            muscle    bifemsh_l
+            musclegroup    femur_l_to_tibia_l
+            position     -0.0301 -0.036 -0.02943
+        endviapoint
+        viapoint    bifemsh_l-P3
+            parent    tibia_l
+            muscle    bifemsh_l
+            musclegroup    femur_l_to_tibia_l
+            position     -0.0234 -0.0563 -0.0343
+        endviapoint
+
+    muscle    vas_med_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_l_to_tibia_l
+        OriginPosition     0.014 -0.2099 -0.0188
+        InsertionPosition     0.0559586 0.0217917 0.0146
+        optimalLength    0.089
+        maximalForce    1294
+        tendonSlackLength    0.126
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    vas_med_l-P1
+            parent    femur_l
+            muscle    vas_med_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.014 -0.2099 -0.0188
+        endviapoint
+        viapoint    vas_med_l-P2
+            parent    femur_l
+            muscle    vas_med_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0356 -0.2769 -0.0009
+        endviapoint
+        viapoint    vas_med_l-P3
+            parent    femur_l
+            muscle    vas_med_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.037 -0.4048 0.0125
+        endviapoint
+        viapoint    vas_med_l-P4
+            parent    femur_l
+            muscle    vas_med_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0274 -0.4255 0.0131
+        endviapoint
+        viapoint    vas_med_l-P5
+            parent    tibia_l
+            muscle    vas_med_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0559586 0.0217917 0.0146
+        endviapoint
+
+    muscle    vas_int_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_l_to_tibia_l
+        OriginPosition     0.029 -0.1924 -0.031
+        InsertionPosition     0.0617576 0.020984 -0.0014
+        optimalLength    0.087
+        maximalForce    1365
+        tendonSlackLength    0.136
+        pennationAngle    0.05235988
+        maxVelocity    10
+    endmuscle
+
+        viapoint    vas_int_l-P1
+            parent    femur_l
+            muscle    vas_int_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.029 -0.1924 -0.031
+        endviapoint
+        viapoint    vas_int_l-P2
+            parent    femur_l
+            muscle    vas_int_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0335 -0.2084 -0.0285
+        endviapoint
+        viapoint    vas_int_l-P3
+            parent    femur_l
+            muscle    vas_int_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0343 -0.403 -0.0055
+        endviapoint
+        viapoint    vas_int_l-P4
+            parent    tibia_l
+            muscle    vas_int_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0617576 0.020984 -0.0014
+        endviapoint
+
+    muscle    vas_lat_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_l_to_tibia_l
+        OriginPosition     0.0048 -0.1854 -0.0349
+        InsertionPosition     0.0599557 0.0195864 -0.0165
+        optimalLength    0.084
+        maximalForce    1871
+        tendonSlackLength    0.157
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    vas_lat_l-P1
+            parent    femur_l
+            muscle    vas_lat_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0048 -0.1854 -0.0349
+        endviapoint
+        viapoint    vas_lat_l-P2
+            parent    femur_l
+            muscle    vas_lat_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0269 -0.2591 -0.0409
+        endviapoint
+        viapoint    vas_lat_l-P3
+            parent    femur_l
+            muscle    vas_lat_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0361 -0.403 -0.0205
+        endviapoint
+        viapoint    vas_lat_l-P4
+            parent    femur_l
+            muscle    vas_lat_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0253 -0.4243 -0.0184
+        endviapoint
+        viapoint    vas_lat_l-P5
+            parent    tibia_l
+            muscle    vas_lat_l
+            musclegroup    femur_l_to_tibia_l
+            position     0.0599557 0.0195864 -0.0165
+        endviapoint
+
+// femur_l > calcn_l
+musclegroup femur_l_to_calcn_l
+    OriginParent        femur_l
+    InsertionParent        calcn_l
+endmusclegroup
+
+    muscle    med_gas_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_l_to_calcn_l
+        OriginPosition     -0.019 -0.3929 0.0235
+        InsertionPosition     0 0.031 0.0053
+        optimalLength    0.06
+        maximalForce    1558
+        tendonSlackLength    0.39
+        pennationAngle    0.29670597
+        maxVelocity    10
+    endmuscle
+
+        viapoint    med_gas_l-P1
+            parent    femur_l
+            muscle    med_gas_l
+            musclegroup    femur_l_to_calcn_l
+            position     -0.019 -0.3929 0.0235
+        endviapoint
+        viapoint    med_gas_l-P2
+            parent    femur_l
+            muscle    med_gas_l
+            musclegroup    femur_l_to_calcn_l
+            position     -0.03 -0.4022 0.0258
+        endviapoint
+        viapoint    med_gas_l-P3
+            parent    calcn_l
+            muscle    med_gas_l
+            musclegroup    femur_l_to_calcn_l
+            position     0 0.031 0.0053
+        endviapoint
+
+    muscle    lat_gas_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    femur_l_to_calcn_l
+        OriginPosition     -0.022 -0.3946 -0.0272
+        InsertionPosition     0 0.031 0.0053
+        optimalLength    0.064
+        maximalForce    683
+        tendonSlackLength    0.38
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    lat_gas_l-P1
+            parent    femur_l
+            muscle    lat_gas_l
+            musclegroup    femur_l_to_calcn_l
+            position     -0.022 -0.3946 -0.0272
+        endviapoint
+        viapoint    lat_gas_l-P2
+            parent    femur_l
+            muscle    lat_gas_l
+            musclegroup    femur_l_to_calcn_l
+            position     -0.03 -0.4018 -0.0274
+        endviapoint
+        viapoint    lat_gas_l-P3
+            parent    calcn_l
+            muscle    lat_gas_l
+            musclegroup    femur_l_to_calcn_l
+            position     0 0.031 0.0053
+        endviapoint
+
+// tibia_l > calcn_l
+musclegroup tibia_l_to_calcn_l
+    OriginParent        tibia_l
+    InsertionParent        calcn_l
+endmusclegroup
+
+    muscle    soleus_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_calcn_l
+        OriginPosition     -0.0024 -0.1533 -0.0071
+        InsertionPosition     0 0.031 0.0053
+        optimalLength    0.05
+        maximalForce    3549
+        tendonSlackLength    0.25
+        pennationAngle    0.43633231
+        maxVelocity    10
+    endmuscle
+
+        viapoint    soleus_l-P1
+            parent    tibia_l
+            muscle    soleus_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0024 -0.1533 -0.0071
+        endviapoint
+        viapoint    soleus_l-P2
+            parent    calcn_l
+            muscle    soleus_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0 0.031 0.0053
+        endviapoint
+
+    muscle    tib_post_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_calcn_l
+        OriginPosition     -0.0094 -0.1348 -0.0019
+        InsertionPosition     0.0772 0.0159 0.0281
+        optimalLength    0.031
+        maximalForce    1588
+        tendonSlackLength    0.31
+        pennationAngle    0.20943951
+        maxVelocity    10
+    endmuscle
+
+        viapoint    tib_post_l-P1
+            parent    tibia_l
+            muscle    tib_post_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0094 -0.1348 -0.0019
+        endviapoint
+        viapoint    tib_post_l-P2
+            parent    tibia_l
+            muscle    tib_post_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0144 -0.4051 0.0229
+        endviapoint
+        viapoint    tib_post_l-P3
+            parent    calcn_l
+            muscle    tib_post_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0417 0.0334 0.0286
+        endviapoint
+        viapoint    tib_post_l-P4
+            parent    calcn_l
+            muscle    tib_post_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0772 0.0159 0.0281
+        endviapoint
+
+    muscle    tib_ant_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_calcn_l
+        OriginPosition     0.0179 -0.1624 -0.0115
+        InsertionPosition     0.1166 0.0178 0.0305
+        optimalLength    0.098
+        maximalForce    905
+        tendonSlackLength    0.223
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    tib_ant_l-P1
+            parent    tibia_l
+            muscle    tib_ant_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0179 -0.1624 -0.0115
+        endviapoint
+        viapoint    tib_ant_l-P2
+            parent    tibia_l
+            muscle    tib_ant_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0329 -0.3951 0.0177
+        endviapoint
+        viapoint    tib_ant_l-P3
+            parent    calcn_l
+            muscle    tib_ant_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.1166 0.0178 0.0305
+        endviapoint
+
+    muscle    per_brev_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_calcn_l
+        OriginPosition     -0.007 -0.2646 -0.0325
+        InsertionPosition     0.0677 0.0219 -0.0343
+        optimalLength    0.05
+        maximalForce    435
+        tendonSlackLength    0.161
+        pennationAngle    0.08726646
+        maxVelocity    10
+    endmuscle
+
+        viapoint    per_brev_l-P1
+            parent    tibia_l
+            muscle    per_brev_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.007 -0.2646 -0.0325
+        endviapoint
+        viapoint    per_brev_l-P2
+            parent    tibia_l
+            muscle    per_brev_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0198 -0.4184 -0.0283
+        endviapoint
+        viapoint    per_brev_l-P3
+            parent    tibia_l
+            muscle    per_brev_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0144 -0.4295 -0.0289
+        endviapoint
+        viapoint    per_brev_l-P4
+            parent    calcn_l
+            muscle    per_brev_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0471 0.027 -0.0233
+        endviapoint
+        viapoint    per_brev_l-P5
+            parent    calcn_l
+            muscle    per_brev_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0677 0.0219 -0.0343
+        endviapoint
+
+    muscle    per_long_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_calcn_l
+        OriginPosition     0.0005 -0.1568 -0.0362
+        InsertionPosition     0.1203 0.0085 0.0184
+        optimalLength    0.049
+        maximalForce    943
+        tendonSlackLength    0.345
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    per_long_l-P1
+            parent    tibia_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0005 -0.1568 -0.0362
+        endviapoint
+        viapoint    per_long_l-P2
+            parent    tibia_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0207 -0.4205 -0.0286
+        endviapoint
+        viapoint    per_long_l-P3
+            parent    tibia_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     -0.0162 -0.4319 -0.0289
+        endviapoint
+        viapoint    per_long_l-P4
+            parent    calcn_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0438 0.023 -0.0221
+        endviapoint
+        viapoint    per_long_l-P5
+            parent    calcn_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0681 0.0106 -0.0284
+        endviapoint
+        viapoint    per_long_l-P6
+            parent    calcn_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0852 0.0069 -0.0118
+        endviapoint
+        viapoint    per_long_l-P7
+            parent    calcn_l
+            muscle    per_long_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.1203 0.0085 0.0184
+        endviapoint
+
+    muscle    per_tert_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_calcn_l
+        OriginPosition     0.001 -0.2804 -0.0231
+        InsertionPosition     0.0857 0.0228 -0.0299
+        optimalLength    0.079
+        maximalForce    180
+        tendonSlackLength    0.1
+        pennationAngle    0.2268928
+        maxVelocity    10
+    endmuscle
+
+        viapoint    per_tert_l-P1
+            parent    tibia_l
+            muscle    per_tert_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.001 -0.2804 -0.0231
+        endviapoint
+        viapoint    per_tert_l-P2
+            parent    tibia_l
+            muscle    per_tert_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0229 -0.4069 -0.0159
+        endviapoint
+        viapoint    per_tert_l-P3
+            parent    calcn_l
+            muscle    per_tert_l
+            musclegroup    tibia_l_to_calcn_l
+            position     0.0857 0.0228 -0.0299
+        endviapoint
+
+// tibia_l > toes_l
+musclegroup tibia_l_to_toes_l
+    OriginParent        tibia_l
+    InsertionParent        toes_l
+endmusclegroup
+
+    muscle    flex_dig_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_toes_l
+        OriginPosition     -0.0083 -0.2046 0.0018
+        InsertionPosition     0.0441 -0.006 -0.0242
+        optimalLength    0.034
+        maximalForce    310
+        tendonSlackLength    0.4
+        pennationAngle    0.12217305
+        maxVelocity    10
+    endmuscle
+
+        viapoint    flex_dig_l-P1
+            parent    tibia_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     -0.0083 -0.2046 0.0018
+        endviapoint
+        viapoint    flex_dig_l-P2
+            parent    tibia_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     -0.0154 -0.4051 0.0196
+        endviapoint
+        viapoint    flex_dig_l-P3
+            parent    calcn_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0436 0.0315 0.028
+        endviapoint
+        viapoint    flex_dig_l-P4
+            parent    calcn_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0708 0.0176 0.0263
+        endviapoint
+        viapoint    flex_dig_l-P5
+            parent    calcn_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.1658 -0.0081 -0.0116
+        endviapoint
+        viapoint    flex_dig_l-P6
+            parent    toes_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     -0.0019 -0.0078 -0.0147
+        endviapoint
+        viapoint    flex_dig_l-P7
+            parent    toes_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0285 -0.0071 -0.0215
+        endviapoint
+        viapoint    flex_dig_l-P8
+            parent    toes_l
+            muscle    flex_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0441 -0.006 -0.0242
+        endviapoint
+
+    muscle    flex_hal_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_toes_l
+        OriginPosition     -0.0079 -0.2334 -0.0244
+        InsertionPosition     0.0562 -0.0102 0.0181
+        optimalLength    0.043
+        maximalForce    322
+        tendonSlackLength    0.38
+        pennationAngle    0.17453293
+        maxVelocity    10
+    endmuscle
+
+        viapoint    flex_hal_l-P1
+            parent    tibia_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     -0.0079 -0.2334 -0.0244
+        endviapoint
+        viapoint    flex_hal_l-P2
+            parent    tibia_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     -0.0186 -0.4079 0.0174
+        endviapoint
+        viapoint    flex_hal_l-P3
+            parent    calcn_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0374 0.0276 0.0241
+        endviapoint
+        viapoint    flex_hal_l-P4
+            parent    calcn_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.1038 0.0068 0.0256
+        endviapoint
+        viapoint    flex_hal_l-P5
+            parent    calcn_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.1726 -0.0053 0.0269
+        endviapoint
+        viapoint    flex_hal_l-P6
+            parent    toes_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0155 -0.0064 0.0265
+        endviapoint
+        viapoint    flex_hal_l-P7
+            parent    toes_l
+            muscle    flex_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0562 -0.0102 0.0181
+        endviapoint
+
+    muscle    ext_dig_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_toes_l
+        OriginPosition     0.0032 -0.1381 -0.0276
+        InsertionPosition     0.0443 -0.0004 -0.025
+        optimalLength    0.102
+        maximalForce    512
+        tendonSlackLength    0.345
+        pennationAngle    0.13962634
+        maxVelocity    10
+    endmuscle
+
+        viapoint    ext_dig_l-P1
+            parent    tibia_l
+            muscle    ext_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0032 -0.1381 -0.0276
+        endviapoint
+        viapoint    ext_dig_l-P2
+            parent    tibia_l
+            muscle    ext_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0289 -0.4007 -0.0072
+        endviapoint
+        viapoint    ext_dig_l-P3
+            parent    calcn_l
+            muscle    ext_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0922 0.0388 0.0001
+        endviapoint
+        viapoint    ext_dig_l-P4
+            parent    calcn_l
+            muscle    ext_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.1616 0.0055 -0.013
+        endviapoint
+        viapoint    ext_dig_l-P5
+            parent    toes_l
+            muscle    ext_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0003 0.0047 -0.0153
+        endviapoint
+        viapoint    ext_dig_l-P6
+            parent    toes_l
+            muscle    ext_dig_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0443 -0.0004 -0.025
+        endviapoint
+
+    muscle    ext_hal_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    tibia_l_to_toes_l
+        OriginPosition     0.0012 -0.1767 -0.0228
+        InsertionPosition     0.0563 0.0034 0.0186
+        optimalLength    0.111
+        maximalForce    162
+        tendonSlackLength    0.305
+        pennationAngle    0.10471976
+        maxVelocity    10
+    endmuscle
+
+        viapoint    ext_hal_l-P1
+            parent    tibia_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0012 -0.1767 -0.0228
+        endviapoint
+        viapoint    ext_hal_l-P2
+            parent    tibia_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0326 -0.3985 0.0085
+        endviapoint
+        viapoint    ext_hal_l-P3
+            parent    calcn_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.097 0.0389 0.0211
+        endviapoint
+        viapoint    ext_hal_l-P4
+            parent    calcn_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.1293 0.0309 0.0257
+        endviapoint
+        viapoint    ext_hal_l-P5
+            parent    calcn_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.1734 0.0139 0.028
+        endviapoint
+        viapoint    ext_hal_l-P6
+            parent    toes_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0298 0.0041 0.0245
+        endviapoint
+        viapoint    ext_hal_l-P7
+            parent    toes_l
+            muscle    ext_hal_l
+            musclegroup    tibia_l_to_toes_l
+            position     0.0563 0.0034 0.0186
+        endviapoint
+
+// pelvis > torso
+musclegroup pelvis_to_torso
+    OriginParent        pelvis
+    InsertionParent        torso
+endmusclegroup
+
+    muscle    ercspn_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_torso
+        OriginPosition     -0.14 0.0439 0.0436
+        InsertionPosition     -0.055 0.11 0.0241
+        optimalLength    0.12
+        maximalForce    2500
+        tendonSlackLength    0.03
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    ercspn_r-P1
+            parent    pelvis
+            muscle    ercspn_r
+            musclegroup    pelvis_to_torso
+            position     -0.14 0.0439 0.0436
+        endviapoint
+        viapoint    ercspn_r-P2
+            parent    torso
+            muscle    ercspn_r
+            musclegroup    pelvis_to_torso
+            position     -0.055 0.11 0.0241
+        endviapoint
+
+    muscle    ercspn_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_torso
+        OriginPosition     -0.14 0.0439 -0.0436
+        InsertionPosition     -0.055 0.11 -0.0241
+        optimalLength    0.12
+        maximalForce    2500
+        tendonSlackLength    0.03
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    ercspn_l-P1
+            parent    pelvis
+            muscle    ercspn_l
+            musclegroup    pelvis_to_torso
+            position     -0.14 0.0439 -0.0436
+        endviapoint
+        viapoint    ercspn_l-P2
+            parent    torso
+            muscle    ercspn_l
+            musclegroup    pelvis_to_torso
+            position     -0.055 0.11 -0.0241
+        endviapoint
+
+    muscle    intobl_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_torso
+        OriginPosition     -0.04 0.07 0.1157
+        InsertionPosition     0.07 0.16 0.015
+        optimalLength    0.1
+        maximalForce    900
+        tendonSlackLength    0.1
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    intobl_r-P1
+            parent    pelvis
+            muscle    intobl_r
+            musclegroup    pelvis_to_torso
+            position     -0.04 0.07 0.1157
+        endviapoint
+        viapoint    intobl_r-P2
+            parent    torso
+            muscle    intobl_r
+            musclegroup    pelvis_to_torso
+            position     0.07 0.16 0.015
+        endviapoint
+
+    muscle    intobl_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_torso
+        OriginPosition     -0.04 0.07 -0.1157
+        InsertionPosition     0.07 0.16 -0.015
+        optimalLength    0.1
+        maximalForce    900
+        tendonSlackLength    0.1
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    intobl_l-P1
+            parent    pelvis
+            muscle    intobl_l
+            musclegroup    pelvis_to_torso
+            position     -0.04 0.07 -0.1157
+        endviapoint
+        viapoint    intobl_l-P2
+            parent    torso
+            muscle    intobl_l
+            musclegroup    pelvis_to_torso
+            position     0.07 0.16 -0.015
+        endviapoint
+
+    muscle    extobl_r
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_torso
+        OriginPosition     -0.03 -0.0636 0.01
+        InsertionPosition     0.065 0.11 0.11
+        optimalLength    0.12
+        maximalForce    900
+        tendonSlackLength    0.14
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    extobl_r-P1
+            parent    pelvis
+            muscle    extobl_r
+            musclegroup    pelvis_to_torso
+            position     -0.03 -0.0636 0.01
+        endviapoint
+        viapoint    extobl_r-P2
+            parent    torso
+            muscle    extobl_r
+            musclegroup    pelvis_to_torso
+            position     0.065 0.11 0.11
+        endviapoint
+
+    muscle    extobl_l
+        Type    hillthelen
+        statetype    buchanan
+        musclegroup    pelvis_to_torso
+        OriginPosition     -0.03 -0.0636 -0.01
+        InsertionPosition     0.065 0.11 -0.11
+        optimalLength    0.12
+        maximalForce    900
+        tendonSlackLength    0.14
+        pennationAngle    0
+        maxVelocity    10
+    endmuscle
+
+        viapoint    extobl_l-P1
+            parent    pelvis
+            muscle    extobl_l
+            musclegroup    pelvis_to_torso
+            position     -0.03 -0.0636 -0.01
+        endviapoint
+        viapoint    extobl_l-P2
+            parent    torso
+            muscle    extobl_l
+            musclegroup    pelvis_to_torso
+            position     0.065 0.11 -0.11
+        endviapoint

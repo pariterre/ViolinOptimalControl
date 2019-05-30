@@ -46,6 +46,8 @@ def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
                  return index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
                 else:
                     j += 1
+            else:
+                return None
 
 def retrieve_name(var):
         """
@@ -208,6 +210,7 @@ class ConvertedFromOsim2Biorbd:
         def list_pathpoint_muscle(muscle):
             #return list of viapoint for each muscle
             viapoint = []
+            # TODO warning for other type of pathpoint 
             index_pathpoint = index_go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'PathPoint')
             list_index = list(index_pathpoint)
             tronc_list_index = list_index[:len(list_index)-2]
@@ -300,16 +303,38 @@ class ConvertedFromOsim2Biorbd:
         def get_body_pathpoint(pathpoint):
             while True:
                 try:
-                    return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
-                except Exception as e:
-                    try:
+                    if index_go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body') != '':
+                        print('*', pathpoint)
+                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
+                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body') != '':
+                        print('Conditional', pathpoint)
                         return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body'))
-                    except Exception as e:
-                        try:
-                            return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body'))
-                        except:
-                            break
-
+                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body') !=  '':
+                        print('Moving', pathpoint)
+                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body'))
+                    else:
+                        return 'None'  
+                except Exception as e:
+                    print('******',e)
+                    break
+        
+        def get_pos(pathpoint):
+            while True:
+                try:
+                    if index_go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'location') != '':
+                        print('*', pathpoint)
+                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'location'))
+                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'location') != '':
+                        print('Conditional', pathpoint)
+                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'location'))
+                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'location') !=  '':
+                        print('Moving', pathpoint)
+                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'location'))
+                    else:
+                        return 'None'  
+                except Exception as e:
+                    print('******',e)
+                    break
         
         def muscle_group_reference(muscle, ref_group):
             for el in ref_group:
@@ -448,11 +473,11 @@ class ConvertedFromOsim2Biorbd:
             bodies_viapoint = []
             for pathpoint in viapoint:
                 bodies_viapoint.append(get_body_pathpoint(pathpoint))
+                print(pathpoint, get_body_pathpoint(pathpoint))
             # it is supposed that viapoints are organized in order 
             # from the parent body to the child body
             body_start = bodies_viapoint[0]
             body_end = bodies_viapoint[len(bodies_viapoint)-1]
-            print(body_end)
             sort_muscle.append([body_start, body_end])
             muscle_ref_group.append([muscle, body_start+'_to_'+body_end])
         # selecting muscle group
@@ -476,8 +501,8 @@ class ConvertedFromOsim2Biorbd:
                     state_type = 'buchanan'
                     start_point = list_pathpoint_muscle(muscle)[0]
                     end_point = list_pathpoint_muscle(muscle)[len(list_pathpoint_muscle(muscle))-1]
-                    start_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', start_point), 'location'))
-                    insert_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', end_point), 'location'))
+                    start_pos = get_pos(start_point)
+                    insert_pos = get_pos(end_point)
                     opt_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'optimal_fiber_length'))
                     max_force = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'max_isometric_force'))
                     tendon_slack_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'tendon_slack_length'))
@@ -503,7 +528,7 @@ class ConvertedFromOsim2Biorbd:
                     for viapoint in list_pathpoint_muscle(muscle):
                         # viapoint data
                         parent_viapoint = get_body_pathpoint(viapoint)
-                        viapoint_pos = new_text(go_to(go_to(self.root, 'PathPoint', 'name', viapoint), 'location'))
+                        viapoint_pos = get_pos(viapoint)
                         # print viapoint data
                         self.write('\n        viapoint    {}'.format(viapoint))
                         self.write('\n            parent    {}'.format(parent_viapoint)) if parent_viapoint != 'None' else self.write('')
@@ -549,7 +574,7 @@ def main():
     #Segment definition
     data = ConvertedFromOsim2Biorbd(
         '../models/testconversion0.biomod', 
-        "../models/Opensim_model/arm26.osim")
+        "../models/Opensim_model/gait2392_simbody.osim")
 
     origin = data.data_origin
     root = origin.getroot()
