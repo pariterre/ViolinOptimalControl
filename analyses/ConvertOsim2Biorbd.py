@@ -1,17 +1,10 @@
 # coding: utf-8
 
 from lxml import etree
-
-import xml.sax
-
 import pprint
-
 import inspect
-
 import numpy as np
-
 from numpy.linalg import inv
-
 import copy
 
 # data = etree.parse("../models/Opensim_model/arm26.osim")
@@ -20,13 +13,14 @@ import copy
 #     for i in range(len(body.getchildren())):
 #         print(body.getchildren()[i].text)
 
-def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
-    #return index to go to _tag which can have condition on its attribute
+
+def index_go_to(_root, _tag, _attrib='False', _attribvalue='', index=''):
+    # return index to go to _tag which can have condition on its attribute
     i = 0
     for _child in _root:
         if type(_child) == str:
             return ''
-        if _attrib != False:
+        if _attrib != 'False':
             if _child.tag == _tag and _child.get(_attrib) == _attribvalue:
                 return index+'[{}]'.format(i)
             else:
@@ -36,58 +30,60 @@ def index_go_to(_root, _tag, _attrib=False, _attribvalue='', index=''):
                 return index+'[{}]'.format(i)
             else:
                 i += 1 
-    #not found in children, go to grand children
+    # not found in children, go to grand children
     else:
         j = 0
         if _root is not None:
             for _child in _root:
                 a = index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
                 if a:
-                 return index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
+                    return index_go_to(_child, _tag, _attrib, _attribvalue, index+'[{}]'.format(j))
                 else:
                     j += 1
             else:
                 return None
 
 def retrieve_name(var):
-        """
-        Gets the name of var. Does it from the out most frame inner-wards.
-        :param var: variable to get name from.
-        :return: string
-        """
-        for fi in reversed(inspect.stack()):
-            names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
-            if len(names) > 0:
-                return names[0]
+    """
+    Gets the name of var. Does it from the out most frame inner-wards.
+    :param var: variable to get name from.
+    :return: string
+    """
+    for fi in reversed(inspect.stack()):
+        names = [var_name for var_name, var_val in fi.frame.f_locals.items() if var_val is var]
+        if len(names) > 0:
+            return names[0]
 
-def go_to(_root, _tag, _attrib=False, _attribvalue=''):
-    #return element corresponding to _tag 
-    #which can have condition on its attribute
+
+def go_to(_root, _tag, _attrib='False', _attribvalue=''):
+    # return element corresponding to _tag
+    # which can have condition on its attribute
     _index = index_go_to(_root, _tag, _attrib, _attribvalue)
-    if _index == None:
+    if _index is None:
         return 'None'
     else:
         _index = index_go_to(_root, _tag, _attrib, _attribvalue)
         return eval(retrieve_name(_root)+_index)   
-    
+
+
 def coord_sys(axis):
     # define orthonormal coordinate system with given z-axis
     [a, b, c] = axis
     if a == 0:
         if b == 0:
             if c == 0:
-                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],''
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]], ''
             else:
-                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'z'
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 'z'
         else:
             if c == 0:
-                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'y'
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 'y'
             else:
                 y_temp = [0, -c/b, 1]
     else:
         if b == 0:
             if c == 0:
-                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]],'x'
+                return [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 'x'
             else:
                 y_temp = [-c/a, 0, 1]
         else:
@@ -99,19 +95,20 @@ def coord_sys(axis):
     x = [1/norm_x_temp*x_el for x_el in x_temp]
     z = [1/norm_z_temp*z_el for z_el in z_temp]
     y = [y_el for y_el in np.cross(z, x)]
-    return [x, y, z],''
-                    
+    return [x, y, z], ''
+
+
 class OrthoMatrix:
     def __init__(self, translation=[0, 0, 0], rotation_1=[0, 0, 0], rotation_2=[0, 0, 0], rotation_3=[0, 0, 0]):
         self.trans = np.transpose(np.array([translation]))
-        self.axe_1 = rotation_1 #axis of rotation for theta_1
-        self.axe_2 = rotation_2 #axis of rotation for theta_2
-        self.axe_3 = rotation_3 #axis of rotation for theta_3
-        self.rot_1 = np.transpose(np.array(coord_sys(self.axe_1)[0]))#rotation matrix for theta_1
-        self.rot_2 = np.transpose(np.array(coord_sys(self.axe_2)[0]))#rotation matrix for theta_2
-        self.rot_3 = np.transpose(np.array(coord_sys(self.axe_3)[0]))#rotation matrix for theta_3
-        self.rotation_matrix = self.rot_3.dot(self.rot_2.dot(self.rot_1)) #rotation matrix for 
-        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
+        self.axe_1 = rotation_1  # axis of rotation for theta_1
+        self.axe_2 = rotation_2  # axis of rotation for theta_2
+        self.axe_3 = rotation_3  # axis of rotation for theta_3
+        self.rot_1 = np.transpose(np.array(coord_sys(self.axe_1)[0]))  # rotation matrix for theta_1
+        self.rot_2 = np.transpose(np.array(coord_sys(self.axe_2)[0]))  # rotation matrix for theta_2
+        self.rot_3 = np.transpose(np.array(coord_sys(self.axe_3)[0]))  # rotation matrix for theta_3
+        self.rotation_matrix = self.rot_3.dot(self.rot_2.dot(self.rot_1))  # rotation matrix for
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]), axis=0)
     
     def get_rotation_matrix(self):
         return self.rotation_matrix
@@ -122,26 +119,27 @@ class OrthoMatrix:
     def get_translation(self):
         return self.trans
     
-    def set_translation(self ,trans):
+    def set_translation(self, trans):
         self.trans = trans
     
     def get_matrix(self):
-        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]), axis=0)
         return self.matrix
     
     def transpose(self):
         self.rotation_matrix = np.transpose(self.rotation_matrix)
         self.trans = -self.rotation_matrix.dot(self.trans)
-        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]), axis=0)
         return self.matrix
     
     def product(self, other):
         self.rotation_matrix = self.rotation_matrix.dot(other.get_rotation_matrix())
         self.trans = self.trans + other.get_translation()
-        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]),axis=0)
+        self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]), axis=0)
         
     def get_axis(self):
         return coord_sys(self.axe_1)[1]+coord_sys(self.axe_2)[1]+coord_sys(self.axe_3)[1]
+
 
 def out_product(rotomatrix_1, rotomatrix_2):
     rotomatrix_prod = OrthoMatrix()
@@ -150,8 +148,9 @@ def out_product(rotomatrix_1, rotomatrix_2):
     rotomatrix_prod.get_matrix()
     return rotomatrix_prod
 
+
 class ConvertedFromOsim2Biorbd:
-    def __init__(self, path, originfile,version=3):
+    def __init__(self, path, originfile, version=3):
 
         self.path = path
         self.originfile = originfile
@@ -162,7 +161,7 @@ class ConvertedFromOsim2Biorbd:
 
         self.file = open(self.path, 'w')
         self.file.write('version '+self.version+'\n')
-        self.file.write('\n// File extracted from '+ self.originfile)
+        self.file.write('\n// File extracted from ' + self.originfile)
         self.file.write('\n')
 
         def new_text(element):
@@ -177,88 +176,81 @@ class ConvertedFromOsim2Biorbd:
 #        def print_publications():
 #            return new_text(go_to(self.root, 'publications'))
 
-        def body_list(self):
+        def body_list(_self):
             L = []
-            for body in self.data_origin.xpath(
+            for body in _self.data_origin.xpath(
                     '/OpenSimDocument/Model/BodySet/objects/Body'):
                 L.append(body.get("name"))
             return L
 
-        def parent_body(body):
-            return new_text(go_to(go_to(self.root, 'Body', 'name', body), 'parent_body'))
-            # body_actu = ref
-            # for _body in list_actuated:
-            #         if _body.find(ref) == 0:
-            #             body_actu = _body
-            # return body_actu
+        def parent_body(_body):
+            return new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'parent_body'))
         
-        def matrix_inertia(body):
-            return [new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xx')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yy')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_zz')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xy')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_xz')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', body), 'inertia_yz'))]
+        def matrix_inertia(_body):
+            return [new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xx')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_yy')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_zz')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xy')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xz')),
+                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_yz'))]
 
-        def muscle_list(self):
-            L = []
-            for muscle in self.data_origin.xpath(
+        def muscle_list(_self):
+            _list = []
+            for _muscle in _self.data_origin.xpath(
                     '/OpenSimDocument/Model/ForceSet/objects/Thelen2003Muscle'):
-                L.append(muscle.get("name"))
-            return L
+                _list.append(_muscle.get("name"))
+            return _list
 
-        def list_pathpoint_muscle(muscle):
-            #return list of viapoint for each muscle
-            viapoint = []
+        def list_pathpoint_muscle(_muscle):
+            # return list of viapoint for each muscle
+            _viapoint = []
             # TODO warning for other type of pathpoint 
-            index_pathpoint = index_go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'PathPoint')
+            index_pathpoint = index_go_to(go_to(self.root, 'Thelen2003Muscle', 'name', _muscle), 'PathPoint')
             list_index = list(index_pathpoint)
             tronc_list_index = list_index[:len(list_index)-2]
             tronc_index = ''.join(tronc_list_index)
-            index_root = index_go_to(self.root, 'Thelen2003Muscle', 'name', muscle)
+            index_root = index_go_to(self.root, 'Thelen2003Muscle', 'name', _muscle)
             index_tronc_total = index_root+tronc_index
             i = 0
             while True:
                 try:
                     child = eval('self.root'+index_tronc_total+str(i)+']')
-                    viapoint.append(child.get("name"))
+                    _viapoint.append(child.get("name"))
                     i += 1
-                except Exception as e:
-                        #print('Error', e)
-                        break  
-            return viapoint
+                except:  # Exception as e:   print('Error', e)
+                    break
+            return _viapoint
         
-        def list_transform_body(body):
-            #return list of transformation for each body
-            translation = []
-            rotation = []
-            index_transformation = index_go_to(go_to(self.root, 'Body', 'name', body), 'TransformAxis')
-            if index_transformation == None:
-                return [[],[]]
+        def list_transform_body(_body):
+            # return list of transformation for each body
+            _translation = []
+            _rotation = []
+            index_transformation = index_go_to(go_to(self.root, 'Body', 'name', _body), 'TransformAxis')
+            if index_transformation is None:
+                return [[], []]
             else:
                 list_index = list(index_transformation)
                 tronc_list_index = list_index[:len(list_index)-2]
                 tronc_index = ''.join(tronc_list_index)
-                index_root = index_go_to(self.root, 'Body', 'name', body)
+                index_root = index_go_to(self.root, 'Body', 'name', _body)
                 index_tronc_total = index_root+tronc_index
                 i = 0
                 while True:
                     try:
                         child = eval('self.root'+index_tronc_total+str(i)+']')
-                        if child.get('name') != None:
-                            translation.append(child.get("name")) if child.get('name').find('translation') == 0 else True
-                            rotation.append(child.get("name")) if child.get('name').find('rotation') == 0 else True
+                        if child.get('name') is not None:
+                            _translation.append(child.get("name")) if child.get('name').find('translation') == 0 else True
+                            _rotation.append(child.get("name")) if child.get('name').find('rotation') == 0 else True
                         i += 1
-                    except Exception as e:
-                        #print('Error', e)
+                    except:  # Exception as e:  print('Error', e)
                         break  
-                return [translation,rotation]
+                return [_translation, _rotation]
         
-        def list_markers_body(body):
-            #return list of transformation for each body
+        def list_markers_body(_body):
+            # return list of transformation for each body
             markers = []
             index_markers = index_go_to(self.root, 'Marker')
-            if index_markers == None:
+            if index_markers is None:
                 return []
             else:
                 list_index = list(index_markers)
@@ -269,68 +261,66 @@ class ConvertedFromOsim2Biorbd:
                     try:
                         child = eval('self.root'+tronc_index+str(i)+']').get('name')
                         which_body = new_text(go_to(go_to(self.root, 'Marker', 'name', child), 'body'))
-                        if which_body == body:
-                            markers.append(child) if child != None else True
+                        if which_body == _body:
+                            markers.append(child) if child is not None else True
                         i += 1
-                    except Exception as e:
-                        #print('Error', e)
+                    except:  # Exception as e:  print('Error', e)
                         break  
                 return markers
 
-        def list_dof_body(body):
-            #return list of generalizes coordinates for given body
+        def list_dof_body(_body):
+            # return list of generalizes coordinates for given body
             dof = []
-            index_markers = index_go_to(go_to(self.root, 'Body', 'name', body), 'Coordinate')
-            if index_markers == None:
+            index_markers = index_go_to(go_to(self.root, 'Body', 'name', _body), 'Coordinate')
+            if index_markers is None:
                 return []
             else:
                 list_index = list(index_markers)
                 tronc_list_index = list_index[:len(list_index)-2]
                 tronc_index = ''.join(tronc_list_index)
-                index_root = index_go_to(self.root, 'Body', 'name', body)
+                index_root = index_go_to(self.root, 'Body', 'name', _body)
                 index_tronc_total = index_root + tronc_index
                 i = 0
                 while True:
                     try:
-                       new_dof = eval('self.root'+index_tronc_total+str(i)+']').get('name')
-                       dof.append(new_dof)
-                       i += 1
-                    except Exception as e:
-                        #print('Error', e)
+                        new_dof = eval('self.root'+index_tronc_total+str(i)+']').get('name')
+                        dof.append(new_dof)
+                        i += 1
+                    except:  # Exception as e:  print('Error', e)
                         break
                 return dof
 
-        def get_body_pathpoint(pathpoint):
+        def get_body_pathpoint(_pathpoint):
             while True:
                 try:
-                    if index_go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body') != '':
-                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'body'))
-                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body') != '':
-                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'body'))
-                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body') !=  '':
-                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'body'))
+                    if index_go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'body') != '':
+                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'body'))
+                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'body') != '':
+                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'body'))
+                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'body') != '':
+                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'body'))
                     else:
                         return 'None'  
                 except Exception as e:
                     break
         
-        def get_pos(pathpoint):
+        def get_pos(_pathpoint):
             while True:
                 try:
-                    if index_go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'location') != '':
-                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', pathpoint), 'location'))
-                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'location') != '':
-                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', pathpoint), 'location'))
-                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'location') !=  '':
-                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', pathpoint), 'location'))
+                    if index_go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'location') != '':
+                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'location'))
+                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'location') != '':
+                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'location'))
+                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'location') !=  '':
+                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'location'))
                     else:
                         return 'None'  
                 except Exception as e:
                     break
         
-        def muscle_group_reference(muscle, ref_group):
+        def muscle_group_reference(_muscle, ref_group):
             for el in ref_group:
-                if muscle == el[0]:
+                if _muscle == el[0]:
                     return el[1]
             else:
                 return 'None'
@@ -346,8 +336,8 @@ class ConvertedFromOsim2Biorbd:
 #        self.write('\n'+_publications+'\n')
 
 
-        # Segment definition
-        body_list_actuated =  []
+# Segment definition
+        body_list_actuated = []
         self.write('\n// SEGMENT DEFINITION\n')
 
         def printing_segment(_body, _name, parent_name, _rotomatrix, transformation_type='', _is_dof='None', true_segment=False, dof_total_trans=''):
@@ -378,15 +368,15 @@ class ConvertedFromOsim2Biorbd:
                                r41, r42, r43, r44))
             self.write('        translations {}\n'.format(dof_total_trans)) if transformation_type == 'translation' and dof_total_trans != '' else True
             self.write('        rotations {}\n'.format('z')) if _is_dof == 'True' else True
-            self.write('        mass {}\n'.format(mass)) if true_segment == True else True
+            self.write('        mass {}\n'.format(mass)) if true_segment is True else True
             self.write('        inertia\n'
                        '            {}    {}    {}\n'
                        '            {}    {}    {}\n'
                        '            {}    {}    {}\n'
                        .format(i11, i12, i13,
                                i12, i22, i23,
-                               i13, i23, i33)) if true_segment == True else True
-            self.write('        com    {}\n'.format(com)) if true_segment == True else True
+                               i13, i23, i33)) if true_segment is True else True
+            self.write('        com    {}\n'.format(com)) if true_segment is True else True
             self.write('    endsegment\n')
         
         # Division of body in segment depending of transformation
@@ -429,8 +419,7 @@ class ConvertedFromOsim2Biorbd:
                     is_true_segment = False
                 printing_segment(body, body_trans, parent, rotomatrix, 'translation', dof_total_trans, true_segment=is_true_segment)
                 parent = body_trans
-                #body_list_actuated.append(body_trans)
-            if list_transform[1] != []:
+            if list_transform[1] != [] :
                 rotomatrix = OrthoMatrix([0, 0, 0])
                 for rotation in list_transform[1]:
                     if rotation.find('rotation') == 0:
@@ -448,16 +437,15 @@ class ConvertedFromOsim2Biorbd:
                         printing_segment(body, body+'_'+rotation, parent, rotomatrix, 'rotation', is_dof)
                         rotation_for_markers = rotation_for_markers.dot(rotomatrix.get_rotation_matrix())
                         parent = body+'_'+rotation
-                        #body_list_actuated.append(parent)
 
                 # segment to cancel axis effects
                 rotomatrix.set_rotation_matrix(inv(rotation_for_markers))
-                printing_segment(body, body, parent, rotomatrix, true_segment = True)
+                printing_segment(body, body, parent, rotomatrix, true_segment=True)
                 parent = body
                 
             # Markers
             _list_markers = list_markers_body(body)
-            if _list_markers != []:
+            if _list_markers is not []:
                 self.write('\n    // Markers')
                 for marker in _list_markers:
                     position = new_text(go_to(go_to(self.root, 'Marker', 'name', marker), 'location'))
@@ -564,21 +552,22 @@ class ConvertedFromOsim2Biorbd:
                 '/OpenSimDocument/Model/publications')[0].text
 
     def body_list(self):
-        L = []
+        _list = []
         for body in self.data_origin.xpath(
                 '/OpenSimDocument/Model/BodySet/objects/Body'):
-            L.append(body.get("name"))
-        return L
+            _list.append(body.get("name"))
+        return _list
 
 
 def main():
-    #Segment definition
+    # Segment definition
     data = ConvertedFromOsim2Biorbd(
         '../models/conv-arm26.biomod',
         "../models/Opensim_model/arm26.osim")
 
     origin = data.data_origin
     root = origin.getroot()
+
 
 if __name__ == "__main__":
     main()
