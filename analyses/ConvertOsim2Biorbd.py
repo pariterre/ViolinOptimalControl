@@ -349,6 +349,7 @@ class ConvertedFromOsim2Biorbd:
             [i11, i22, i33, i12, i13, i23] = matrix_inertia(_body)
             mass = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'mass'))
             com = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'mass_center'))
+            path_mesh_file = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'mesh_file'))
             # TODO add mesh files
 
             # writing data
@@ -377,6 +378,7 @@ class ConvertedFromOsim2Biorbd:
                                i12, i22, i23,
                                i13, i23, i33)) if true_segment is True else True
             self.write('        com    {}\n'.format(com)) if true_segment is True else True
+            self.write('        //meshfile {}\n'.format(path_mesh_file)) if path_mesh_file != 'None' else True
             self.write('    endsegment\n')
         
         # Division of body in segment depending of transformation
