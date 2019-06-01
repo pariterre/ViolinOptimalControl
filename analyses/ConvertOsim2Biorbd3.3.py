@@ -183,16 +183,27 @@ class ConvertedFromOsim2Biorbd:
                 L.append(body.get("name"))
             return L
 
-        def parent_body(_body):
-            return new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'parent_body'))
+        def parent_body(_body, _late_body):
+            ref = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'parent_body'))
+            if ref == 'None':
+                return _late_body
+            else:
+                return ref
+
         
         def matrix_inertia(_body):
-            return [new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xx')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_yy')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_zz')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xy')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xz')),
-                    new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_yz'))]
+            ref = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xx'))
+            if ref == 'None':
+                _inertia_str = new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia'))
+                _inertia = [float(s) for s in _inertia_str.split(' ')]
+                return _inertia
+            else:
+                return [ref,
+                        new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_yy')),
+                        new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_zz')),
+                        new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xy')),
+                        new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_xz')),
+                        new_text(go_to(go_to(self.root, 'Body', 'name', _body), 'inertia_yz'))]
 
         def muscle_list(_self):
             _list = []
@@ -226,6 +237,7 @@ class ConvertedFromOsim2Biorbd:
             _translation = []
             _rotation = []
             index_transformation = index_go_to(go_to(self.root, 'Body', 'name', _body), 'TransformAxis')
+            print(index_transformation, _body)
             if index_transformation is None:
                 return [[], []]
             else:
@@ -293,12 +305,33 @@ class ConvertedFromOsim2Biorbd:
         def get_body_pathpoint(_pathpoint):
             while True:
                 try:
-                    if index_go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'body') != '':
-                        return new_text(go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'body'))
-                    elif index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'body') != '':
-                        return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'body'))
-                    elif index_go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'body') != '':
-                        return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'body'))
+                    if index_go_to(self.root, 'PathPoint', 'name', _pathpoint) is not None or '':
+                        if index_go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'body') is not None or '':
+                            return new_text(go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint), 'body'))
+                        # opensim version 4.0
+                        if index_go_to(go_to(self.root, 'PathPoint', 'name', _pathpoint),
+                                       'socket_parent_frame') is not None or '':
+                            _ref = new_text(go_to(
+                                go_to(self.root, 'PathPoint', 'name', _pathpoint), 'socket_parent_frame'))
+                            return _ref[9:]
+                    elif index_go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint) != '':
+                        if index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'body') != '':
+                            return new_text(go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint), 'body'))
+                        # opensim version 4.0
+                        if index_go_to(go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint),
+                                       'socket_parent_frame') is not None or '':
+                            _ref = new_text(go_to(
+                                go_to(self.root, 'ConditionalPathPoint', 'name', _pathpoint),'socket_parent_frame'))
+                            return _ref[9:]
+                    elif index_go_to(self.root, 'MovingPathPoint', 'name', _pathpoint) != '':
+                        if index_go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'body') != '':
+                            return new_text(go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'body'))
+                        # opensim version 4.0
+                        if index_go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint),
+                                       'socket_parent_frame') is not None or '':
+                            _ref = new_text(
+                                go_to(go_to(self.root, 'MovingPathPoint', 'name', _pathpoint), 'socket_parent_frame'))
+                            return _ref[9:]
                     else:
                         return 'None'  
                 except Exception as e:
@@ -382,10 +415,11 @@ class ConvertedFromOsim2Biorbd:
             self.write('    endsegment\n')
         
         # Division of body in segment depending of transformation
+        late_body = 'None'
         for body in body_list(self):
             rotomatrix = OrthoMatrix([0, 0, 0])
             self.write('\n// Information about {} segment\n'.format(body))
-            parent = parent_body(body)
+            parent = parent_body(body, late_body)
             list_transform = list_transform_body(body)
             rotation_for_markers = rotomatrix.get_rotation_matrix()
             # segment data
@@ -455,7 +489,8 @@ class ConvertedFromOsim2Biorbd:
                     self.write('\n        parent    {}'.format(parent))
                     self.write('\n        position    {}'.format(position))
                     self.write('\n    endmarker\n')
-            
+            late_body = body
+
         # Muscle definition
         self.write('\n// MUSCLE DEFINIION\n')
         sort_muscle = []
@@ -562,13 +597,17 @@ class ConvertedFromOsim2Biorbd:
 
 
 def main():
-    # Segment definition
-    data = ConvertedFromOsim2Biorbd(
+    ConvertedFromOsim2Biorbd(
         '../models/conv-arm26.biomod',
         "../models/Opensim_model/arm26.osim")
+#    ConvertedFromOsim2Biorbd(
+#        '../models/conv-arm26_2.biomod',
+#        "../models/Opensim_model/arm26_2.osim")
+#    ConvertedFromOsim2Biorbd(
+#        '../models/conv-arm26_with_bucket.biomod',
+#        "../models/Opensim_model/arm26_with_bucket.osim")
 
-    origin = data.data_origin
-    root = origin.getroot()
+
 
 
 if __name__ == "__main__":
