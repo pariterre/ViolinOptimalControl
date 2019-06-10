@@ -37,32 +37,59 @@ develop_factor_ff = 10
 recover_factor_ff = 10
 
 # Target Load
-target_load = 99  # percent of Maximal Voluntary Contraction
+target_load = 60  # percent of Maximal Voluntary Contraction
+delta_t = 0.5  # time to reach target load - smoother rise
 t_Max = 100
+freq_load = 20
+delta_amp = 0.20
+
+# Normalize contribution of each fiber
+total = (S_Specific_Tension * S_Percent + FR_Specific_Tension * FR_Percent + FF_Specific_Tension * FF_Percent)
+alpha_s = S_Specific_Tension * S_Percent/total
+alpha_ffr = FR_Specific_Tension * FR_Percent/total
+alpha_ff = FF_Specific_Tension * FF_Percent/total
 
 # Initial States
 state_init_s0 = (0, 100, 0)  # ma, mr, mf
 state_init_ffr0 = (0, 100, 0)
 state_init_ff0 = (0, 100, 0)
 state_init_activation0 = (1, 0, 0)
-state_init_0 = (0, 100, 0, 0, 100, 0, 0, 100, 0, 1, 0, 0)
+
+ma_s_0 = 0  # min(target_load/alpha_s, 100)
+ma_ffr_0 = 0  # min(min(abs((target_load-ma_s_0)/alpha_ffr), 0), 100)
+ma_ff_0 = 0  # min(min(abs((target_load-ma_s_0-ma_ffr_0)/alpha_ff), 0), 100)
+state_init_0 = (ma_s_0, 100-ma_s_0, 0,
+                ma_ffr_0, 100-ma_ffr_0, 0,
+                ma_ff_0, 100-ma_ff_0, 0,
+                1, 0, 0)
+print(state_init_0)
+
+def var_load(_t, _target_load=target_load, _delta_t=delta_t):
+    if _t <= delta_t:
+        return _target_load/_delta_t*_t
+    else:
+        return _target_load
 
 
-def fatigue(load):
+def var_sin_load(_t, freq=freq_load, _delta_amp=delta_amp, _target_load=target_load):
+    return _target_load*(1 + _delta_amp*np.math.sin(freq*_t))
 
-    def dyn(t, x):
+
+def fatigue(fun_load):
+
+    def dyn(_t, x):
         [ma_s, mr_s, mf_s, ma_ffr, mr_ffr, mf_ffr, ma_ff, mr_ff, mf_ff, activ_s, activ_ffr, activ_ff] = x
-
+        load = fun_load(_t)
         # Residual capacity
-        recover_cap_s = S_Percent * S_Specific_Tension * (ma_s + mr_s)
-        recover_cap_ffr = FR_Percent * FR_Specific_Tension * (ma_ffr + mr_ffr)
-        # recover_cap_ff = FF_Percent * FF_Specific_Tension * ma_ff
+        res_cap_s = alpha_s * (ma_s + mr_s)
+        res_cap_ffr = alpha_ffr * (ma_ffr + mr_ffr)
+        # res_cap_ff = alpha_ff * (ma_ff + mr_ff)
 
         # Recruitment order
         activ_s = 1
-        if load > recover_cap_s:
+        if load > res_cap_s:
             activ_ffr = 1
-            if load > recover_cap_s + recover_cap_ffr:
+            if load > res_cap_s + res_cap_ffr:
                 activ_ff = 1
             else:
                 activ_ff = 0
@@ -70,7 +97,7 @@ def fatigue(load):
             activ_ffr = 0
 
         # Conditions of evolution
-        def defdyn(recover_rate, fatigue_rate, develop_factor, recovery_factor, ma, mr, mf, activ, _load, percent, tension):
+        def defdyn(recover_rate, fatigue_rate, develop_factor, recovery_factor, ma, mr, mf, activ, _load):
             if ma < _load:
                 if mr > _load - ma:
                     c = develop_factor * (_load - ma)  # development & not fatigued
@@ -78,7 +105,6 @@ def fatigue(load):
                     c = develop_factor * mr  # development & fatigued
             else:
                 c = recovery_factor * (_load - ma)  # recovery
-            c = percent * tension * c
 
             ma_dot = c * activ - fatigue_rate * ma
             mr_dot = -c * activ + recover_rate * mf
@@ -88,21 +114,20 @@ def fatigue(load):
 
         (madot_s, mrdot_s, mfdot_s) = defdyn(recovery_rate_s, fatigue_rate_s, develop_factor_s,
                                              recover_factor_s, ma_s, mr_s, mf_s, activ_s,
-                                             load/(S_Percent*S_Specific_Tension), S_Percent, S_Specific_Tension)
+                                             load/alpha_s)
         (madot_ffr, mrdot_ffr, mfdot_ffr) = defdyn(recovery_rate_ffr, fatigue_rate_ffr, develop_factor_ffr,
-                                            recover_factor_ffr, ma_ffr, mr_ffr, mf_ffr, activ_ffr,
-                                            (load - S_Percent*S_Specific_Tension*ma_s)/(FR_Percent*FR_Specific_Tension),
-                                                   FR_Percent, FR_Specific_Tension)
+                                                   recover_factor_ffr, ma_ffr, mr_ffr, mf_ffr, activ_ffr,
+                                                   (load - alpha_s*ma_s)/alpha_ffr)
         (madot_ff, mrdot_ff, mfdot_ff) = defdyn(recovery_rate_ff, fatigue_rate_ff, develop_factor_ff,
                                                 recover_factor_ff, ma_ff, mr_ff, mf_ff, activ_ff,
-                                                (load - S_Percent*S_Specific_Tension*ma_s - FR_Percent*FR_Specific_Tension*ma_ffr)/(FF_Percent*FF_Specific_Tension), FF_Percent,FF_Specific_Tension)
+                                                (load - alpha_s*ma_s - alpha_ffr*ma_ffr)/alpha_ff)
 
         return madot_s, mrdot_s, mfdot_s, madot_ffr, mrdot_ffr, mfdot_ffr, madot_ff, mrdot_ff, mfdot_ff,\
                activ_s, activ_ffr, activ_ff
     return dyn
 
 
-X = integrate.solve_ivp(fatigue(target_load), (0, t_Max), state_init_0)
+X = integrate.solve_ivp(fatigue(var_load), (0, t_Max), state_init_0)
 t = X.t
 X_S = (X.y[0, :], X.y[1, :], X.y[2, :])
 X_FR = (X.y[3, :], X.y[4, :], X.y[5, :])
@@ -126,15 +151,14 @@ for i in range(len(BE_FF)):
         BE_FF[i] = 1
 
 # Total activity
-ma_total = S_Percent * S_Specific_Tension * X.y[0, :]\
-           + FR_Percent * FR_Specific_Tension * X.y[3, :]\
-           + FF_Percent * FF_Specific_Tension * X.y[6, :]
+ma_total = alpha_s * X.y[0, :] + alpha_ffr * X.y[3, :] + alpha_ff * X.y[6, :]
+
 
 def find_endur_time(_load, _t_max, state_init):
     x = integrate.solve_ivp(fatigue(_load), (0, _t_max), state_init)
     _t = x.t
 
-    ma_t = S_Percent * x.y[0, :] + FR_Percent * x.y[3, :] + FF_Percent * x.y[6, :]
+    ma_t = alpha_s * x.y[0, :] + alpha_ffr * x.y[3, :] + alpha_ff * x.y[6, :]
 
     _endur_time = 0
     for i in range(len(ma_t)):
@@ -144,35 +168,35 @@ def find_endur_time(_load, _t_max, state_init):
     return _endur_time
 
 
-#list_target_load = np.linspace(1, 100, 50)
-#endur_time = np.ndarray(len(list_target_load))
-#for i in range(len(list_target_load)):
-#    endur_time[i] = find_endur_time(list_target_load[i], 1000, state_init_0)
+# list_target_load = np.linspace(1, 100, 100)
+# endur_time = np.ndarray(len(list_target_load))
+# for i in range(len(list_target_load)):
+#    endur_time[i] = find_endur_time(list_target_load[i], 500, state_init_0)
 #    print(endur_time[i])
 
 # Plot
 plt.figure(1)
-
+plt.subplots_adjust(left=0.06, bottom=0.06, right=0.81, top=0.96, wspace=0.20, hspace=0.78)
 plt.subplot(4, 1, 1)
-plt.plot(t, X_S[0]*S_Percent, label='Force developed by active')
-plt.plot(t, X_S[1]*S_Percent, label='Potential force from resting')
-plt.plot(t, X_S[2]*S_Percent, label='Force lost from fatigue')
+plt.plot(t, X_S[0]*alpha_s, label='Force developed by active')
+plt.plot(t, X_S[1]*alpha_s, label='Potential force from resting')
+plt.plot(t, X_S[2]*alpha_s, label='Force lost from fatigue')
 plt.title("Slow fibers")
 plt.xlabel('time')
 plt.ylabel('%MVC')
 
 plt.subplot(4, 1, 2)
-plt.plot(t, X_FR[0]*FR_Percent, label='Force developed by active')
-plt.plot(t, X_FR[1]*FR_Percent, label='Potential force from resting')
-plt.plot(t, X_FR[2]*FR_Percent, label='Force lost from fatigue')
+plt.plot(t, X_FR[0]*alpha_ffr, label='Force developed by active')
+plt.plot(t, X_FR[1]*alpha_ffr, label='Potential force from resting')
+plt.plot(t, X_FR[2]*alpha_ffr, label='Force lost from fatigue')
 plt.title("Fast Fatigue Resistant fibers")
 plt.xlabel('time')
 plt.ylabel('%MVC')
 
 plt.subplot(4, 1, 3)
-plt.plot(t, X_FF[0]*FF_Percent, label='Force developed by active')
-plt.plot(t, X_FF[1]*FF_Percent, label='Potential force from resting')
-plt.plot(t, X_FF[2]*FF_Percent, label='Force lost from fatigue')
+plt.plot(t, X_FF[0]*alpha_ff, label='Force developed by active')
+plt.plot(t, X_FF[1]*alpha_ff, label='Potential force from resting')
+plt.plot(t, X_FF[2]*alpha_ff, label='Force lost from fatigue')
 plt.title("Fast Fatigable fibers")
 plt.xlabel('time')
 plt.ylabel('%MVC')
@@ -180,9 +204,9 @@ plt.legend(bbox_to_anchor=(1.01, 1), loc=2, borderaxespad=0)
 
 plt.subplot(4, 1, 4)
 plt.plot(t, ma_total)
-plt.plot([0.0, 100.0], [target_load, target_load], 'r-', lw=0.5)  # Red straight line
-plt.plot([0, 100], [0.95*target_load, 0.95*target_load], 'r--', lw=0.5)  # Red dashed straight line
-plt.plot([0, 100], [1.05*target_load, 1.05*target_load], 'r--', lw=0.5)  # Red dashed straight line
+plt.plot([0.0, t_Max], [target_load, target_load], 'r-', lw=0.8)  # Red straight line
+plt.plot([0, t_Max], [(1-delta_amp)*target_load, (1-delta_amp)*target_load], 'r--', lw=0.8)  # Red dashed straight line
+plt.plot([0, t_Max], [(1+delta_amp)*target_load, (1+delta_amp)*target_load], 'r--', lw=0.8)  # Red dashed straight line
 plt.xlabel('time')
 plt.ylabel('%MVC')
 
