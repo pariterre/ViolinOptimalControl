@@ -558,8 +558,9 @@ class ConvertedFromOsim2Biorbd:
                 if m_ref == muscle_group[0]+'_to_'+muscle_group[1]:
                     muscle_type = 'hillthelen'
                     state_type = 'buchanan'
-                    start_point = list_pathpoint_muscle(muscle)[0]
-                    end_point = list_pathpoint_muscle(muscle)[len(list_pathpoint_muscle(muscle))-1]
+                    list_pathpoint = list_pathpoint_muscle(muscle)
+                    start_point = list_pathpoint.pop(0)
+                    end_point = list_pathpoint.pop()
                     start_pos = get_pos(start_point)
                     insert_pos = get_pos(end_point)
                     opt_length = new_text(go_to(go_to(self.root, 'Thelen2003Muscle', 'name', muscle), 'optimal_fiber_length'))
@@ -584,7 +585,7 @@ class ConvertedFromOsim2Biorbd:
                     self.write('\n        maxVelocity    {}'.format(max_velocity)) if max_velocity != 'None' else self.write('')
                     self.write('\n    endmuscle\n')
                     # viapoint
-                    for viapoint in list_pathpoint_muscle(muscle):
+                    for viapoint in list_pathpoint:
                         # viapoint data
                         parent_viapoint = get_body_pathpoint(viapoint)
                         viapoint_pos = get_pos(viapoint)
@@ -631,7 +632,7 @@ class ConvertedFromOsim2Biorbd:
 
 def main():
     ConvertedFromOsim2Biorbd(
-        '../models/conv-arm26.biomod',
+        '../models/conv-arm26.bioMod',
         "../models/Opensim_model/arm26.osim")
 #    ConvertedFromOsim2Biorbd(
 #        '../models/conv-arm26_2.biomod',
