@@ -601,7 +601,7 @@ endmusclegroup
 			  muscle 		BicepsLong
 			  musclegroup 	Scapula2LowerArm2
 			  position 		0.0298861 0.0000217669 0.000163252
-		endviapoint 
+		endviapoint
 		viapoint via4
 			  parent 		Arm
 			  muscle 		BicepsLong
