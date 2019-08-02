@@ -9,8 +9,8 @@ import scipy.interpolate as interpolate
 import matplotlib.pyplot as plt
 
 # Parameters
-t_Max = 10000
-EMG_target = 0.7
+t_Max = 1000
+EMG_target = 1
 EMG = biorbd.s2mMuscleStateActual(0, EMG_target)
 state_init = (0, 0, 1)
 n_frames = 300
@@ -90,13 +90,17 @@ for i in range(3):
     tck_biorbd = interpolate.splrep(time_biorbd, X_biorbd.y[i, :], s=0)
     Y_biorbd.append(interpolate.splev(T, tck_biorbd, der=0))
 
-error_ma = (Y_biorbd[0][:] - Y[0][:])/Y[0][:]
-error_mf = (Y_biorbd[1][:] - Y[1][:])/Y[1][:]
-error_mr = (Y_biorbd[2][:] - Y[2][:])/Y[2][:]
+error_ma_absolute = (Y_biorbd[0][:] - Y[0][:])
+error_mf_absolute = (Y_biorbd[1][:] - Y[1][:])
+error_mr_absolute = (Y_biorbd[2][:] - Y[2][:])
+
+error_ma_relative = (Y_biorbd[0][:] - Y[0][:])/Y[0][:]*100
+error_mf_relative = (Y_biorbd[1][:] - Y[1][:])/Y[1][:]*100
+error_mr_relative = (Y_biorbd[2][:] - Y[2][:])/Y[2][:]*100
 
 # Error of integration and processing
-error_total = X_biorbd.y[0, :] + X_biorbd.y[1, :] + X_biorbd.y[2, :] - np.ones(time.size)
-max_error = max(max(abs(error_ma)), max(abs(error_mf)), max(abs(error_mr)))
+error_total = X_biorbd.y[0, :] + X_biorbd.y[1, :] + X_biorbd.y[2, :] - np.ones(X_biorbd.y[0, :].size)
+max_error = max(max(abs(error_ma_relative)), max(abs(error_mf_relative)), max(abs(error_mr_relative)))
 print(max_error)
 
 # Plot results
@@ -117,6 +121,8 @@ plt.title("Slow fibers fatigue from biorbd")
 plt.xlabel('time')
 plt.ylabel('%MVC')
 
+plt.legend()
+
 plt.figure(2)
 plt.plot(X_biorbd.t, error_total)
 plt.title("Total error of integration and processing")
@@ -124,10 +130,18 @@ plt.xlabel('time')
 plt.ylabel('%MVC')
 
 plt.figure(3)
-plt.plot(T, error_ma, label = 'error_Activated')
-plt.plot(T, error_mf, label = 'error_Fatigued')
-plt.plot(T, error_mr, label = 'error_Resting')
-plt.title("Error from biorbd")
+plt.plot(T, error_ma_absolute, label = 'error_Activated')
+plt.plot(T, error_mf_absolute, label = 'error_Fatigued')
+plt.plot(T, error_mr_absolute, label = 'error_Resting')
+plt.title("Absolute Error from biorbd")
+plt.xlabel('time')
+plt.ylabel('%error')
+
+plt.figure(4)
+plt.plot(T, error_ma_relative, label = 'error_relative_Activated')
+plt.plot(T, error_mf_relative, label = 'error_relative_Fatigued')
+plt.plot(T, error_mr_relative, label = 'error_relative_Resting')
+plt.title("Relative Error from biorbd")
 plt.xlabel('time')
 plt.ylabel('%error')
 
