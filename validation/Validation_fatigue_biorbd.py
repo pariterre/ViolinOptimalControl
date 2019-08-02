@@ -9,15 +9,15 @@ import scipy.interpolate as interpolate
 import matplotlib.pyplot as plt
 
 # Parameters
-t_Max = 1000
+t_Max = 1500
 EMG_target = 1
-EMG = biorbd.s2mMuscleStateActual(0, EMG_target)
-state_init = (0, 0, 1)
+state_init = (0.5, 0, 0.5)
 n_frames = 300
 
 # Load model for biorbd
 model = biorbd.s2mMusculoSkeletalModel("../models/conv-arm26.bioMod")
 muscle = model.muscleGroup(0).muscle(0)
+
 
 # Muscle parameters for slow fibers
 S_Percent = 0.50  # percent of slow fibers in muscle
@@ -27,11 +27,35 @@ recovery_rate_s = 0.002  # recovery rate
 develop_factor_s = 10  # development factor
 recovery_factor_s = 10  # recovery factor
 
+# Parameters for EMG
+target_load = 0.3
+delta_t = 0.01
+delta_amp = 0.15
+freq_load = 10  # Hz
 
-def def_dyn(_load, recovery_rate, fatigue_rate, develop_factor, recovery_factor):
+ma_recup = list()
+mf_recup = list()
+mr_recup = list()
 
-    def dyn(t, X):
-        (ma, mf, mr) = X
+
+# Define activation command
+def var_load(_t, _target_load=target_load, _delta_t=delta_t):
+    if _t <= delta_t:
+        return _target_load/_delta_t*_t
+    else:
+        return _target_load
+
+
+def var_sin_load(_t, freq=freq_load, _delta_amp=delta_amp, _target_load=target_load):
+    return _target_load*(1 + _delta_amp*np.math.sin(freq*_t))
+
+
+# Define model of fatigue
+def def_dyn(fun_load, recovery_rate, fatigue_rate, develop_factor, recovery_factor):
+
+    def dyn(t, x):
+        _load = fun_load(t)
+        (ma, mf, mr) = x
         if ma < _load:
             if mr > _load - ma:
                 command = develop_factor*(_load-ma)
@@ -51,13 +75,20 @@ def def_dyn(_load, recovery_rate, fatigue_rate, develop_factor, recovery_factor)
     return dyn
 
 
-def def_dyn_biorbd(_muscle, _emg):
+# Get values from biorbd
+def def_dyn_biorbd(_muscle, fun_load):
     _fatigue_model = biorbd.s2mMuscleHillTypeThelenFatigable_getRef(_muscle)
     _fatigue_state = biorbd.s2mMuscleFatigueDynamicStateXia_getRef(_fatigue_model.fatigueState())
 
-    def dyn(t, X):
-        (ma, mf, mr) = X
+    def dyn(t, x):
+        _load = fun_load(t)
+        _emg = biorbd.s2mMuscleStateActual(0, _load)
+        (ma, mf, mr) = x
         _fatigue_state.setState(ma, mf, mr)
+        #print(_fatigue_model.FLCE(_emg), "***********************")
+        ma_recup.append(_fatigue_state.activeFibers())
+        mf_recup.append(_fatigue_state.fatiguedFibers())
+        mr_recup.append(_fatigue_state.restingFibers())
         _fatigue_model.computeTimeDerivativeState(_emg)
         ma_dot = _fatigue_state.activeFibersDot()
         mf_dot = _fatigue_state.fatiguedFibersDot()
@@ -70,8 +101,8 @@ def def_dyn_biorbd(_muscle, _emg):
 
 
 # Create functions to integrate
-dyn_S = def_dyn(EMG_target, recovery_rate_s, fatigue_rate_s, develop_factor_s, recovery_factor_s)
-dyn_biorbd = def_dyn_biorbd(muscle, EMG)
+dyn_S = def_dyn(var_sin_load, recovery_rate_s, fatigue_rate_s, develop_factor_s, recovery_factor_s)
+dyn_biorbd = def_dyn_biorbd(muscle, var_sin_load)
 
 # Integration
 X_S = integrate.solve_ivp(dyn_S, (0, t_Max), state_init)
@@ -99,7 +130,10 @@ error_mf_relative = (Y_biorbd[1][:] - Y[1][:])/Y[1][:]*100
 error_mr_relative = (Y_biorbd[2][:] - Y[2][:])/Y[2][:]*100
 
 # Error of integration and processing
-error_total = X_biorbd.y[0, :] + X_biorbd.y[1, :] + X_biorbd.y[2, :] - np.ones(X_biorbd.y[0, :].size)
+error_total_biorbd = X_biorbd.y[0, :] + X_biorbd.y[1, :] + X_biorbd.y[2, :] - np.ones(X_biorbd.y[0, :].size)
+error_total_biorbd_2 = list()
+for i in range(len(ma_recup)):
+    error_total_biorbd_2.append(ma_recup[i] + mr_recup[i] + mf_recup[i] - 1)
 max_error = max(max(abs(error_ma_relative)), max(abs(error_mf_relative)), max(abs(error_mr_relative)))
 print(max_error)
 
@@ -124,7 +158,7 @@ plt.ylabel('%MVC')
 plt.legend()
 
 plt.figure(2)
-plt.plot(X_biorbd.t, error_total)
+plt.plot(X_biorbd.t, error_total_biorbd)
 plt.title("Total error of integration and processing")
 plt.xlabel('time')
 plt.ylabel('%MVC')
@@ -137,6 +171,8 @@ plt.title("Absolute Error from biorbd")
 plt.xlabel('time')
 plt.ylabel('%error')
 
+plt.legend()
+
 plt.figure(4)
 plt.plot(T, error_ma_relative, label = 'error_relative_Activated')
 plt.plot(T, error_mf_relative, label = 'error_relative_Fatigued')
@@ -144,6 +180,12 @@ plt.plot(T, error_mr_relative, label = 'error_relative_Resting')
 plt.title("Relative Error from biorbd")
 plt.xlabel('time')
 plt.ylabel('%error')
-
 plt.legend()
+
+plt.figure(5)
+plt.plot(error_total_biorbd_2)
+plt.title("Total error of integration and processing 2")
+plt.xlabel('time')
+plt.ylabel('%MVC')
+
 plt.show()
