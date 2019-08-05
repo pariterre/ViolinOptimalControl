@@ -76,19 +76,26 @@ def def_dyn(fun_load, recovery_rate, fatigue_rate, develop_factor, recovery_fact
 
 
 # Get values from biorbd
-def def_dyn_biorbd(_muscle, fun_load):
+def fatigue_dyn_biorbd(_model, _muscle, _q, _q_dot, fun_load, is_state, is_muscle_updated=True):
     _fatigue_model = biorbd.s2mMuscleHillTypeThelenFatigable_getRef(_muscle)
     _fatigue_state = biorbd.s2mMuscleFatigueDynamicStateXia_getRef(_fatigue_model.fatigueState())
+    if is_state and type(fun_load) != biorbd.s2mMuscleStateActual:
+        print("Warning: command function is not of type s2mMuscleStateActual")
+        return 1
+    if type(fun_load) == biorbd.s2mMuscleStateActual:
+        is_state = True
 
     def dyn(t, x):
-        _load = fun_load(t)
-        _emg = biorbd.s2mMuscleStateActual(0, _load)
+        if not is_state:
+            _load = fun_load(t)
+            _emg = biorbd.s2mMuscleStateActual(0, _load)
+        else:
+            _emg = fun_load
+
         (ma, mf, mr) = x
         _fatigue_state.setState(ma, mf, mr)
-        #print(_fatigue_model.FLCE(_emg), "***********************")
-        ma_recup.append(_fatigue_state.activeFibers())
-        mf_recup.append(_fatigue_state.fatiguedFibers())
-        mr_recup.append(_fatigue_state.restingFibers())
+        _model.updateMuscles(_model, _q, _q_dot, is_muscle_updated)
+        _fatigue_model.computeFlCE(_emg)
         _fatigue_model.computeTimeDerivativeState(_emg)
         ma_dot = _fatigue_state.activeFibersDot()
         mf_dot = _fatigue_state.fatiguedFibersDot()
@@ -102,7 +109,7 @@ def def_dyn_biorbd(_muscle, fun_load):
 
 # Create functions to integrate
 dyn_S = def_dyn(var_sin_load, recovery_rate_s, fatigue_rate_s, develop_factor_s, recovery_factor_s)
-dyn_biorbd = def_dyn_biorbd(muscle, var_sin_load)
+dyn_biorbd = fatigue_dyn_biorbd(model, muscle, biorbd.s2mGenCoord(model), biorbd.s2mGenCoord(model), biorbd.s2mMuscleStateActual(0, 0.5), True, True)
 
 # Integration
 X_S = integrate.solve_ivp(dyn_S, (0, t_Max), state_init)
