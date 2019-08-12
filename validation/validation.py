@@ -1,37 +1,32 @@
 import opensim as osim
 import biorbd
-
-# Opensim
-model_path_osim = '../models/Opensim_model/arm26.osim'
-model_osim = osim.Model(model_path_osim)
-model_osim.finalizeFromProperties()
-state, actuators, muscle_actuators = [], [], []
-actual_q, actual_qdot, actual_qddot = [], [], []
-n_dof, n_actuators, n_muscles = [], [], []
-
+import pandas as pd
 
 # Biorbd
-model_path_biorbd = '../models/convert-arm26.biomod'
+model_path_biorbd = '../models/conv-arm26.bioMod'
 model_biorbd = biorbd.s2mMusculoSkeletalModel(model_path_biorbd)
+data_excel = '../models/Opensim_model/validation-os.xlsx'
+
+data = pd.read_excel(data_excel, sheet_name='arm26.mot')
+
+time = list(data['time'])
+q = [list(data['r_shoulder_elev']), list(data['r_elbow_flex'])]
+
+q_dot = [[], []]
+q_ddot = [[], []]
+
+for i in range(len(time) - 1):
+    q_dot[0].append((q[0][i + 1] - q[0][i]) / (time[i + 1] - time[i]))
+    q_dot[1].append((q[1][i + 1] - q[1][i]) / (time[i + 1] - time[i]))
+
+for i in range(len(time) - 2):
+    q_ddot[0].append((q_dot[0][i + 1] - q_dot[0][i]) / (time[i + 1] - time[i]))
+    q_ddot[1].append((q_dot[1][i + 1] - q_dot[1][i]) / (time[i + 1] - time[i]))
+# TODO convert q, qdot in s2mGenCoord
+
+tau_artic = [[], []]
+for i in range(len(time)-2):
+    #[tau_artic[0], tau_artic[1]] =
+    print(model_biorbd.InverseDynamics(q[i], q_dot[i], q_ddot[i]))
 
 
-def forward_dynamics(model, x, n_times=0):
-    # set residual forces
-    fs = model.getForceSet()
-    for i in range(n_muscles, fs.getSize()):
-        coord = osim.CoordinateActuator.safeDownCast(fs.get(i))
-        if coord:
-            coord.setOverrideActuation(state, x[i] * x[i])
-
-    # update muscles
-    muscle_activation = x[: n_muscles]
-    for m in range(n_muscles):
-        muscle_actuators.get(m).setActivation(state, muscle_activation[m])
-    try:
-        model.equilibrateMuscles(state)
-        model.realizeAcceleration(state)
-        return state.getUDot()
-    except RuntimeError:
-        if n_times > 10:
-            raise RuntimeError("equilibrateMuscles failed too much times")
-        return forward_dynamics(x + 0.001, n_times + 1)
