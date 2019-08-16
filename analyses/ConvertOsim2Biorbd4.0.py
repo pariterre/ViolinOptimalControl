@@ -150,10 +150,10 @@ def out_product(rotomatrix_1, rotomatrix_2):
 
 
 class ConvertedFromOsim2Biorbd:
-    def __init__(self, path, originfile, version=3):
+    def __init__(self, path, origin_file, version=3):
 
         self.path = path
-        self.originfile = originfile
+        self.origin_file = origin_file
         self.version = str(version)
 
         self.data_origin = etree.parse(self.originfile)
@@ -161,7 +161,7 @@ class ConvertedFromOsim2Biorbd:
 
         self.file = open(self.path, 'w')
         self.file.write('version '+self.version+'\n')
-        self.file.write('\n// File extracted from ' + self.originfile)
+        self.file.write('\n// File extracted from ' + self.origin_file)
         self.file.write('\n')
 
         def new_text(element):
@@ -279,6 +279,8 @@ class ConvertedFromOsim2Biorbd:
                     i += 1
                 except:  # Exception as e:print('Error', e)
                     break
+        print(list_joint)
+
         def dof_of_joint(_joint, _joint_type):
             dof = []
             _index_dof = index_go_to(go_to(self.root, _joint_type, 'name', _joint), 'Coordinate')
