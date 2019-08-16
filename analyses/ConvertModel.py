@@ -76,7 +76,7 @@ class OrthoMatrix:
         self.matrix = np.append(np.append(self.rotation_matrix, self.trans, axis=1), np.array([[0, 0, 0, 1]]), axis=0)
 
     def get_axis(self):
-        return coord_sys(self.axe_1)[1 ] +coord_sys(self.axe_2)[1 ] +coord_sys(self.axe_3)[1]
+        return coord_sys(self.axe_1)[1] + coord_sys(self.axe_2)[1] + coord_sys(self.axe_3)[1]
 
 
 def out_product(rotomatrix_1, rotomatrix_2):
@@ -87,8 +87,8 @@ def out_product(rotomatrix_1, rotomatrix_2):
     return rotomatrix_prod
 
 
-def get_words(model):
-    file = open(model, "r")
+def get_words(_model):
+    file = open(_model, "r")
     all_lines = file.readlines()
     all_words = []
     for line in all_lines:
@@ -102,6 +102,7 @@ def get_words(model):
                         new_l.append(word)
                 all_words.append(new_l)
     return all_words
+
 
 class Segment:
     def __init__(self, name, parent, rot_trans_matrix, dof_rotation, dof_translation, mass, inertia, com):
@@ -162,6 +163,9 @@ class Segment:
     def set_com(self, new_com):
         self.com = new_com
 
+# TODO add element marker to segment
+
+
 class Marker:
     def __init__(self, name, parent, position, technical):
         self.name = name
@@ -193,8 +197,10 @@ class Marker:
     def set_technical(self, new_technical):
         self.technical = new_technical
 
+# TODO create class for group of muscles
+# TODO create class for muscles
 
-class ConvertModel:
+class BiorbdModel:
     def __init__(self, model):
         self.model = model
         self.words = get_words(self.model)
@@ -216,14 +222,14 @@ class ConvertModel:
         parent_marker = ''
         position_marker = []
         technical = ''
-
         while number_line < len(self.words):
+            print(number_line)
             line = self.words[number_line]
             if line[0] == 'segment':
                 name_segment = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'parent'
+            if line[0] == 'parent':
                 parent_segment = line[1]
                 number_line += 1
                 continue
@@ -255,10 +261,11 @@ class ConvertModel:
                 com.append(line[1])
                 com.append(line[2])
                 com.append(line[3])
-                number_line +=1
+                number_line += 1
                 continue
             if line[0] == 'endsegment':
-                self.segments.append(Segment(name_segment, parent_segment, rot_trans_matrix, dof_rotation, dof_translation, mass, inertia, com))
+                self.segments.append(Segment(name_segment, parent_segment, rot_trans_matrix,
+                                             dof_rotation, dof_translation, mass, inertia, com))
                 number_line += 1
                 name_segment = ''
                 parent_segment = ''
@@ -293,20 +300,59 @@ class ConvertModel:
                 position_marker = []
                 technical = ''
                 continue
+            else:
+                number_line += 1
+                continue
 
-    def length_segment(self, number_of_segment):
-        segment = self.segments[number_of_segment]
+    def add_segment(self, new_segment):
+        if type(new_segment) != Segment:
+            assert 'wrong type of segment'
+        self.segments.append(new_segment)
+        return new_segment
+
+    def get_number_of_segments(self):
+        return len(self.segments)
+
+    def get_segment(self, segment_index):
+        return self.segments[segment_index]
+
+    def get_relative_position(self, segment_index):
+        segment = self.get_segment(segment_index)
         rot_trans_matrix = segment.get_rot_trans_matrix()
-        relative_position = [float(rot_trans_matrix[0][2]), float(rot_trans_matrix[1][2]), float(rot_trans_matrix[2][2])]
+        return [float(rot_trans_matrix[0][2]), float(rot_trans_matrix[1][2]), float(rot_trans_matrix[2][2])]
+
+    def set_relative_position(self, segment_index, new_relative_position):
+        if len(new_relative_position) != 3:
+            assert 'wrong size of vector to set new relative position of the segment'
+        rot_trans_matrix = self.get_segment(segment_index).get_rot_trans_matrix()
+        rot_trans_matrix[0][2] = str(new_relative_position[0])
+        rot_trans_matrix[1][2] = str(new_relative_position[1])
+        rot_trans_matrix[2][2] = str(new_relative_position[2])
+        self.get_segment(segment_index).set_rot_trans_matrix(rot_trans_matrix)
+        return rot_trans_matrix
+
+    def length_segment(self, segment_index):
+        relative_position = self.get_relative_position(segment_index)
         return math.sqrt(relative_position[0]**2 + relative_position[1]**2 + relative_position[2]**2)
 
+    def normalize_segment(self, segment_index):
+        length = self.length_segment(segment_index)
+        relative_position = self.get_relative_position(segment_index)
+        for element in relative_position:
+            element /= length
+        self.set_relative_position(segment_index, relative_position)
+        return relative_position
 
-def normalize_model(model):
-    return 0
+    def normalize_model(self):
+        for i in range(self.get_number_of_segments()):
+            self.normalize_segment(i)
+        return 0
 
 
 def main():
-    print(get_words('../models/model_Clara/AdaJef_1g_Model.s2mMod'))
+    model = BiorbdModel('../models/model_Clara/AdaJef_1g_Model.s2mMod')
+    model.normalize_model()
+    return 0
 
 
 if __name__ == "__main__":

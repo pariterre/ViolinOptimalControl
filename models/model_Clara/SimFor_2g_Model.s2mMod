@@ -1,0 +1,607 @@
+version	1
+
+// General informations
+root_actuated 0
+external_forces 0
+
+// Informations about Pelvis segment
+	// Segment
+	segment	Pelvis
+		RT
+			1.0000000000	0.0000000000	0.0000000000	0.0000000000
+			0.0000000000	1.0000000000	0.0000000000	0.0000000000
+			0.0000000000	0.0000000000	1.0000000000	0.0000000000
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		translations	xyz
+		rotations	xyz
+	endsegment
+
+	// Markers
+	marker	ASISl
+		parent	Pelvis
+		position	-0.1199687536	0.1027935516	0.0000000000
+		technical 1
+	endmarker
+	marker	ASISr
+		parent	Pelvis
+		position	0.1199687536	0.1007089072	0.0000000000
+		technical 1
+	endmarker
+	marker	PSISl
+		parent	Pelvis
+		position	-0.0256655251	-0.1009290602	0.0035636514
+		technical 1
+	endmarker
+	marker	PSISr
+		parent	Pelvis
+		position	0.0256655251	-0.1025733987	-0.0035636514
+		technical 1
+	endmarker
+
+
+// Informations about Thorax segment
+	// Segment
+	segment	Thorax
+		parent	Pelvis
+		RT
+			0.9990244658	0.0208849523	0.0389093229	0.0175377654
+			-0.0161434062	0.9928324840	-0.1184189557	-0.1580546359
+			-0.0411036139	0.1176753050	0.9922010963	0.4640484277
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		translations	xyz
+		rotations	xyz
+		mass	74.98000
+		inertia
+			1.0000000000	0.0000000000	0.0000000000
+			0.0000000000	1.0000000000	0.0000000000
+			0.0000000000	0.0000000000	1.0000000000
+		com		0.0020180000		0.0861620000		-0.0306930000
+	endsegment
+
+	// Markers
+	marker	XIPH
+		parent	Thorax
+		position	0.0001275245	0.2196151302	-0.2562853892
+		technical 1
+	endmarker
+	marker	STER
+		parent	Thorax
+		position	0.0036600046	0.1562615677	-0.0556648259
+		technical 1
+	endmarker
+	marker	STERback
+		parent	Thorax
+		position	-0.0034049555	-0.0252682669	-0.0498809579
+		technical 1
+	endmarker
+	marker	XIPHback
+		parent	Thorax
+		position	0.0001275245	-0.0407958144	-0.2562853892
+		technical 1
+	endmarker
+	marker	ThL
+		parent	Thorax
+		position	-0.1648496157	0.1295794858	-0.2428924448
+		technical 1
+	endmarker
+	marker	ThR
+		parent	Thorax
+		position	0.1677406261	0.1286121163	-0.2311936452
+		technical 1
+	endmarker
+	marker	C7
+		parent	Thorax
+		position	0.0000000000	0.0000000000	0.0000000000
+		technical 1
+	endmarker
+
+
+// Informations about ClaviculeRight segment
+	// Segment
+	segment	ClaviculeRight
+		parent	Thorax
+		RT
+			0.9550473983	0.2963864211	0.0062893591	0.0270540640
+			-0.2964509949	0.9549063087	0.0164544522	0.1509808385
+			-0.0011288724	-0.0175792684	0.9998448354	-0.0452544488
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	zyx
+	endsegment
+
+	// Markers
+	marker	CLAV_SC_R
+		parent	ClaviculeRight
+		position	0.0000000000	0.0000000000	0.0000000000
+		technical 1
+	endmarker
+	marker	CLAV_AC_R
+		parent	ClaviculeRight
+		position	0.1852116078	0.0000000000	-0.0000000000
+		technical 1
+	endmarker
+
+
+// Informations about ScapulaRight segment
+	// Segment
+	segment	ScapulaRight
+		parent	ClaviculeRight
+		RT
+			0.6053160503	-0.7941087976	0.0546232236	0.1852107877
+			0.7872407185	0.6073988499	0.1063893225	0.0000002776
+			-0.1176627801	-0.0213975387	0.9928230534	-0.0000000819
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	zyx
+	endsegment
+
+	// Markers
+	marker	SCAP_CP_R
+		parent	ScapulaRight
+		position	-0.0385023163	0.0681151958	0.0020682096
+		technical 1
+	endmarker
+	marker	CLAV_AC_R
+		parent	ScapulaRight
+		position	0.0000000000	0.0000000000	0.0000000000
+		technical 1
+	endmarker
+	marker	SCAP_AA_R
+		parent	ScapulaRight
+		position	-0.0066526647	-0.0252056932	-0.0099414154
+		technical 1
+	endmarker
+	marker	SCAPspine_R
+		parent	ScapulaRight
+		position	-0.0669225233	-0.0313576893	-0.0036108941
+		technical 1
+	endmarker
+	marker	SCAP_TS_R
+		parent	ScapulaRight
+		position	-0.1457989243	-0.0252056932	-0.0099414154
+		technical 0
+	endmarker
+	marker	SCAP_IA_R
+		parent	ScapulaRight
+		position	-0.1396581784	-0.0252056932	-0.1620235596
+		technical 0
+	endmarker
+
+
+// Informations about ArmRight segment
+	// Segment
+	segment	ArmRight
+		parent	ScapulaRight
+		RT
+			0.9570080044	-0.2169466961	-0.1925352181	0.0187626175
+			0.2268473363	0.9734467036	0.0306887769	-0.0035673687
+			0.1807649446	-0.0730455065	0.9808100676	-0.0533970081
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		translations	xyz
+		rotations	zyz
+		mass	2.25000
+		inertia
+			0.0140400000	0.0000000000	0.0000000000
+			0.0000000000	0.0125080000	0.0000000000
+			0.0000000000	0.0000000000	0.0043150000
+		com		-0.0002380000		-0.0045620000		-0.1597480000
+	endsegment
+
+	// Markers
+	marker	DELT_R
+		parent	ArmRight
+		position	0.0223731521	0.0122283084	-0.1204708587
+		technical 1
+	endmarker
+	marker	ARMl_R
+		parent	ArmRight
+		position	0.0255209599	0.0135725152	-0.1507823044
+		technical 1
+	endmarker
+	marker	EPICl_R
+		parent	ArmRight
+		position	0.0334277767	-0.0027535817	-0.2716490791
+		technical 0
+	endmarker
+	marker	EPICm_R
+		parent	ArmRight
+		position	-0.0342516905	-0.0130526591	-0.2818806698
+		technical 1
+	endmarker
+	marker	CLAV_AC_R
+		parent	ArmRight
+		position	0.0000843767	0.0016187114	0.0566867815
+		technical 0
+	endmarker
+
+
+// Informations about LowerArm1Right segment
+	// Segment
+	segment	LowerArm1Right
+		parent	ArmRight
+		RT
+			0.9773044734	-0.0800691595	-0.1961246939	0.0000000334
+			-0.0000008938	0.9258159171	-0.3779747179	-0.0000008685
+			0.2118394814	0.3693965581	0.9048039660	-0.2786646750
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	x
+	endsegment
+
+	// Markers
+	marker	LARM_dist_R
+		parent	LowerArm1Right
+		position	0.0423792382	0.0144477867	-0.1520982922
+		technical 1
+	endmarker
+	marker	LARM_post_R
+		parent	LowerArm1Right
+		position	0.0358146762	-0.0144477867	-0.0734062806
+		technical 1
+	endmarker
+	marker	LARM_elb_R
+		parent	LowerArm1Right
+		position	-0.0124595957	-0.0264263314	-0.0367653151
+		technical 1
+	endmarker
+	marker	LARM_ant_R
+		parent	LowerArm1Right
+		position	0.0002770817	0.0523711034	-0.0804305290
+		technical 1
+	endmarker
+
+
+// Informations about LowerArm2Right segment
+	// Segment
+	segment	LowerArm2Right
+		parent	LowerArm1Right
+		RT
+			0.0091439543	-0.9997260939	-0.0215435578	0.0184188180
+			0.9998937634	0.0088966770	0.0115460247	0.0029125525
+			-0.0113511961	-0.0216468454	0.9997012376	-0.0000307160
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	z
+		mass	1.35000
+		inertia
+			0.0079630000	0.0000000000	0.0000000000
+			0.0000000000	0.0073410000	0.0000000000
+			0.0000000000	0.0000000000	0.0015300000
+		com		-0.0205130000		0.0071450000		-0.1231750000
+	endsegment
+
+	// Markers
+	marker	STYLrad_R
+		parent	LowerArm2Right
+		position	0.0062096367	-0.0072649968	-0.2622375116
+		technical 1
+	endmarker
+	marker	STYLrad_up_R
+		parent	LowerArm2Right
+		position	0.0106595181	-0.0065855171	-0.2408672981
+		technical 1
+	endmarker
+	marker	STYLulna_R
+		parent	LowerArm2Right
+		position	-0.0401185831	-0.0072649968	-0.2588818267
+		technical 1
+	endmarker
+	marker	STYLulna_up_R
+		parent	LowerArm2Right
+		position	-0.0301449574	-0.0110234908	-0.2307012688
+		technical 1
+	endmarker
+
+
+// Informations about HandRight segment
+	// Segment
+	segment	HandRight
+		parent	LowerArm2Right
+		RT
+			0.9638306250	0.2658827741	0.0183541969	-0.0228801592
+			-0.2609550878	0.9554752862	-0.1377295147	0.0040104257
+			-0.0541568870	0.1279583032	0.9902998052	-0.2742292432
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	xy
+		mass	0.51000
+		inertia
+			0.0011530000	0.0000000000	0.0000000000
+			0.0000000000	0.0007690000	0.0000000000
+			0.0000000000	0.0000000000	0.0004700000
+		com		0.0035890000		-0.0066270000		-0.0594730000
+	endsegment
+
+	// Markers
+	marker	META2dist_R
+		parent	HandRight
+		position	0.0380833509	-0.0083891102	-0.0833415162
+		technical 1
+	endmarker
+	marker	META5dist_R
+		parent	HandRight
+		position	-0.0289966903	-0.0083891102	-0.0672235581
+		technical 1
+	endmarker
+	marker	META5prox_R
+		parent	HandRight
+		position	-0.0154498279	-0.0103668062	-0.0062400465
+		technical 1
+	endmarker
+	marker	META2prox_R
+		parent	HandRight
+		position	0.0245364884	-0.0064114143	-0.0085311765
+		technical 1
+	endmarker
+
+
+// Informations about ClaviculeLeft segment
+	// Segment
+	segment	ClaviculeLeft
+		parent	Thorax
+		RT
+			0.9502741206	-0.2332877101	-0.2062909107	-0.0223535053
+			0.3012164554	0.8566963533	0.4187361998	0.1482236030
+			0.0790426619	-0.4600523910	0.8843664710	-0.0416429211
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	zyx
+	endsegment
+
+	// Markers
+	marker	CLAV_SC_L
+		parent	ClaviculeLeft
+		position	0.0000000000	0.0000000000	0.0000000000
+		technical 1
+	endmarker
+	marker	CLAV_AC_L
+		parent	ClaviculeLeft
+		position	-0.1894876225	-0.0000000000	-0.0000000000
+		technical 1
+	endmarker
+
+
+// Informations about ScapulaLeft segment
+	// Segment
+	segment	ScapulaLeft
+		parent	ClaviculeLeft
+		RT
+			0.4909895308	0.8503925584	0.1891078447	-0.1894867070
+			-0.7958002158	0.5261384337	-0.2998005423	-0.0000000938
+			-0.3544450555	-0.0032931359	0.9350710442	0.0000002199
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	zyx
+	endsegment
+
+	// Markers
+	marker	SCAP_CP_L
+		parent	ScapulaLeft
+		position	0.0368265423	0.0732151571	0.0065801094
+		technical 1
+	endmarker
+	marker	CLAV_AC_L
+		parent	ScapulaLeft
+		position	0.0000000000	0.0000000000	0.0000000000
+		technical 1
+	endmarker
+	marker	SCAP_AA_L
+		parent	ScapulaLeft
+		position	0.0027507414	-0.0228316901	-0.0120756093
+		technical 1
+	endmarker
+	marker	SCAPspine_L
+		parent	ScapulaLeft
+		position	0.0590040395	-0.0318017222	-0.0107483238
+		technical 1
+	endmarker
+	marker	SCAP_TS_L
+		parent	ScapulaLeft
+		position	0.1430769426	-0.0228316901	-0.0120756093
+		technical 0
+	endmarker
+	marker	SCAP_IA_L
+		parent	ScapulaLeft
+		position	0.1333981578	-0.0228316901	-0.1519176397
+		technical 0
+	endmarker
+
+
+// Informations about ArmLeft segment
+	// Segment
+	segment	ArmLeft
+		parent	ScapulaLeft
+		RT
+			0.9898479080	0.0534121928	0.1317127815	-0.0160626760
+			-0.0304745686	0.9849075275	-0.1703774119	0.0009762006
+			-0.1388251412	0.1646338346	0.9765363691	-0.0545280336
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		translations	xyz
+		rotations	zyz
+		mass	2.25000
+		inertia
+			0.0141110000	0.0000000000	0.0000000000
+			0.0000000000	0.0125710000	0.0000000000
+			0.0000000000	0.0000000000	0.0043370000
+		com		0.0003160000		-0.0059100000		-0.1601080000
+	endsegment
+
+	// Markers
+	marker	DELT_L
+		parent	ArmLeft
+		position	-0.0235106314	0.0114080567	-0.0952174768
+		technical 1
+	endmarker
+	marker	ARMl_L
+		parent	ArmLeft
+		position	-0.0231662359	0.0126342053	-0.1259626671
+		technical 1
+	endmarker
+	marker	EPICl_L
+		parent	ArmLeft
+		position	-0.0323626356	-0.0017868388	-0.2740016323
+		technical 0
+	endmarker
+	marker	EPICm_L
+		parent	ArmLeft
+		position	0.0334515060	-0.0186932504	-0.2807778772
+		technical 1
+	endmarker
+	marker	CLAV_AC_L
+		parent	ArmLeft
+		position	-0.0001115108	0.0020973585	0.0568147690
+		technical 0
+	endmarker
+
+
+// Informations about LowerArm1Left segment
+	// Segment
+	segment	LowerArm1Left
+		parent	ArmLeft
+		RT
+			0.9877656067	0.0601267105	0.1438884459	0.0000022353
+			0.0000004755	0.9226809849	-0.3855642612	0.0000002672
+			-0.1559458436	0.3808471848	0.9113925143	-0.2808355531
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	x
+	endsegment
+
+	// Markers
+	marker	LARM_dist_L
+		parent	LowerArm1Left
+		position	-0.0452086876	0.0122828600	-0.1357636207
+		technical 1
+	endmarker
+	marker	LARM_post_L
+		parent	LowerArm1Left
+		position	-0.0353247536	-0.0122828600	-0.0672501518
+		technical 1
+	endmarker
+	marker	LARM_elb_L
+		parent	LowerArm1Left
+		position	0.0022573807	-0.0278495262	-0.0341981766
+		technical 1
+	endmarker
+	marker	LARM_ant_L
+		parent	LowerArm1Left
+		position	0.0070294739	0.0490259534	-0.0743226157
+		technical 1
+	endmarker
+
+
+// Informations about LowerArm2Left segment
+	// Segment
+	segment	LowerArm2Left
+		parent	LowerArm1Left
+		RT
+			-0.1553844447	0.9851051697	0.0736442724	-0.0148948629
+			-0.9840305391	-0.1609051037	0.0761146838	0.0118200531
+			0.0868307077	-0.0606411750	0.9943757217	-0.0009036581
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	z
+		mass	1.35000
+		inertia
+			0.0081500000	0.0000000000	0.0000000000
+			0.0000000000	0.0075130000	0.0000000000
+			0.0000000000	0.0000000000	0.0015660000
+		com		0.0201870000		0.0054810000		-0.1222630000
+	endsegment
+
+	// Markers
+	marker	STYLrad_L
+		parent	LowerArm2Left
+		position	-0.0041862916	-0.0064531539	-0.2632617512
+		technical 1
+	endmarker
+	marker	STYLrad_up_L
+		parent	LowerArm2Left
+		position	-0.0099714533	-0.0049516526	-0.2375250117
+		technical 1
+	endmarker
+	marker	STYLulna_L
+		parent	LowerArm2Left
+		position	0.0320423069	-0.0064531539	-0.2591804714
+		technical 1
+	endmarker
+	marker	STYLulna_up_L
+		parent	LowerArm2Left
+		position	0.0240653895	-0.0079263270	-0.2350910097
+		technical 1
+	endmarker
+
+
+// Informations about HandLeft segment
+	// Segment
+	segment	HandLeft
+		parent	LowerArm2Left
+		RT
+			0.9350978555	-0.3542927711	0.0082844662	0.0140042297
+			0.3444927727	0.9032495286	-0.2558613269	0.0074697064
+			0.0831668784	0.2421093173	0.9666779964	-0.2749947193
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	xy
+		mass	0.51000
+		inertia
+			0.0012480000	0.0000000000	0.0000000000
+			0.0000000000	0.0008330000	0.0000000000
+			0.0000000000	0.0000000000	0.0005090000
+		com		-0.0007830000		-0.0082230000		-0.0618380000
+	endsegment
+
+	// Markers
+	marker	META2dist_L
+		parent	HandLeft
+		position	-0.0329739803	-0.0104090779	-0.0821254599
+		technical 1
+	endmarker
+	marker	META5dist_L
+		parent	HandLeft
+		position	0.0309922392	-0.0104090779	-0.0744281842
+		technical 1
+	endmarker
+	marker	META5prox_L
+		parent	HandLeft
+		position	0.0172420891	-0.0134222026	-0.0058999248
+		technical 1
+	endmarker
+	marker	META2prox_L
+		parent	HandLeft
+		position	-0.0192238302	-0.0073959531	-0.0083752221
+		technical 1
+	endmarker
+
+
+// Informations about Head segment
+	// Segment
+	segment	Head
+		parent	Thorax
+		RT
+			0.9982271901	-0.0364581560	-0.0470455057	-0.0045521364
+			0.0007306871	0.7978793497	-0.6028167294	0.0761837248
+			0.0595142240	0.6017136745	0.7964915009	0.1939727349
+			0.0000000000	0.0000000000	0.0000000000	1.0000000000
+		rotations	xyz
+		mass	5.77000
+		inertia
+			0.0010260000	0.0000000000	0.0000000000
+			0.0000000000	0.0011070000	0.0000000000
+			0.0000000000	0.0000000000	0.0007620000
+		com		0.0120860000		0.0236630000		0.0135480000
+	endsegment
+
+	// Markers
+	marker	head1
+		parent	Head
+		position	-0.0644590167	0.0722930070	0.0012696709
+		technical 1
+	endmarker
+	marker	head2
+		parent	Head
+		position	0.0644590167	0.0734267957	-0.0012696709
+		technical 1
+	endmarker
+	marker	head3
+		parent	Head
+		position	0.0567590030	-0.0723111696	0.0012696709
+		technical 1
+	endmarker
+	marker	head4
+		parent	Head
+		position	-0.0567590030	-0.0734086331	-0.0012696709
+		technical 1
+	endmarker
+
+

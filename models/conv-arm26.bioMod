@@ -187,7 +187,7 @@ musclegroup base_to_r_ulna_radius_hand
 endmusclegroup
 
     muscle    TRIlong
-        Type    hillthelenfatigable
+        Type    hillthelen
         statetype    buchanan
         musclegroup    base_to_r_ulna_radius_hand
         OriginPosition    -0.053650000000000003 -0.013729999999999999 0.14723
@@ -197,14 +197,6 @@ endmusclegroup
         tendonSlackLength    0.14299999999999999
         pennationAngle    0.20943951
         maxVelocity    10
-	
-	fatigueParameters
-		Type Xia
-		fatiguerate 0.01
-		recoveryrate 0.002
-		developfactor 10
-		recoveryfactor 10
-	endfatigueparameters
     endmuscle
 
         viapoint    TRIlong-P2
