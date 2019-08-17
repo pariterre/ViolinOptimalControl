@@ -114,6 +114,7 @@ class Segment:
         self.mass = mass
         self.inertia = inertia
         self.com = com
+        self.markers = []
 
     def get_name(self):
         return self.name
@@ -163,7 +164,22 @@ class Segment:
     def set_com(self, new_com):
         self.com = new_com
 
-# TODO add element marker to segment
+    def add_marker(self, marker):
+        if type(marker) != Marker:
+            assert 'wrong type of marker'
+        elif marker.get_parent != self.name:
+            assert 'this marker does not belong to this segment'
+        else:
+            self.markers.append(marker)
+
+    def get_markers(self):
+        return self.markers
+
+    def set_markers(self, list_of_markers):
+        self.markers = []
+        for element in list_of_markers:
+            self.add_marker(element)
+        return list_of_markers
 
 
 class Marker:
@@ -197,8 +213,205 @@ class Marker:
     def set_technical(self, new_technical):
         self.technical = new_technical
 
-# TODO create class for group of muscles
-# TODO create class for muscles
+
+class MuscleGroup:
+    def __init__(self, name, origin_parent, insertion_parent):
+        self.name = name
+        self.origin_parent = origin_parent
+        self.insertion_parent = insertion_parent
+        self.muscles = []
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, new_name):
+        self.name = new_name
+        return self.name
+
+    def get_origin_parent(self):
+        return self.origin_parent
+
+    def set_origin_parent(self, new_origin_parent):
+        self.origin_parent = new_origin_parent
+        return self.origin_parent
+
+    def get_insertion_parent(self):
+        return self.insertion_parent
+
+    def set_insertion_parent(self, new_insertion_parent):
+        self.insertion_parent = new_insertion_parent
+        return self.insertion_parent
+
+    def add_muscle(self, muscle):
+        if type(muscle) != Muscle:
+            assert 'wrong type of muscle'
+        elif muscle.get_muscle_group() != self.name:
+            assert 'this muscle does not belong to this muscle group'
+        else:
+            self.muscles.append(muscle)
+
+    def get_muscles(self):
+        return self.muscles
+
+    def set_muscles(self, list_of_muscles):
+        self.muscles = []
+        for element in list_of_muscles:
+            self.add_muscle(element)
+        return list_of_muscles
+
+
+class Muscle:
+    def __init__(self, name, _type, state_type, muscle_group, origin_position, insertion_position, optimal_length,
+                 maximal_force, tendon_slack_length, pennation_angle, max_velocity):
+        self.name = name
+        self._type = _type
+        self.state_type = state_type
+        self.muscle_group = muscle_group
+        self.origin_position = origin_position
+        self.insertion_position = insertion_position
+        self.optimal_length = optimal_length
+        self.maximal_force = maximal_force
+        self.tendon_slack_length = tendon_slack_length
+        self.pennation_angle = pennation_angle
+        self.max_velocity = max_velocity
+        self.pathpoints = []
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, new_name):
+        self.name = new_name
+        return self.name
+
+    def get_type(self):
+        return self._type
+
+    def set_type(self, new_type):
+        self._type = new_type
+        return self._type
+
+    def get_state_type(self):
+        return self.state_type
+
+    def set_state_type(self, new_state_type):
+        self.state_type = new_state_type
+        return self.state_type
+
+    def get_muscle_group(self):
+        return self.muscle_group
+
+    def set_muscle_group(self, new_muscle_group):
+        self.muscle_group = new_muscle_group
+        return self.muscle_group
+
+    def get_origin_position(self):
+        return self.origin_position
+
+    def set_origin_position(self, new_origin_position):
+        self.origin_position = new_origin_position
+        return self.origin_position
+
+    def get_insertion_position(self):
+        return self.insertion_position
+
+    def set_insertion_position(self, new_insertion_position):
+        self.insertion_position = new_insertion_position
+        return self.insertion_position
+
+    def get_optimal_length(self):
+        return self.optimal_length
+
+    def set_optimal_length(self, new_optimal_length):
+        self.optimal_length = new_optimal_length
+        return self.optimal_length
+
+    def get_maximal_force(self):
+        return self.maximal_force
+
+    def set_maximal_force(self, new_maximal_force):
+        self.maximal_force = new_maximal_force
+        return self.maximal_force
+
+    def get_tendon_slack_length(self):
+        return self.tendon_slack_length
+
+    def set_tendon_slack_length(self, new_tendon_slack_length):
+        self.tendon_slack_length = new_tendon_slack_length
+        return self.tendon_slack_length
+
+    def get_pennation_angle(self):
+        return self.pennation_angle
+
+    def set_pennation_angle(self, new_pennation_angle):
+        self.pennation_angle = new_pennation_angle
+        return self.pennation_angle
+
+    def get_max_velocity(self):
+        return self.max_velocity
+
+    def set_max_velocity(self, new_max_velocity):
+        self.max_velocity = new_max_velocity
+        return self.max_velocity
+
+    def get_pathpoints(self):
+        return self.pathpoints
+
+    def add_pathpoint(self, pathpoint):
+        if type(pathpoint) != Pathpoint:
+            assert 'wrong type of pathpoint'
+        else:
+            self.pathpoints.append(pathpoint)
+
+    def set_pathpoints(self, list_of_pathpoints):
+        self.pathpoints = []
+        for element in list_of_pathpoints:
+            self.add_pathpoint(element)
+        return list_of_pathpoints
+
+
+class Pathpoint:
+    def __init__(self, name, parent, muscle, muscle_group, position):
+        self.name = name
+        self.parent = parent
+        self.muscle = muscle
+        self.muscle_group = muscle_group
+        self.position = position
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, new_name):
+        self.name = new_name
+        return self.name
+
+    def get_parent(self):
+        return self.parent
+
+    def set_parent(self, new_parent):
+        self.parent = new_parent
+        return self.parent
+
+    def get_muscle(self):
+        return self.muscle
+
+    def set_muscle(self, new_muscle):
+        self.muscle = new_muscle
+        return self.muscle
+
+    def get_muscle_group(self):
+        return self.muscle_group
+
+    def set_muscle_group(self, new_muscle_group):
+        self.muscle_group = new_muscle_group
+        return self.muscle_group
+
+    def get_position(self):
+        return self.position
+
+    def set_position(self, new_position):
+        self.position = new_position
+        return self.position
+
 
 class BiorbdModel:
     def __init__(self, model):
@@ -223,7 +436,6 @@ class BiorbdModel:
         position_marker = []
         technical = ''
         while number_line < len(self.words):
-            print(number_line)
             line = self.words[number_line]
             if line[0] == 'segment':
                 name_segment = line[1]
@@ -294,6 +506,7 @@ class BiorbdModel:
                 technical = line[-1]
             if line[0] == 'endmarker':
                 self.markers.append(Marker(name_marker, parent_marker, position_marker, technical))
+                self.segments[-1].add_marker(self.markers[-1])
                 number_line += 1
                 name_marker = ''
                 parent_marker = ''
@@ -303,6 +516,8 @@ class BiorbdModel:
             else:
                 number_line += 1
                 continue
+
+    # TODO add reading of muscles, muscle group, pathpoints
 
     def add_segment(self, new_segment):
         if type(new_segment) != Segment:
