@@ -729,9 +729,7 @@ class BiorbdModel:
             self.normalize_segment(i)
         return 0
 
-    # TODO add writing method
-
-    def printing_segment(self, segment_index):
+    def write_segment(self, segment_index):
         segment = self.segments[segment_index]
         _name = segment.get_name()
         parent_name = segment.get_parent()
@@ -763,15 +761,27 @@ class BiorbdModel:
                 self.file.write('\n')
         self.file.write('\t\tcom\t{}\n'.format(com)) if com != '' else True
         self.file.write('    endsegment\n')
+        return 0
 
-    def printing_markers(self, segment_index, marker_index):
-        #TODO complete
+    def write_marker(self, segment_index, marker_index):
+        marker = self.segments[segment_index].get_markers()[marker_index]
+        self.file.write('\n\tmarker\t{}'.format(marker.get_name()))
+        self.file.write('\n\t\tparent\t{}'.format(marker.get_parent()))
+        self.file.write('\n\t\tposition\t{}'.format(marker.get_position()))
+        self.file.write('\n\tendmarker\n')
+        return 0
 
-    def printing_muscle(self, muscle_index):
+    def write_muscle_group(self, muscle_group_index):
+        # TODO complete
+        return 0
+
+    def write_muscle(self, muscle_group_index, muscle_index):
         # TODO complete
         return  0
 
-    # TODO printing for pathpoints,  muscle groups
+    def write_pathpoint(self, muscle_group_index, muscle_index, pathpoint_index):
+        # TODO complete
+        return 0
 
     def rewrite(self, path, with_markers=True, with_muscles=True, with_pathpoints=True):
         self.file = open(path, 'w')
@@ -783,6 +793,24 @@ class BiorbdModel:
         self.file.write('\n// SEGMENT DEFINITION\n')
         for i in range(self.get_number_of_segments()):
             self.printing_segment(i)
+            if with_markers:
+                markers = self.segments[i].get_markers
+                if markers:
+                    self.write('\t// Markers\n')
+                    for j in range(len(markers)):
+                        self.write_marker(i, j)
+        if with_muscles:
+            self.file.write('\n// MUSCLE DEFINIION\n')
+            for i in range(len(self.muscle_groups)):
+                self.write_muscle_group(i)
+                for j in range(len(self.muscle_groups[i].get_muscles())):
+                    self.printing_muscle(i, j)
+                    if with_pathpoints:
+                        pathpoints = self.muscle_groups[i].get_muscles()[j].get_pathpoints()
+                        if pathpoints:
+                            for k in range(len(markers)):
+                                self.write_pathpoint(i, j, k)
+        return 0
 
 
 def main():
