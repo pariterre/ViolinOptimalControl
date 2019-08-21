@@ -406,7 +406,7 @@ class ConvertedFromOsim2Biorbd:
 
         # Segment definition
         self.write('\n// SEGMENT DEFINITION\n')
-
+# TODO change spaces into \t
         def printing_segment(_body, _name, parent_name, _rotomatrix, transformation_type='', _is_dof='None', true_segment=False, dof_total_trans=''):
             rt_in_matrix = 1
             [[r11, r12, r13, r14],

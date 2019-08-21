@@ -171,11 +171,15 @@ class Segment:
             assert 'wrong type of marker'
         elif marker.get_parent != self.name:
             assert 'this marker does not belong to this segment'
-        else:
-            self.markers.append(marker)
+        self.markers.append(marker)
 
     def get_markers(self):
         return self.markers
+
+    def set_marker(self, marker_to_be_set_index, changed_marker):
+        if type(changed_marker) != Marker:
+            assert 'wrong type of marker'
+        self.markers[marker_to_be_set_index] = changed_marker
 
     def set_markers(self, list_of_markers):
         self.markers = []
@@ -196,24 +200,28 @@ class Marker:
 
     def set_name(self, new_name):
         self.name = new_name
+        return self.name
 
     def get_parent(self):
         return self.parent
 
     def set_parent(self, new_parent):
         self.parent = new_parent
+        return self.parent
 
     def get_position(self):
         return self.position
 
     def set_position(self, new_position):
         self.position = new_position
+        return self.position
 
     def get_technical(self):
         return self.technical
 
     def set_technical(self, new_technical):
         self.technical = new_technical
+        return self.technical
 
 
 class MuscleGroup:
@@ -361,8 +369,12 @@ class Muscle:
     def add_pathpoint(self, pathpoint):
         if type(pathpoint) != Pathpoint:
             assert 'wrong type of pathpoint'
-        else:
-            self.pathpoints.append(pathpoint)
+        self.pathpoints.append(pathpoint)
+
+    def set_pathpoint(self, pathpoint_to_be_set_index, changed_pathpoint):
+        if type(changed_pathpoint) != Pathpoint:
+            assert 'wrong type of pathpoint'
+        self.pathpoints[pathpoint_to_be_set_index] = changed_pathpoint
 
     def set_pathpoints(self, list_of_pathpoints):
         self.pathpoints = []
@@ -433,7 +445,7 @@ class BiorbdModel:
 
         name_segment = ''
         parent_segment = ''
-        rot_trans_matrix = [[], [], []]
+        rot_trans_matrix = [[], [], [], []]
         dof_translation = ''
         dof_rotation = ''
         mass = 0
@@ -467,53 +479,65 @@ class BiorbdModel:
         pathpoint_muscle_group = ''
         pathpoint_position = []
 
+        is_segment = False
+        is_marker = False
+        is_muscle_group = False
+        is_muscle = False
+        is_viapoint = False
+
         while number_line < len(self.words):
             line = self.words[number_line]
+            if not line:
+                number_line += 1
+                continue
             if line[0] == 'segment':
                 name_segment = line[1]
                 number_line += 1
+                is_segment = True
                 continue
-            if line[0] == 'parent':
+            if line[0] == 'parent' and is_segment:
                 parent_segment = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'RT':
+            if line[0] == 'RT' and is_segment:
                 rot_trans_matrix[0] = self.words[number_line + 1]
                 rot_trans_matrix[1] = self.words[number_line + 2]
                 rot_trans_matrix[2] = self.words[number_line + 3]
-                number_line += 4
+                rot_trans_matrix[3] = self.words[number_line + 4]
+                number_line += 5
                 continue
-            if line[0] == 'translations':
+            if line[0] == 'translations' and is_segment:
                 dof_translation = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'rotations':
+            if line[0] == 'rotations' and is_segment:
                 dof_rotation = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'mass':
+            if line[0] == 'mass' and is_segment:
                 mass = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'inertia':
+            if line[0] == 'inertia' and is_segment:
                 inertia[0] = self.words[number_line + 1]
                 inertia[1] = self.words[number_line + 2]
                 inertia[2] = self.words[number_line + 3]
                 number_line += 4
                 continue
-            if line[0] == 'com':
+            if line[0] == 'com' and is_segment:
                 com.append(line[1])
                 com.append(line[2])
                 com.append(line[3])
                 number_line += 1
                 continue
-            if line[0] == 'endsegment':
+            if line[0] == 'endsegment' and is_segment:
                 self.segments.append(Segment(name_segment, parent_segment, rot_trans_matrix,
                                              dof_rotation, dof_translation, mass, inertia, com))
                 number_line += 1
+                is_segment = False
                 name_segment = ''
                 parent_segment = ''
-                rot_trans_matrix = [[], [], []]
+                rot_trans_matrix = [[], [], [], []]
                 dof_translation = ''
                 dof_rotation = ''
                 mass = 0
@@ -522,23 +546,25 @@ class BiorbdModel:
                 continue
             if line[0] == 'marker':
                 name_marker = line[1]
+                is_marker = True
                 number_line += 1
                 continue
-            if line[0] == 'parent':
+            if line[0] == 'parent' and is_marker:
                 parent_marker = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'position':
+            if line[0] == 'position' and is_marker:
                 position_marker.append(line[1])
                 position_marker.append(line[2])
                 position_marker.append(line[3])
                 number_line += 1
                 continue
-            if line[0].find('technical'):
+            if line[0].find('technical') and is_marker:
                 technical = line[-1]
-            if line[0] == 'endmarker':
+            if line[0] == 'endmarker' and is_marker:
                 self.markers.append(Marker(name_marker, parent_marker, position_marker, technical))
                 self.segments[-1].add_marker(self.markers[-1])
+                is_marker = False
                 number_line += 1
                 name_marker = ''
                 parent_marker = ''
@@ -547,19 +573,21 @@ class BiorbdModel:
                 continue
             if line[0] == 'musclegroup':
                 muscle_group_name = line[1]
+                is_muscle_group = True
                 number_line += 1
                 continue
-            if line[0] == 'OriginParent':
+            if line[0] == 'OriginParent' and is_muscle_group:
                 muscle_group_origin_parent = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'InsertionParent':
+            if line[0] == 'InsertionParent' and is_muscle_group:
                 muscle_group_insertion_parent = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'endmusclegroup':
+            if line[0] == 'endmusclegroup' and is_muscle_group:
                 self.muscle_groups.append(MuscleGroup(muscle_group_name,
                                                       muscle_group_origin_parent, muscle_group_insertion_parent))
+                is_muscle_group = False
                 number_line += 1
                 muscle_group_name = ''
                 muscle_group_origin_parent = ''
@@ -568,52 +596,54 @@ class BiorbdModel:
 
             if line[0] == 'muscle':
                 muscle_name = line[1]
+                is_muscle = True
                 number_line += 1
                 continue
-            if line[0] == 'Type':
+            if line[0] == 'Type' and is_muscle:
                 muscle_type = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'statetype':
+            if line[0] == 'statetype' and is_muscle:
                 muscle_state_type = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'musclegroup':
+            if line[0] == 'musclegroup' and is_muscle:
                 muscle_group = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'OriginPosition':
+            if line[0] == 'OriginPosition' and is_muscle:
                 origin_position = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'InsertionPosition':
+            if line[0] == 'InsertionPosition' and is_muscle:
                 insertion_position = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'optimalLength':
+            if line[0] == 'optimalLength' and is_muscle:
                 optimal_length = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'maximalForce':
+            if line[0] == 'maximalForce' and is_muscle:
                 maximal_force = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'tendonSlackLength':
+            if line[0] == 'tendonSlackLength' and is_muscle:
                 tendon_slack_length = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'pennationAngle':
+            if line[0] == 'pennationAngle' and is_muscle:
                 pennation_angle = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'maxVelocity':
+            if line[0] == 'maxVelocity' and is_muscle:
                 max_velocity = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'endmuscle':
+            if line[0] == 'endmuscle' and is_muscle:
                 self.muscles.append(Muscle(muscle_name, muscle_type, muscle_state_type, muscle_group, origin_position, insertion_position, optimal_length,
             maximal_force, tendon_slack_length, pennation_angle, max_velocity))
                 self.muscle_groups[-1].add_muscle(self.muscles[-1])
+                is_muscle = False
                 muscle_name = ''
                 muscle_type = ''
                 muscle_state_type = ''
@@ -630,27 +660,29 @@ class BiorbdModel:
 
             if line[0] == 'viapoint':
                 pathpoint_name = line[1]
+                is_viapoint = True
                 number_line += 1
                 continue
-            if line[0] == 'parent':
+            if line[0] == 'parent' and is_viapoint:
                 pathpoint_parent = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'muscle':
+            if line[0] == 'muscle' and is_viapoint:
                 pathpoint_muscle = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'muscle_group':
+            if line[0] == 'muscle_group' and is_viapoint:
                 pathpoint_muscle_group = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'position':
+            if line[0] == 'position' and is_viapoint:
                 pathpoint_position = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'endviapoint':
+            if line[0] == 'endviapoint' and is_viapoint:
                 self.pathpoints.append(Pathpoint(pathpoint_name, pathpoint_parent, pathpoint_muscle, pathpoint_muscle_group, pathpoint_position))
                 self.muscles[-1].add_pathpoint(self.pathpoints[-1])
+                is_viapoint = False
                 pathpoint_name = ''
                 pathpoint_parent = ''
                 pathpoint_muscle = ''
@@ -661,6 +693,12 @@ class BiorbdModel:
             else:
                 number_line += 1
                 continue
+
+    def get_segments(self):
+        return self.segments
+
+    def get_muscle_groups(self):
+        return self.muscle_groups
 
     def add_muscle_group(self, new_muscle_group):
         if type(new_muscle_group) != MuscleGroup:
@@ -708,26 +746,25 @@ class BiorbdModel:
         relative_position = self.get_relative_position(segment_index)
         return math.sqrt(relative_position[0]**2 + relative_position[1]**2 + relative_position[2]**2)
 
-    def normalize_segment(self, segment_index):
+    def adjust_position(self, segment_index, marker_index, adjust_factor):
+        marker = self.segments[segment_index].get_markers()[marker_index]
+        new_position = []
+        for i in range(3):
+            new_position.append(str(int(marker.get_position()[i])*adjust_factor))
+        marker.set_position(new_position)
+        self.segments[segment_index].set_marker(marker_index, marker)
+
+    def set_segment_length(self, segment_index, new_segment_length, adjust_markers=True):
         length = self.length_segment(segment_index)
         relative_position = self.get_relative_position(segment_index)
+        adjust_factor = new_segment_length/length
         for element in relative_position:
-            element /= length
+            element *= adjust_factor
         self.set_relative_position(segment_index, relative_position)
+        if adjust_markers:
+            for marker_index in self.segments[segment_index].get_markers():
+                self.adjust_position(segment_index, marker_index, adjust_factor)
         return relative_position
-
-    def set_segment_length(self, segment_index, new_segment_length):
-        length = self.length_segment(segment_index)
-        relative_position = self.get_relative_position(segment_index)
-        for element in relative_position:
-            element *= new_segment_length/length
-        self.set_relative_position(segment_index, relative_position)
-        return relative_position
-
-    def normalize_model(self):
-        for i in range(self.get_number_of_segments()):
-            self.normalize_segment(i)
-        return 0
 
     def write_segment(self, segment_index):
         segment = self.segments[segment_index]
@@ -740,18 +777,18 @@ class BiorbdModel:
         com = segment.get_com()
         # writing data
         self.file.write('\t// Segment\n')
-        self.file.write('\tsegment\t{}\n'.format(_name)) if _name != 'None' else self.write('')
+        self.file.write('\tsegment\t{}\n'.format(_name)) if _name != 'None' else self.file.write('')
         self.file.write('\t\tparent\t{} \n'.format(parent_name)) if parent_name != '' else True
-        self.file.write('\t\tRTinMatrix\t{}\n'.format(rt_in_matrix)) if rt_in_matrix != 'None' else self.write('')
+        self.file.write('\t\tRTinMatrix\t{}\n'.format(rt_in_matrix)) if rt_in_matrix != 'None' else self.file.write('')
         self.file.write('\t\tRT\n')
-        for i in range(3):
+        for i in range(4):
             self.file.write('\t\t')
-            for j in range(3):
+            for j in range(4):
                 self.file.write('\t{}'.format(segment.get_rot_trans_matrix()[i][j]))
             self.file.write('\n')
-        self.file.write('\t\ttranslations {}\n'.format(dof_total_trans)) if dof_total_trans != '' else True
-        self.file.write('\t\trotations {}\n'.format(dof_total_rot)) if dof_total_rot != '' else True
-        self.file.write('\t\tmass {}\n'.format(mass)) if mass != '' else True
+        self.file.write('\t\ttranslations\t{}\n'.format(dof_total_trans)) if dof_total_trans != '' else True
+        self.file.write('\t\trotations\t{}\n'.format(dof_total_rot)) if dof_total_rot != '' else True
+        self.file.write('\t\tmass\t{}\n'.format(mass)) if mass != '' else True
         self.file.write('\t\tinertia\n')
         if segment.get_inertia() != [[], [], []]:
             for i in range(3):
@@ -759,69 +796,131 @@ class BiorbdModel:
                 for j in range(3):
                     self.file.write('\t{}'.format(segment.get_inertia()[i][j]))
                 self.file.write('\n')
-        self.file.write('\t\tcom\t{}\n'.format(com)) if com != '' else True
-        self.file.write('    endsegment\n')
+        self.file.write('\t\tcom\t{}\t{}\t{}\n'.format(com[0], com[1], com[2])) if com != [] else True
+        self.file.write('\tendsegment\n')
         return 0
 
     def write_marker(self, segment_index, marker_index):
         marker = self.segments[segment_index].get_markers()[marker_index]
         self.file.write('\n\tmarker\t{}'.format(marker.get_name()))
         self.file.write('\n\t\tparent\t{}'.format(marker.get_parent()))
-        self.file.write('\n\t\tposition\t{}'.format(marker.get_position()))
+        self.file.write('\n\t\tposition\t{}\t{}\t{}'.format(marker.get_position()[0], marker.get_position()[1], marker.get_position()[2]))
         self.file.write('\n\tendmarker\n')
         return 0
 
     def write_muscle_group(self, muscle_group_index):
-        # TODO complete
+        muscle_group = self.muscle_groups[muscle_group_index]
+        self.file.write('\n// {} > {}\n'.format(muscle_group.get_origin_parent(), muscle_group.get_insertion_parent()))
+        self.file.write('musclegroup\t{}\n'.format(muscle_group.get_name()))
+        self.file.write('\tOriginParent\t\t{}\n'.format(muscle_group.get_origin_parent()))
+        self.file.write('\tInsertionParent\t{}\n'.format(muscle_group.get_insertion_parent()))
+        self.file.write('endmusclegroup\n')
         return 0
 
     def write_muscle(self, muscle_group_index, muscle_index):
-        # TODO complete
-        return  0
+        muscle = self.muscle_groups[muscle_group_index].get_muscles()[muscle_index]
+        muscle_type = muscle.get_type()
+        state_type = muscle.get_state_type()
+        m_ref = muscle.get_muscle_group()
+        start_pos = muscle.get_origin_position()
+        insert_pos = muscle.get_insertion_position()
+        opt_length = muscle.get_optimal_length()
+        max_force = muscle.get_maximal_force()
+        tendon_slack_length = muscle.get_tendon_slack_length()
+        pennation_angle = muscle.get_pennation_angle()
+        pcsa = ''
+        max_velocity = muscle.get_max_velocity()
+        self.file.write('\n\tmuscle\t{}'.format(muscle))
+        self.file.write('\n\t\tType\t{}'.format(muscle_type)) if muscle_type != '' else self.file.write('')
+        self.file.write('\n\t\tstatetype\t{}'.format(state_type)) if state_type != '' else self.file.write('')
+        self.file.write('\n\t\tmusclegroup\t{}'.format(m_ref)) if m_ref != '' else self.file.write('')
+        self.file.write('\n\t\tOriginPosition\t{}'.format(start_pos)) if start_pos != '' else self.file.write('')
+        self.file.write('\n\t\tInsertionPosition\t{}'.format(insert_pos)) if insert_pos != '' else self.file.write('')
+        self.file.write('\n\t\toptimalLength\t{}'.format(opt_length)) if opt_length != '' else self.file.write('')
+        self.file.write('\n\t\tmaximalForce\t{}'.format(max_force)) if max_force != '' else self.file.write('')
+        self.file.write('\n\t\ttendonSlackLength\t{}'.format(
+            tendon_slack_length)) if tendon_slack_length != '' else self.file.write('')
+        self.file.write('\n\t\tpennationAngle\t{}'.format(pennation_angle)) if pennation_angle != '' else self.file.write('')
+        self.file.write('\n\t\tPCSA\t{}'.format(pcsa)) if pcsa != '' else self.file.write('')
+        self.file.write('\n\t\tmaxVelocity\t{}'.format(max_velocity)) if max_velocity != '' else self.file.write('')
+        self.file.write('\n\tendmuscle\n')
+        return 0
 
     def write_pathpoint(self, muscle_group_index, muscle_index, pathpoint_index):
-        # TODO complete
+        pathpoint = self.muscle_groups[muscle_group_index].get_muscles()[muscle_index].get_pathpoints()[pathpoint_index]
+        viapoint = pathpoint.get_name()
+        parent_viapoint = pathpoint.get_parent()
+        muscle_viapoint = pathpoint.get_muscle()
+        m_ref = pathpoint.get_muscle_group()
+        viapoint_pos = pathpoint.get_position()
+        self.file.write('\n\t\tviapoint\t{}'.format(viapoint))
+        self.file.write('\n\t\t\tparent\t{}'.format(parent_viapoint)) if parent_viapoint != '' else self.file.write('')
+        self.file.write('\n\t\t\tmuscle\t{}'.format(muscle_viapoint))
+        self.file.write('\n\t\t\tmusclegroup\t{}'.format(m_ref)) if m_ref != '' else self.file.write('')
+        self.file.write('\n\t\t\tposition\t{}'.format(viapoint_pos)) if viapoint_pos != '' else self.file.write('')
+        self.file.write('\n\t\tendviapoint\n')
         return 0
 
     def rewrite(self, path, with_markers=True, with_muscles=True, with_pathpoints=True):
         self.file = open(path, 'w')
         self.path = path
-        self.file.write('version ' + self.version + '\n')
+        self.file.write('version ' + str(self.version) + '\n')
         self.file.write('\n// File extracted from ' + self.model)
         self.file.write('\n')
 
+        self.file.write('// Informations générales\n'
+                   'root_actuated\t1\n'
+                   'external_forces\t0\n')
+
         self.file.write('\n// SEGMENT DEFINITION\n')
         for i in range(self.get_number_of_segments()):
-            self.printing_segment(i)
+            self.write_segment(i)
             if with_markers:
-                markers = self.segments[i].get_markers
+                markers = self.segments[i].get_markers()
                 if markers:
-                    self.write('\t// Markers\n')
+                    self.file.write('\t// Markers')
                     for j in range(len(markers)):
                         self.write_marker(i, j)
+                    self.file.write('\n')
         if with_muscles:
-            self.file.write('\n// MUSCLE DEFINIION\n')
+            if len(self.muscle_groups) > 0:
+                self.file.write('\n// MUSCLE DEFINITION\n')
             for i in range(len(self.muscle_groups)):
                 self.write_muscle_group(i)
                 for j in range(len(self.muscle_groups[i].get_muscles())):
-                    self.printing_muscle(i, j)
+                    self.write_muscle(i, j)
                     if with_pathpoints:
                         pathpoints = self.muscle_groups[i].get_muscles()[j].get_pathpoints()
                         if pathpoints:
-                            for k in range(len(markers)):
+                            for k in range(len(self.pathpoints)):
                                 self.write_pathpoint(i, j, k)
+        return 0
+
+
+class ConvertModel:
+    def __init__(self, model_to_convert, default_model='../models/Bras.bioMod'):
+        self.model_to_convert = BiorbdModel(model_to_convert)
+        self.model_to_convert.read()
+        self.default_model = BiorbdModel(default_model)
+        self.default_model.read()
+
+    def remodel(self):
         return 0
 
 
 def main():
     model = BiorbdModel('../models/model_Clara/AdaJef_1g_Model.s2mMod')
-    model2 = BiorbdModel('../models/conv-arm26.bioMod')
+    model2 = BiorbdModel('../models/Bras.bioMod')
+    print(get_words('../models/model_Clara/AdaJef_1g_Model.s2mMod'))
+    print(get_words('../models/Bras.bioMod'))
     model.read()
     model2.read()
-    print(get_words('../models/conv-arm26.bioMod'))
-    print(get_words('../models/model_Clara/AdaJef_1g_Model.s2mMod'))
-    print(model.get_total_muscle_number())
-    print(model2.get_total_muscle_number())
+    for el in model.get_segments():
+        print(el.get_name())
+    print('***')
+    for el in model2.get_segments():
+        print(el.get_name())
+
     return 0
 
 
