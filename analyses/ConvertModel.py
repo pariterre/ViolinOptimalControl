@@ -107,7 +107,7 @@ def get_words(_model):
 
 
 class Segment:
-    def __init__(self, name, parent, rot_trans_matrix, dof_rotation, dof_translation, mass, inertia, com):
+    def __init__(self, name, parent, rot_trans_matrix, dof_rotation, dof_translation, mass, inertia, com, rt_in_matrix):
         self.name = name
         self.parent = parent
         self.rot_trans_matrix = rot_trans_matrix
@@ -117,6 +117,7 @@ class Segment:
         self.inertia = inertia
         self.com = com
         self.markers = []
+        self.rt_in_matrix = rt_in_matrix
 
     def get_name(self):
         return self.name
@@ -128,43 +129,53 @@ class Segment:
         return self.parent
 
     def set_parent(self, new_parent):
-        self.name = new_parent
+        self.parent = new_parent
+        return self.parent
 
     def get_rot_trans_matrix(self):
         return self.rot_trans_matrix
 
     def set_rot_trans_matrix(self, new_rot_trans_matrix):
         self.rot_trans_matrix = new_rot_trans_matrix
+        return self.rot_trans_matrix
 
     def get_dof_rotation(self):
         return self.dof_rotation
 
     def set_dof_rotation(self, new_dof_rotation):
         self.dof_rotation = new_dof_rotation
+        return self.dof_rotation
 
     def get_dof_translation(self):
         return self.dof_translation
 
     def set_dof_translation(self, new_dof_translation):
         self.dof_translation = new_dof_translation
+        return self.dof_translation
 
     def get_mass(self):
         return self.mass
 
     def set_mass(self, new_mass):
         self.mass = new_mass
+        return self.mass
 
     def get_inertia(self):
         return self.inertia
 
     def set_inertia(self, new_inertia):
         self.inertia = new_inertia
+        return self.inertia
 
     def get_com(self):
         return self.com
 
     def set_com(self, new_com):
         self.com = new_com
+        return self.com
+
+    def get_rt_in_matrix(self):
+        return self.rt_in_matrix
 
     def add_marker(self, marker):
         if type(marker) != Marker:
@@ -445,12 +456,13 @@ class BiorbdModel:
 
         name_segment = ''
         parent_segment = ''
-        rot_trans_matrix = [[], [], [], []]
+        rot_trans_matrix = []
         dof_translation = ''
         dof_rotation = ''
-        mass = 0
+        mass = ''
         inertia = [[], [], []]
         com = []
+        rt_in_matrix = 1
 
         name_marker = ''
         parent_marker = ''
@@ -500,12 +512,22 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'RT' and is_segment:
-                rot_trans_matrix[0] = self.words[number_line + 1]
-                rot_trans_matrix[1] = self.words[number_line + 2]
-                rot_trans_matrix[2] = self.words[number_line + 3]
-                rot_trans_matrix[3] = self.words[number_line + 4]
-                number_line += 5
-                continue
+                if len(line) == 1:
+                    rt_in_matrix = 1
+                    rot_trans_matrix = [[], [], [], []]
+                    rot_trans_matrix[0] = self.words[number_line + 1]
+                    rot_trans_matrix[1] = self.words[number_line + 2]
+                    rot_trans_matrix[2] = self.words[number_line + 3]
+                    rot_trans_matrix[3] = self.words[number_line + 4]
+                    number_line += 5
+                    continue
+                if len(line) == 8:
+                    rt_in_matrix = 0
+                    for i in range(7):
+                        rot_trans_matrix.append(line[i+1])
+                    number_line += 1
+                    continue
+
             if line[0] == 'translations' and is_segment:
                 dof_translation = line[1]
                 number_line += 1
@@ -532,12 +554,12 @@ class BiorbdModel:
                 continue
             if line[0] == 'endsegment' and is_segment:
                 self.segments.append(Segment(name_segment, parent_segment, rot_trans_matrix,
-                                             dof_rotation, dof_translation, mass, inertia, com))
+                                             dof_rotation, dof_translation, mass, inertia, com, rt_in_matrix))
                 number_line += 1
                 is_segment = False
                 name_segment = ''
                 parent_segment = ''
-                rot_trans_matrix = [[], [], [], []]
+                rot_trans_matrix = []
                 dof_translation = ''
                 dof_rotation = ''
                 mass = 0
@@ -640,8 +662,9 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'endmuscle' and is_muscle:
-                self.muscles.append(Muscle(muscle_name, muscle_type, muscle_state_type, muscle_group, origin_position, insertion_position, optimal_length,
-            maximal_force, tendon_slack_length, pennation_angle, max_velocity))
+                self.muscles.append(Muscle(muscle_name, muscle_type, muscle_state_type, muscle_group, origin_position,
+                                           insertion_position, optimal_length, maximal_force, tendon_slack_length,
+                                           pennation_angle, max_velocity))
                 self.muscle_groups[-1].add_muscle(self.muscles[-1])
                 is_muscle = False
                 muscle_name = ''
@@ -680,7 +703,8 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'endviapoint' and is_viapoint:
-                self.pathpoints.append(Pathpoint(pathpoint_name, pathpoint_parent, pathpoint_muscle, pathpoint_muscle_group, pathpoint_position))
+                self.pathpoints.append(Pathpoint(pathpoint_name, pathpoint_parent, pathpoint_muscle,
+                                                 pathpoint_muscle_group, pathpoint_position))
                 self.muscles[-1].add_pathpoint(self.pathpoints[-1])
                 is_viapoint = False
                 pathpoint_name = ''
@@ -727,6 +751,7 @@ class BiorbdModel:
     def get_segment(self, segment_index):
         return self.segments[segment_index]
 
+# TODO add in case of rt_in_matrix = 0
     def get_relative_position(self, segment_index):
         segment = self.get_segment(segment_index)
         rot_trans_matrix = segment.get_rot_trans_matrix()
@@ -770,27 +795,33 @@ class BiorbdModel:
         segment = self.segments[segment_index]
         _name = segment.get_name()
         parent_name = segment.get_parent()
-        rt_in_matrix = 1
+        rt_in_matrix = segment.get_rt_in_matrix()
         dof_total_trans = segment.get_dof_translation()
         dof_total_rot = segment.get_dof_rotation()
         mass = segment.get_mass()
         com = segment.get_com()
         # writing data
         self.file.write('\t// Segment\n')
-        self.file.write('\tsegment\t{}\n'.format(_name)) if _name != 'None' else self.file.write('')
+        self.file.write('\tsegment\t{}\n'.format(_name)) if _name != '' else self.file.write('')
         self.file.write('\t\tparent\t{} \n'.format(parent_name)) if parent_name != '' else True
-        self.file.write('\t\tRTinMatrix\t{}\n'.format(rt_in_matrix)) if rt_in_matrix != 'None' else self.file.write('')
-        self.file.write('\t\tRT\n')
-        for i in range(4):
-            self.file.write('\t\t')
-            for j in range(4):
-                self.file.write('\t{}'.format(segment.get_rot_trans_matrix()[i][j]))
+        self.file.write('\t\tRTinMatrix\t{}\n'.format(rt_in_matrix)) if rt_in_matrix != '' else self.file.write('')
+        if rt_in_matrix == 1:
+            self.file.write('\t\tRT\n')
+            for i in range(4):
+                self.file.write('\t\t')
+                for j in range(4):
+                    self.file.write('\t{}'.format(segment.get_rot_trans_matrix()[i][j]))
+                self.file.write('\n')
+        if rt_in_matrix == 0:
+            self.file.write('\t\tRT')
+            for i in range(7):
+                self.file.write('\t' + segment.get_rot_trans_matrix()[i])
             self.file.write('\n')
         self.file.write('\t\ttranslations\t{}\n'.format(dof_total_trans)) if dof_total_trans != '' else True
         self.file.write('\t\trotations\t{}\n'.format(dof_total_rot)) if dof_total_rot != '' else True
         self.file.write('\t\tmass\t{}\n'.format(mass)) if mass != '' else True
-        self.file.write('\t\tinertia\n')
         if segment.get_inertia() != [[], [], []]:
+            self.file.write('\t\tinertia\n')
             for i in range(3):
                 self.file.write('\t\t')
                 for j in range(3):
@@ -804,7 +835,8 @@ class BiorbdModel:
         marker = self.segments[segment_index].get_markers()[marker_index]
         self.file.write('\n\tmarker\t{}'.format(marker.get_name()))
         self.file.write('\n\t\tparent\t{}'.format(marker.get_parent()))
-        self.file.write('\n\t\tposition\t{}\t{}\t{}'.format(marker.get_position()[0], marker.get_position()[1], marker.get_position()[2]))
+        self.file.write('\n\t\tposition\t{}\t{}\t{}'.format(marker.get_position()[0], marker.get_position()[1],
+                                                            marker.get_position()[2]))
         self.file.write('\n\tendmarker\n')
         return 0
 
@@ -840,7 +872,8 @@ class BiorbdModel:
         self.file.write('\n\t\tmaximalForce\t{}'.format(max_force)) if max_force != '' else self.file.write('')
         self.file.write('\n\t\ttendonSlackLength\t{}'.format(
             tendon_slack_length)) if tendon_slack_length != '' else self.file.write('')
-        self.file.write('\n\t\tpennationAngle\t{}'.format(pennation_angle)) if pennation_angle != '' else self.file.write('')
+        self.file.write('\n\t\tpennationAngle\t{}'.format(pennation_angle)) if pennation_angle != '' \
+            else self.file.write('')
         self.file.write('\n\t\tPCSA\t{}'.format(pcsa)) if pcsa != '' else self.file.write('')
         self.file.write('\n\t\tmaxVelocity\t{}'.format(max_velocity)) if max_velocity != '' else self.file.write('')
         self.file.write('\n\tendmuscle\n')
@@ -892,7 +925,7 @@ class BiorbdModel:
                     if with_pathpoints:
                         pathpoints = self.muscle_groups[i].get_muscles()[j].get_pathpoints()
                         if pathpoints:
-                            for k in range(len(self.pathpoints)):
+                            for k in range(len(pathpoints)):
                                 self.write_pathpoint(i, j, k)
         return 0
 
@@ -905,7 +938,7 @@ class ConvertModel:
         self.default_model.read()
 
     def remodel(self):
-        return 0
+        return 1
 
 
 def main():
@@ -915,6 +948,7 @@ def main():
     print(get_words('../models/Bras.bioMod'))
     model.read()
     model2.read()
+    model2.rewrite('../models/converted.bioMod')
     for el in model.get_segments():
         print(el.get_name())
     print('***')
@@ -926,3 +960,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
