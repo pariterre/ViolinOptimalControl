@@ -93,16 +93,17 @@ def get_words(_model):
     all_words = []
     for line in all_lines:
         line = line[:-1]
-        if line != '':
-            if line.find('//') == -1:
-                raw_line = line.split("\t")
-                new_l = []
-                for word in raw_line:
-                    if word != '':
-                        for element in word.split(' '):
-                            if element != '':
-                                new_l.append(element)
-                all_words.append(new_l)
+        if line:
+            if line.find('//') > -1:
+                line = line[:line.find('//')]
+            raw_line = line.split("\t")
+            new_l = []
+            for word in raw_line:
+                if word != '':
+                    for element in word.split(' '):
+                        if element != '':
+                            new_l.append(element)
+            all_words.append(new_l)
     return all_words
 
 
@@ -197,6 +198,54 @@ class Segment:
         for element in list_of_markers:
             self.add_marker(element)
         return list_of_markers
+
+    def get_relative_position(self):
+        rot_trans_matrix = self.get_rot_trans_matrix()
+        if self.get_rt_in_matrix() == 1:
+            return [float(rot_trans_matrix[0][3]), float(rot_trans_matrix[1][3]), float(rot_trans_matrix[2][3])]
+        elif self.get_rt_in_matrix() == 0:
+            return [float(rot_trans_matrix[4]), float(rot_trans_matrix[5]), float(rot_trans_matrix[6])]
+
+    def set_relative_position(self, new_relative_position):
+        if len(new_relative_position) != 3:
+            assert 'wrong size of vector to set new relative position of the segment'
+        rot_trans_matrix = self.get_rot_trans_matrix()
+        if self.get_rt_in_matrix() == 1:
+            rot_trans_matrix[0][3] = str(new_relative_position[0])
+            rot_trans_matrix[1][3] = str(new_relative_position[1])
+            rot_trans_matrix[2][3] = str(new_relative_position[2])
+            self.set_rot_trans_matrix(rot_trans_matrix)
+        if self.get_rt_in_matrix() == 0:
+            rot_trans_matrix[4] = str(new_relative_position[0])
+            rot_trans_matrix[5] = str(new_relative_position[1])
+            rot_trans_matrix[6] = str(new_relative_position[2])
+            self.set_rot_trans_matrix(rot_trans_matrix)
+        return rot_trans_matrix
+
+    def length(self):
+        relative_position = self.get_relative_position()
+        return math.sqrt(relative_position[0]**2 + relative_position[1]**2 + relative_position[2]**2)
+
+    def adjust_position(self, marker_index, adjust_factor):
+        marker = self.get_markers()[marker_index]
+        new_position = []
+        for i in range(3):
+            new_position.append(str(float(marker.get_position()[i])*adjust_factor))
+        marker.set_position(new_position)
+        self.set_marker(marker_index, marker)
+
+    def set_length(self, new_segment_length, adjust_markers=True):
+        length = self.length()
+        relative_position = self.get_relative_position()
+        adjust_factor = new_segment_length/length
+        for i in range(3):
+            relative_position[i] *= adjust_factor
+        self.set_relative_position(relative_position)
+        if adjust_markers:
+            markers = self.get_markers()
+            for marker_index in range(len(markers)):
+                self.adjust_position(marker_index, adjust_factor)
+        return relative_position
 
 
 class Marker:
@@ -553,8 +602,10 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'endsegment' and is_segment:
-                self.segments.append(Segment(name_segment, parent_segment, rot_trans_matrix,
-                                             dof_rotation, dof_translation, mass, inertia, com, rt_in_matrix))
+                new_segment = Segment(name_segment, parent_segment, rot_trans_matrix, dof_rotation, dof_translation,
+                                      mass, inertia, com, rt_in_matrix)
+                if new_segment not in self.segments:
+                    self.segments.append(new_segment)
                 number_line += 1
                 is_segment = False
                 name_segment = ''
@@ -581,11 +632,15 @@ class BiorbdModel:
                 position_marker.append(line[3])
                 number_line += 1
                 continue
-            if line[0].find('technical') and is_marker:
-                technical = line[-1]
+            if line[0].find('technical') != -1 and is_marker:
+                technical = line[1]
+                number_line += 1
+                continue
             if line[0] == 'endmarker' and is_marker:
-                self.markers.append(Marker(name_marker, parent_marker, position_marker, technical))
-                self.segments[-1].add_marker(self.markers[-1])
+                new_marker = Marker(name_marker, parent_marker, position_marker, technical)
+                if new_marker not in self.markers:
+                    self.markers.append(new_marker)
+                    self.segments[-1].add_marker(self.markers[-1])
                 is_marker = False
                 number_line += 1
                 name_marker = ''
@@ -593,7 +648,7 @@ class BiorbdModel:
                 position_marker = []
                 technical = ''
                 continue
-            if line[0] == 'musclegroup':
+            if line[0] == 'musclegroup' and not is_muscle and not is_viapoint:
                 muscle_group_name = line[1]
                 is_muscle_group = True
                 number_line += 1
@@ -607,8 +662,10 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'endmusclegroup' and is_muscle_group:
-                self.muscle_groups.append(MuscleGroup(muscle_group_name,
-                                                      muscle_group_origin_parent, muscle_group_insertion_parent))
+                new_muscle_group = MuscleGroup(muscle_group_name, muscle_group_origin_parent,
+                                               muscle_group_insertion_parent)
+                if new_muscle_group not in self.muscle_groups:
+                    self.muscle_groups.append(new_muscle_group)
                 is_muscle_group = False
                 number_line += 1
                 muscle_group_name = ''
@@ -616,7 +673,7 @@ class BiorbdModel:
                 muscle_group_insertion_parent = ''
                 continue
 
-            if line[0] == 'muscle':
+            if line[0] == 'muscle' and not is_viapoint:
                 muscle_name = line[1]
                 is_muscle = True
                 number_line += 1
@@ -634,11 +691,15 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'OriginPosition' and is_muscle:
-                origin_position = line[1]
+                origin_position.append(line[1])
+                origin_position.append(line[2])
+                origin_position.append(line[3])
                 number_line += 1
                 continue
             if line[0] == 'InsertionPosition' and is_muscle:
-                insertion_position = line[1]
+                insertion_position.append(line[1])
+                insertion_position.append(line[2])
+                insertion_position.append(line[3])
                 number_line += 1
                 continue
             if line[0] == 'optimalLength' and is_muscle:
@@ -662,10 +723,12 @@ class BiorbdModel:
                 number_line += 1
                 continue
             if line[0] == 'endmuscle' and is_muscle:
-                self.muscles.append(Muscle(muscle_name, muscle_type, muscle_state_type, muscle_group, origin_position,
-                                           insertion_position, optimal_length, maximal_force, tendon_slack_length,
-                                           pennation_angle, max_velocity))
-                self.muscle_groups[-1].add_muscle(self.muscles[-1])
+                new_muscle = Muscle(muscle_name, muscle_type, muscle_state_type, muscle_group, origin_position,
+                                    insertion_position, optimal_length, maximal_force, tendon_slack_length,
+                                    pennation_angle, max_velocity)
+                if new_muscle not in self.muscles:
+                    self.muscles.append(new_muscle)
+                    self.muscle_groups[-1].add_muscle(self.muscles[-1])
                 is_muscle = False
                 muscle_name = ''
                 muscle_type = ''
@@ -694,18 +757,22 @@ class BiorbdModel:
                 pathpoint_muscle = line[1]
                 number_line += 1
                 continue
-            if line[0] == 'muscle_group' and is_viapoint:
+            if line[0] == 'musclegroup' and is_viapoint:
                 pathpoint_muscle_group = line[1]
                 number_line += 1
                 continue
             if line[0] == 'position' and is_viapoint:
-                pathpoint_position = line[1]
+                pathpoint_position.append(line[1])
+                pathpoint_position.append(line[2])
+                pathpoint_position.append(line[3])
                 number_line += 1
                 continue
             if line[0] == 'endviapoint' and is_viapoint:
-                self.pathpoints.append(Pathpoint(pathpoint_name, pathpoint_parent, pathpoint_muscle,
-                                                 pathpoint_muscle_group, pathpoint_position))
-                self.muscles[-1].add_pathpoint(self.pathpoints[-1])
+                new_pathpoint = Pathpoint(pathpoint_name, pathpoint_parent, pathpoint_muscle, pathpoint_muscle_group,
+                                          pathpoint_position)
+                if new_pathpoint not in self.pathpoints:
+                    self.pathpoints.append(new_pathpoint)
+                    self.muscles[-1].add_pathpoint(self.pathpoints[-1])
                 is_viapoint = False
                 pathpoint_name = ''
                 pathpoint_parent = ''
@@ -723,6 +790,13 @@ class BiorbdModel:
 
     def get_muscle_groups(self):
         return self.muscle_groups
+
+    def set_segment(self, segment_index, modified_segment):
+        if type(modified_segment) == Segment:
+            self.segments[segment_index] = modified_segment
+        else:
+            assert "wrong type of modified segment"
+        return modified_segment
 
     def add_muscle_group(self, new_muscle_group):
         if type(new_muscle_group) != MuscleGroup:
@@ -751,45 +825,15 @@ class BiorbdModel:
     def get_segment(self, segment_index):
         return self.segments[segment_index]
 
-# TODO add in case of rt_in_matrix = 0
-    def get_relative_position(self, segment_index):
-        segment = self.get_segment(segment_index)
-        rot_trans_matrix = segment.get_rot_trans_matrix()
-        return [float(rot_trans_matrix[0][2]), float(rot_trans_matrix[1][2]), float(rot_trans_matrix[2][2])]
-
-    def set_relative_position(self, segment_index, new_relative_position):
-        if len(new_relative_position) != 3:
-            assert 'wrong size of vector to set new relative position of the segment'
-        rot_trans_matrix = self.get_segment(segment_index).get_rot_trans_matrix()
-        rot_trans_matrix[0][2] = str(new_relative_position[0])
-        rot_trans_matrix[1][2] = str(new_relative_position[1])
-        rot_trans_matrix[2][2] = str(new_relative_position[2])
-        self.get_segment(segment_index).set_rot_trans_matrix(rot_trans_matrix)
-        return rot_trans_matrix
-
-    def length_segment(self, segment_index):
-        relative_position = self.get_relative_position(segment_index)
-        return math.sqrt(relative_position[0]**2 + relative_position[1]**2 + relative_position[2]**2)
-
-    def adjust_position(self, segment_index, marker_index, adjust_factor):
-        marker = self.segments[segment_index].get_markers()[marker_index]
-        new_position = []
-        for i in range(3):
-            new_position.append(str(int(marker.get_position()[i])*adjust_factor))
-        marker.set_position(new_position)
-        self.segments[segment_index].set_marker(marker_index, marker)
-
-    def set_segment_length(self, segment_index, new_segment_length, adjust_markers=True):
-        length = self.length_segment(segment_index)
-        relative_position = self.get_relative_position(segment_index)
-        adjust_factor = new_segment_length/length
-        for element in relative_position:
-            element *= adjust_factor
-        self.set_relative_position(segment_index, relative_position)
-        if adjust_markers:
-            for marker_index in self.segments[segment_index].get_markers():
-                self.adjust_position(segment_index, marker_index, adjust_factor)
-        return relative_position
+    def get_segment_index(self, segment_name):
+        index = 0
+        for segment in self.get_segments():
+            if segment.get_name() == segment_name:
+                return index
+            else:
+                index += 1
+        else:
+            return None
 
     def write_segment(self, segment_index):
         segment = self.segments[segment_index]
@@ -851,6 +895,7 @@ class BiorbdModel:
 
     def write_muscle(self, muscle_group_index, muscle_index):
         muscle = self.muscle_groups[muscle_group_index].get_muscles()[muscle_index]
+        muscle_name = muscle.get_name()
         muscle_type = muscle.get_type()
         state_type = muscle.get_state_type()
         m_ref = muscle.get_muscle_group()
@@ -862,12 +907,12 @@ class BiorbdModel:
         pennation_angle = muscle.get_pennation_angle()
         pcsa = ''
         max_velocity = muscle.get_max_velocity()
-        self.file.write('\n\tmuscle\t{}'.format(muscle))
+        self.file.write('\n\tmuscle\t{}'.format(muscle_name))
         self.file.write('\n\t\tType\t{}'.format(muscle_type)) if muscle_type != '' else self.file.write('')
         self.file.write('\n\t\tstatetype\t{}'.format(state_type)) if state_type != '' else self.file.write('')
         self.file.write('\n\t\tmusclegroup\t{}'.format(m_ref)) if m_ref != '' else self.file.write('')
-        self.file.write('\n\t\tOriginPosition\t{}'.format(start_pos)) if start_pos != '' else self.file.write('')
-        self.file.write('\n\t\tInsertionPosition\t{}'.format(insert_pos)) if insert_pos != '' else self.file.write('')
+        self.file.write('\n\t\tOriginPosition\t{}\t{}\t{}'.format(start_pos[0], start_pos[1], start_pos[2])) if start_pos else self.file.write('')
+        self.file.write('\n\t\tInsertionPosition\t{}\t{}\t{}'.format(insert_pos[0], insert_pos[1], insert_pos[2])) if insert_pos else self.file.write('')
         self.file.write('\n\t\toptimalLength\t{}'.format(opt_length)) if opt_length != '' else self.file.write('')
         self.file.write('\n\t\tmaximalForce\t{}'.format(max_force)) if max_force != '' else self.file.write('')
         self.file.write('\n\t\ttendonSlackLength\t{}'.format(
@@ -890,7 +935,7 @@ class BiorbdModel:
         self.file.write('\n\t\t\tparent\t{}'.format(parent_viapoint)) if parent_viapoint != '' else self.file.write('')
         self.file.write('\n\t\t\tmuscle\t{}'.format(muscle_viapoint))
         self.file.write('\n\t\t\tmusclegroup\t{}'.format(m_ref)) if m_ref != '' else self.file.write('')
-        self.file.write('\n\t\t\tposition\t{}'.format(viapoint_pos)) if viapoint_pos != '' else self.file.write('')
+        self.file.write('\n\t\t\tposition\t{}\t{}\t{}'.format(viapoint_pos[0], viapoint_pos[1], viapoint_pos[2])) if viapoint_pos else self.file.write('')
         self.file.write('\n\t\tendviapoint\n')
         return 0
 
@@ -931,29 +976,65 @@ class BiorbdModel:
 
 
 class ConvertModel:
-    def __init__(self, model_to_convert, default_model='../models/Bras.bioMod'):
-        self.model_to_convert = BiorbdModel(model_to_convert)
-        self.model_to_convert.read()
-        self.default_model = BiorbdModel(default_model)
-        self.default_model.read()
+    def __init__(self, model_to_convert, default_model=BiorbdModel('../models/Bras.bioMod')):
+        if type(model_to_convert) == str:
+            self.converted_model = BiorbdModel(model_to_convert)
+            self.converted_model.read()
+        else:
+            self.converted_model = model_to_convert
+        if type(default_model) == str:
+            self.default_model = BiorbdModel(default_model)
+            self.default_model.read()
+        else:
+            self.default_model = default_model
 
-    def remodel(self):
-        return 1
+    def get_converted_model(self):
+        return self.converted_model
+
+    def remodel(self, default_segment_name, segment_to_convert_name):
+        segment_to_convert_index = self.converted_model.get_segment_index(segment_to_convert_name)
+        segment = self.converted_model.get_segments()[segment_to_convert_index]
+        segment_default_index = self.default_model.get_segment_index(default_segment_name)
+        new_length = self.default_model.get_segments()[segment_default_index].length()
+        segment.set_length(new_length)
+        self.converted_model.set_segment(segment_to_convert_index, segment)
+        return self.converted_model
 
 
 def main():
-    model = BiorbdModel('../models/model_Clara/AdaJef_1g_Model.s2mMod')
-    model2 = BiorbdModel('../models/Bras.bioMod')
-    print(get_words('../models/model_Clara/AdaJef_1g_Model.s2mMod'))
-    print(get_words('../models/Bras.bioMod'))
-    model.read()
-    model2.read()
-    model2.rewrite('../models/converted.bioMod')
-    for el in model.get_segments():
-        print(el.get_name())
+    model_to_convert = BiorbdModel('../models/model_Clara/AdaJef_1g_Model.s2mMod')
+    model_default = BiorbdModel('../models/Bras.bioMod')
+    model_to_convert.read()
+    model_default.read()
+
+    for segment in model_default.get_segments():
+        segment_name = segment.get_name()
+        print(segment_name, '-', segment.length())
+
+    conversion = ConvertModel(model_to_convert, model_default)
     print('***')
-    for el in model2.get_segments():
-        print(el.get_name())
+
+    conversion.remodel('Pelvis', 'Pelvis')
+    conversion.remodel('Thorax', 'Thorax')
+    conversion.remodel('Clavicle', 'ClaviculeRight')
+    conversion.remodel('Scapula', 'ScapulaRight')
+    conversion.remodel('Arm', 'ArmRight')
+    conversion.remodel('LowerArm1', 'LowerArm1Right')
+    conversion.remodel('LowerArm2', 'LowerArm2Right')
+    conversion.remodel('hand', 'HandRight')
+    conversion.remodel('Clavicle', 'ClaviculeLeft')
+    conversion.remodel('Scapula', 'ScapulaLeft')
+    conversion.remodel('Arm', 'ArmLeft')
+    conversion.remodel('LowerArm1', 'LowerArm1Left')
+    conversion.remodel('LowerArm2', 'LowerArm2Left')
+    conversion.remodel('hand', 'HandLeft')
+
+    converted_model = conversion.get_converted_model()
+    converted_model.rewrite('../models/model_Clara/converted-AdaJef_1g_Model.bioMod')
+
+    for segment in model_to_convert.get_segments():
+        segment_name = segment.get_name()
+        print(segment_name, '-', segment.length())
 
     return 0
 
