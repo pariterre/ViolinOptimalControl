@@ -1,7 +1,5 @@
 import numpy as np
 import math
-from numpy.linalg import inv
-import biorbd
 
 
 def coord_sys(axis):
@@ -488,16 +486,17 @@ class Pathpoint:
 
 
 class BiorbdModel:
-    def __init__(self, model):
+    def __init__(self, model=''):
         self.model = model
-        self.words = get_words(self.model)
+        if self.model != '':
+            self.words = get_words(self.model)
+            self.file = open(model, "r")
         self.segments = []
         self.markers = []
         self.muscle_groups = []
         self.muscles = []
         self.pathpoints = []
         self.path = ''
-        self.file = open(model, "r")
         self.version = 3
 
     def read(self):
