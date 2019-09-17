@@ -486,20 +486,27 @@ class Pathpoint:
 
 
 class BiorbdModel:
-    def __init__(self, model=''):
-        self.model = model
-        if self.model != '':
-            self.words = get_words(self.model)
-            self.file = open(model, "r")
+    def __init__(self, path=None):
         self.segments = []
         self.markers = []
         self.muscle_groups = []
         self.muscles = []
         self.pathpoints = []
-        self.path = ''
+        self.path = path
+        self.file = ''
+        self.words = ''
         self.version = 3
+        # TODO handle biorbd version differences
 
-    def read(self):
+    def read(self, path=None):
+        if not path:
+            if self.path:
+                self.words = get_words(self.path)
+            else:
+                assert "You need to give a file to read"
+        else:
+            self.words = get_words(path)
+            self.path = path
         number_line = 0
 
         name_segment = ''
@@ -938,7 +945,7 @@ class BiorbdModel:
         self.file.write('\n\t\tendviapoint\n')
         return 0
 
-    def rewrite(self, path, with_markers=True, with_muscles=True, with_pathpoints=True):
+    def write(self, path, with_markers=True, with_muscles=True, with_pathpoints=True):
         self.file = open(path, 'w')
         self.path = path
         self.file.write('version ' + str(self.version) + '\n')
@@ -1001,10 +1008,10 @@ class ConvertModel:
 
 
 def main():
-    model_to_convert = BiorbdModel('../models/model_Clara/AdaJef_1g_Model.s2mMod')
-    model_default = BiorbdModel('../models/Bras.bioMod')
-    model_to_convert.read()
-    model_default.read()
+    model_to_convert = BiorbdModel()
+    model_to_convert.read('../models/model_Clara/AdaJef_1g_Model.s2mMod')
+    model_default = BiorbdModel()
+    model_default.read('../models/Bras.bioMod')
 
     for segment in model_default.get_segments():
         segment_name = segment.get_name()
@@ -1029,7 +1036,7 @@ def main():
     conversion.remodel('hand', 'HandLeft')
 
     converted_model = conversion.get_converted_model()
-    converted_model.rewrite('../models/model_Clara/converted-AdaJef_1g_Model.bioMod')
+    converted_model.write('../models/model_Clara/converted-AdaJef_1g_Model.bioMod')
 
     for segment in model_to_convert.get_segments():
         segment_name = segment.get_name()

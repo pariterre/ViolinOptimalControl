@@ -78,24 +78,26 @@ class MainWindow(tk.Tk):
         # Frame for analysis
         self.frame_analyse = tk.Frame(self, borderwidth=4, relief=tk.GROOVE)
         self.label_analyse = tk.Label(self.frame_analyse, text="Analyse file", borderwidth=2, relief=tk.GROOVE)
-        self.tree = ttk.Treeview(self.frame_analyse, columns=('name', 'size', 'modified'))
+        self.tree = ttk.Treeview(self.frame_analyse, columns=('type', 'value'))
+        self.tree.heading('type', text='Object type')
+        self.tree.heading('value', text='Value')
 
         # Frame for original model
         self.frame_original = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_original.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-        self.label_original = tk.Label(self.frame_original, text="Original Model", borderwidth=2, relief=tk.GROOVE)
+        self.label_original = tk.Label(self.frame_original, text="Read file", borderwidth=2, relief=tk.GROOVE)
         self.label_original.pack()
 
         # Frame for converted model
         self.frame_converted = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_converted.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-        self.label_converted = tk.Label(self.frame_converted, text="Converted Model", borderwidth=2, relief=tk.GROOVE)
+        self.label_converted = tk.Label(self.frame_converted, text="Modify file", borderwidth=2, relief=tk.GROOVE)
         self.label_converted.pack()
 
         # Frame for exportation
         self.frame_exportation = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_exportation.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-        self.label_exportation = tk.Label(self.frame_exportation, text="Exportation", borderwidth=2, relief=tk.GROOVE)
+        self.label_exportation = tk.Label(self.frame_exportation, text="Write file", borderwidth=2, relief=tk.GROOVE)
         self.label_exportation.pack()
 
         # Quit button
@@ -237,22 +239,23 @@ class MainWindow(tk.Tk):
             print('** opensim file')
             try:
                 ConvertedFromOsim2Biorbd3(self.biorbd_path, self.original_path)
-                return BiorbdModel(self.biorbd_path)
-
+                self.model = BiorbdModel()
+                self.model.read(self.biorbd_path)
             except:
                 ConvertedFromOsim2Biorbd4(self.biorbd_path, self.original_path)
-                return BiorbdModel(self.biorbd_path)
+                self.model = BiorbdModel()
+                self.model.read(self.biorbd_path)
         elif self.file_type == 'Biorbd':
             self.biorbd_path = self.original_path
             print('** biorbd file')
             try:
-                return BiorbdModel(self.biorbd_path)
+                self.model = BiorbdModel()
+                self.model.read(self.biorbd_path)
             except:
                 print('*')
 
     def analyse(self):
-        self.model = self.actualise_file()
-        self.model.read()
+        self.actualise_file()
         # Frame for analyse
         if not self.is_analyzed:
             self.geometry("%dx%d%+d%+d" % (1000, 400, 350, 125))
@@ -264,23 +267,72 @@ class MainWindow(tk.Tk):
         index_segments = self.tree.insert(index_model, 0, 'Segments', text='Segments')
         index_muscle_groups = self.tree.insert(index_model, 1, 'MuscleGroups', text='MuscleGroups')
 
-        index = 3
         for segment in self.model.get_segments():
-            print(index)
             index_segment = self.tree.insert(index_segments, 'end', segment.get_name(),
                                              text='segment '+segment.get_name())
-            for marker in segment.get_markers():
-                index = self.tree.insert(index_segment, 'end', marker.get_name(), text='marker '+marker.get_name())
+            index_segment_parameters = self.tree.insert(index_segment, 'end', segment.get_name()+'_parameters',
+                                                        text='Parameters')
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + 'parent',
+                             text='parent', values=('', segment.get_parent()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + '_mass',
+                             text='mass', values=('', segment.get_mass()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + '_inertia',
+                             text='inertia', values=('', segment.get_inertia()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + '_com',
+                             text='center of mass', values=('', segment.get_com()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + '_rt_in_matrix',
+                             text='rt_in_matrix', values=('', segment.get_rt_in_matrix()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + 'rot_trans_matrix',
+                             text='rot_trans_matrix', values=('', segment.get_rot_trans_matrix()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + 'dof_translation',
+                             text='dof_translation', values=('', segment.get_dof_translation()))
+            self.tree.insert(index_segment_parameters, 'end', segment.get_name() + 'dof_rotation',
+                             text='dof_rotation', values=('', segment.get_dof_rotation()))
+            markers = segment.get_markers()
+            if markers:
+                index_markers = self.tree.insert(index_segment, 'end', 'markers'+segment.get_name(), text='markers')
+                for marker in markers:
+                    index_marker = self.tree.insert(index_markers, 'end', marker.get_name(),
+                                                    text='marker '+marker.get_name())
+                    self.tree.insert(index_marker, 'end', marker.get_name() + '_position',
+                                     text='position in segment', values=('', marker.get_position()))
+                    # TODO add technical and anatomical
         for muscle_group in self.model.get_muscle_groups():
             index_muscle_group = \
                 self.tree.insert(index_muscle_groups, 'end', muscle_group.get_name(),
                                  text='muscle group '+muscle_group.get_name())
-            for muscle in muscle_group.get_muscles():
-                index_muscle = \
-                    self.tree.insert(index_muscle_group, 'end', muscle.get_name(), text='muscle '+muscle.get_name())
-                for pathpoint in muscle.get_pathpoints():
-                    index = self.tree.insert(index_muscle, 'end', pathpoint.get_name(),
-                                             text='pathpoint '+pathpoint.get_name())
+            muscles = muscle_group.get_muscles()
+            if muscles:
+                for muscle in muscles:
+                    index_muscle = \
+                        self.tree.insert(index_muscle_group, 'end', muscle.get_name(), text='muscle '+muscle.get_name())
+                    index_muscle_parameters = self.tree.insert(index_muscle, 'end',
+                                                               muscle.get_name() + '_parameters', text='Parameters')
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'type',
+                                     text='type', values=('', muscle.get_type()))
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'state_type',
+                                     text='state_type', values=('', muscle.get_state_type()))
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'optimal_length',
+                                     text='optimal_length', values=('', muscle.get_optimal_length()))
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'maximal_force',
+                                     text='maximal_force', values=('', muscle.get_maximal_force()))
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'tendon_slack_length',
+                                     text='tendon_slack_length', values=('', muscle.get_tendon_slack_length()))
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'pennation_angle',
+                                     text='pennation_angle', values=('', muscle.get_pennation_angle()))
+                    self.tree.insert(index_muscle_parameters, 'end', muscle.get_name() + 'max_velocity',
+                                     text='max_velocity', values=('', muscle.get_max_velocity()))
+                    pathpoints = muscle.get_pathpoints()
+                    if pathpoints:
+                        index_pathpoints = self.tree.insert(index_muscle, 'end', 'pathpoints' + muscle.get_name(),
+                                                            text='pathpoints')
+                        for pathpoint in pathpoints:
+                            index_pathpoint = self.tree.insert(index_pathpoints, 'end', pathpoint.get_name(),
+                                                               text='pathpoint '+pathpoint.get_name())
+                            self.tree.insert(index_pathpoint, 'end', pathpoint.get_name() + '_parent',
+                                             text='parent', values=('', pathpoint.get_parent()))
+                            self.tree.insert(index_pathpoint, 'end', pathpoint.get_name() + '_position',
+                                             text='position in parent muscle', values=('', pathpoint.get_position()))
         self.tree.pack(side=tk.BOTTOM, fill=tk.BOTH, expand='yes')
 
     def state(self, boolean):

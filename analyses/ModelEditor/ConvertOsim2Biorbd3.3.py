@@ -598,8 +598,8 @@ class ConvertedFromOsim2Biorbd:
 
 def main():
     ConvertedFromOsim2Biorbd(
-        '../models/conv-arm26.biomod',
-        "../models/Opensim_model/arm26.osim")
+        '../models/conv-doigt.biomod',
+        "../models/Opensim_model/Index6_Original.osim")
 #    ConvertedFromOsim2Biorbd(
 #        '../models/conv-arm26_2.biomod',
 #        "../models/Opensim_model/arm26_2.osim")
