@@ -40,17 +40,17 @@ class MainWindow(tk.Tk):
         self.main_menu_bar = MainMenuBar(self)
 
         self.menu1 = ToolMenu(self.main_menu_bar, tearoff=0)
-        self.menu1.add_command(label="", command=self.fun('Create'))
-        self.menu1.add_command(label="Edit", command=self.fun('Edit'))
+        self.menu1.add_command(label="Open File", command=self.find_path)
+        self.menu1.add_command(label="Save File", command=self.fun('Save'))
         self.menu1.add_separator()
         self.menu1.add_command(label="Quit", command=self.quit)
         self.main_menu_bar.add_cascade(label="File", menu=self.menu1)
 
         self.menu2 = ToolMenu(self.main_menu_bar, tearoff=0)
-        self.menu2.add_command(label="1", command=self.fun('*'))
+        self.menu2.add_command(label="Read file", command=self.analyse, state=tk.DISABLED)
         self.menu2.add_command(label="2", command=self.fun('*'))
         self.menu2.add_command(label="3", command=self.fun('*'))
-        self.main_menu_bar.add_cascade(label="Analyse", menu=self.menu2)
+        self.main_menu_bar.add_cascade(label="Read", menu=self.menu2)
 
         self.menu3 = ToolMenu(self.main_menu_bar, tearoff=0)
         self.menu3.add_command(label="About", command=self.fun('*'))
@@ -77,7 +77,7 @@ class MainWindow(tk.Tk):
 
         # Frame for analysis
         self.frame_analyse = tk.Frame(self, borderwidth=4, relief=tk.GROOVE)
-        self.label_analyse = tk.Label(self.frame_analyse, text="Analyse file", borderwidth=2, relief=tk.GROOVE)
+        self.label_analyse = tk.Label(self.frame_analyse, text="Reader", borderwidth=2, relief=tk.GROOVE)
         self.tree = ttk.Treeview(self.frame_analyse, columns=('type', 'value'))
         self.tree.heading('type', text='Object type')
         self.tree.heading('value', text='Value')
@@ -85,24 +85,29 @@ class MainWindow(tk.Tk):
         # Frame for original model
         self.frame_original = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_original.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-        self.label_original = tk.Label(self.frame_original, text="Read file", borderwidth=2, relief=tk.GROOVE)
+        self.label_original = tk.Label(self.frame_original, text="Reader menu", borderwidth=2, relief=tk.GROOVE)
         self.label_original.pack()
 
         # Frame for converted model
         self.frame_converted = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_converted.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-        self.label_converted = tk.Label(self.frame_converted, text="Modify file", borderwidth=2, relief=tk.GROOVE)
+        self.label_converted = tk.Label(self.frame_converted, text="Converter menu", borderwidth=2, relief=tk.GROOVE)
         self.label_converted.pack()
 
         # Frame for exportation
         self.frame_exportation = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_exportation.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-        self.label_exportation = tk.Label(self.frame_exportation, text="Write file", borderwidth=2, relief=tk.GROOVE)
+        self.label_exportation = tk.Label(self.frame_exportation, text="Writer menu", borderwidth=2, relief=tk.GROOVE)
         self.label_exportation.pack()
 
         # Quit button
         self.button_quit = tk.Button(self, text="Quit", command=self.quit)
         self.button_quit.pack(side=tk.BOTTOM)
+
+        # Find path
+        self.path_to_find = tk.StringVar()
+        self.find_path_button = tk.Button(self.frame_original, text='Find', width=5, command=self.find_path)
+        self.find_path_button.pack(side=tk.LEFT)
 
         # entry
         self.value = tk.StringVar()
@@ -110,11 +115,6 @@ class MainWindow(tk.Tk):
         self.entree = tk.Entry(self.frame_original, textvariable=self.value, width=20)
         self.entree.pack(side=tk.LEFT)
         self.entree.focus_set()
-
-        # Find path
-        self.path_to_find = tk.StringVar()
-        self.find_path_button = tk.Button(self.frame_original, text='Find', width=5, command=self.find_path)
-        self.find_path_button.pack(side=tk.LEFT)
 
         # Check path
         self.check_button = tk.Button(self.frame_original, text="Check path", width=10, command=self.check_path)
@@ -124,7 +124,7 @@ class MainWindow(tk.Tk):
         self.status.pack(side=tk.BOTTOM)
 
         self.analyse_button =\
-            tk.Button(self.frame_original, text='Analyse file', command=self.analyse, state=tk.DISABLED)
+            tk.Button(self.frame_original, text='Read file', command=self.analyse, state=tk.DISABLED)
         self.analyse_button.pack(side=tk.BOTTOM)
 
     def fun(self, name):
@@ -135,7 +135,7 @@ class MainWindow(tk.Tk):
     def find_path(self):
         self.filename = filedialog.askopenfilename(initialdir=self.initial_dir, title="Select file",
                                                    filetypes=(("bioMod files", "*.bioMod"),
-                                                              ("S2mMod files", "*.s2mMod"), ("OpenSimfiles", "*.osim"),
+                                                              ("S2mMod files", "*.s2mMod"), ("OpenSim files", "*.osim"),
                                                               ("all files", "*.*")))
         self.value.set(os.path.relpath(self.filename))
 
@@ -145,10 +145,11 @@ class MainWindow(tk.Tk):
             self.status.config(text="File found : " + self.file_type)
             if is_error:
                 self.analyse_button.config(state=tk.DISABLED)
+                self.menu2.config(state=tk.DISABLED)
             else:
                 self.is_checked = True
                 self.analyse_button.config(state=tk.NORMAL)
-
+                self.menu2.config(state=tk.NORMAL)
         return _check
 
     def unknown_extension_check(self):
