@@ -15,98 +15,155 @@ except:
     import tkFileDialog as filedialog
 
 
-file_type = 'None'
-is_checked = False
-original_path = ''
-biorbd_path = ''
-initial_dir = os.getcwd()
-check_status = 'file not found'
-file_exist = False
-unknown_extension = False
-model = None
+class ToolMenu(tk.Menu):
+    def __init__(self, mainmenubar, *args, ** kwargs):
+        tk.Menu.__init__(self, mainmenubar, *args, **kwargs)
+        self.mainmenubar = mainmenubar
 
 
-def callback():
-    print(entree.get())
+class MainMenuBar(tk.Menu):
+    def __init__(self, parent, *args, ** kwargs):
+        tk.Menu.__init__(self, parent, *args, **kwargs)
+        self.config(tearoff=0)
+        self.parent = parent
 
 
-def fun(name):
-    def _fun():
-        print(name)
-    return _fun
+class MainWindow(tk.Tk):
+    def __init__(self, *args, ** kwargs):
+        # heritance of tk window
+        tk.Tk.__init__(self, *args, **kwargs)
+        # general window
+        self.title("Biorbd Model Converter")
+        self.geometry("%dx%d%+d%+d" % (1000, 100, 350, 125))
 
+        # menu bar
+        self.main_menu_bar = MainMenuBar(self)
 
-def find_path():
-    window.filename = filedialog.askopenfilename(initialdir=initial_dir, title="Select file",
-                                                 filetypes=(("bioMod files", "*.bioMod"), ("S2mMod files", "*.s2mMod"), ("OpenSimfiles", "*.osim"), ("all files","*.*")))
-    value.set(os.path.relpath(window.filename))
+        self.menu1 = ToolMenu(self.main_menu_bar, tearoff=0)
+        self.menu1.add_command(label="", command=self.fun('Create'))
+        self.menu1.add_command(label="Edit", command=self.fun('Edit'))
+        self.menu1.add_separator()
+        self.menu1.add_command(label="Quit", command=self.quit)
+        self.main_menu_bar.add_cascade(label="File", menu=self.menu1)
 
+        self.menu2 = ToolMenu(self.main_menu_bar, tearoff=0)
+        self.menu2.add_command(label="1", command=self.fun('*'))
+        self.menu2.add_command(label="2", command=self.fun('*'))
+        self.menu2.add_command(label="3", command=self.fun('*'))
+        self.main_menu_bar.add_cascade(label="Analyse", menu=self.menu2)
 
-def check(_window, is_error=False):
-    def _check():
-        _window.destroy()
-        status.config(text="File found : " + file_type)
-        if is_error:
-            analyse_button.config(state=tk.DISABLED)
-        else:
-            is_checked = True
-            analyse_button.config(state=tk.NORMAL)
+        self.menu3 = ToolMenu(self.main_menu_bar, tearoff=0)
+        self.menu3.add_command(label="About", command=self.fun('*'))
+        self.main_menu_bar.add_cascade(label="Help", menu=self.menu3)
 
-    return _check
+        self.config(menu=self.main_menu_bar)
 
+        # Initializing
+        self.file_type = 'None'
+        self.is_checked = False
+        self.original_path = ''
+        self.biorbd_path = ''
+        self.initial_dir = os.getcwd()
+        self.filename = ''
+        self.check_status = 'file not found'
+        self.file_exist = False
+        self.unknown_extension = False
+        self.model = None
+        self.is_analyzed = False
 
-def check_path():
-    file_type = 'None'
-    original_path = entree.get()
-    if os.path.exists(original_path):
-        if original_path.find('.osim') > -1:
-            check_status = 'OpenSim file found'
-            file_exist = True
-            unknown_extension = False
-            file_type = 'OpenSim'
-        elif original_path.find('.bioMod') > -1:
-            check_status = 'Biorbd file found'
-            file_exist = True
-            unknown_extension = False
-            file_type = 'Biorbd'
-        elif original_path.find('.biomod') > -1:
-            check_status = 'Biorbd file found'
-            file_exist = True
-            unknown_extension = False
-            file_type = 'Biorbd'
-        else:
-            check_status = 'file found but extension is not recognized.\n' \
-                           'Please indicate the type of file : '
-            file_exist = True
-            unknown_extension = True
-    else:
-        check_status = 'file not found'
-        file_exist = False
-        unknown_extension = False
+        # General frame for file management
+        self.general_frame = tk.Frame(self, height=100)
+        self.general_frame.pack(fill=tk.BOTH)
 
-    # Message box
-    top = tk.Toplevel()
-    top.geometry("%dx%d%+d%+d" % (300, 160, 250, 125))
-    top.title("File checker")
-    l = tk.LabelFrame(top, text="Message", padx=20, pady=20)
-    l.pack(fill="both", expand="yes")
-    tk.Label(l, text=check_status).pack()
+        # Frame for analysis
+        self.frame_analyse = tk.Frame(self, borderwidth=4, relief=tk.GROOVE)
+        self.label_analyse = tk.Label(self.frame_analyse, text="Analyse file", borderwidth=2, relief=tk.GROOVE)
+        self.tree = ttk.Treeview(self.frame_analyse, columns=('name', 'size', 'modified'))
 
-    def unknown_extension_check():
-        res = var1.get()
+        # Frame for original model
+        self.frame_original = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
+        self.frame_original.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
+        self.label_original = tk.Label(self.frame_original, text="Original Model", borderwidth=2, relief=tk.GROOVE)
+        self.label_original.pack()
+
+        # Frame for converted model
+        self.frame_converted = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
+        self.frame_converted.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
+        self.label_converted = tk.Label(self.frame_converted, text="Converted Model", borderwidth=2, relief=tk.GROOVE)
+        self.label_converted.pack()
+
+        # Frame for exportation
+        self.frame_exportation = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
+        self.frame_exportation.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
+        self.label_exportation = tk.Label(self.frame_exportation, text="Exportation", borderwidth=2, relief=tk.GROOVE)
+        self.label_exportation.pack()
+
+        # Quit button
+        self.button_quit = tk.Button(self, text="Quit", command=self.quit)
+        self.button_quit.pack(side=tk.BOTTOM)
+
+        # entry
+        self.value = tk.StringVar()
+        self.value.set("Enter path of original model")
+        self.entree = tk.Entry(self.frame_original, textvariable=self.value, width=20)
+        self.entree.pack(side=tk.LEFT)
+        self.entree.focus_set()
+
+        # Find path
+        self.path_to_find = tk.StringVar()
+        self.find_path_button = tk.Button(self.frame_original, text='Find', width=5, command=self.find_path)
+        self.find_path_button.pack(side=tk.LEFT)
+
+        # Check path
+        self.check_button = tk.Button(self.frame_original, text="Check path", width=10, command=self.check_path)
+        self.check_button.pack(side=tk.LEFT)
+
+        self.status = tk.Label(self.frame_original, text="File found : " + self.file_type)
+        self.status.pack(side=tk.BOTTOM)
+
+        self.analyse_button =\
+            tk.Button(self.frame_original, text='Analyse file', command=self.analyse, state=tk.DISABLED)
+        self.analyse_button.pack(side=tk.BOTTOM)
+
+    def fun(self, name):
+        def _fun():
+            print(name)
+        return _fun
+
+    def find_path(self):
+        self.filename = filedialog.askopenfilename(initialdir=self.initial_dir, title="Select file",
+                                                   filetypes=(("bioMod files", "*.bioMod"),
+                                                              ("S2mMod files", "*.s2mMod"), ("OpenSimfiles", "*.osim"),
+                                                              ("all files", "*.*")))
+        self.value.set(os.path.relpath(self.filename))
+
+    def check(self, _window, is_error=False):
+        def _check():
+            _window.destroy()
+            self.status.config(text="File found : " + self.file_type)
+            if is_error:
+                self.analyse_button.config(state=tk.DISABLED)
+            else:
+                self.is_checked = True
+                self.analyse_button.config(state=tk.NORMAL)
+
+        return _check
+
+    def unknown_extension_check(self):
+        res = self.var1.get()
         if res == 'Biorbd file (.bioMod)':
-            file_type = 'Biorbd'
-            is_checked = True
-            status.config(text="File found : " + file_type)
-            analyse_button.config(state=tk.NORMAL)
-            top.destroy()
+            self.file_type = 'Biorbd'
+            self.is_checked = True
+            self.status.config(text="File found : " + self.file_type)
+            self.analyse_button.config(state=tk.NORMAL)
+            self.top.destroy()
             return 0
         elif res == 'OpenSim file (.osim)':
-            file_type = 'OpenSim'
-            is_checked = True
-            status.config(text="File found : " + file_type)
-            analyse_button.config(state=tk.NORMAL)
-            top.destroy()
+            self.file_type = 'OpenSim'
+            self.is_checked = True
+            self.status.config(text="File found : " + self.file_type)
+            self.analyse_button.config(state=tk.NORMAL)
+            self.top.destroy()
             return 0
         else:
             error_window = tk.Toplevel()
@@ -115,167 +172,125 @@ def check_path():
             label_error = tk.LabelFrame(error_window, text="Message", padx=20, pady=20)
             label_error.pack(fill="both", expand="yes")
             tk.Label(label_error, text="You must choose a type of file").pack()
-            tk.Button(label_error, text="Ok", command=check(error_window, True)).pack()
+            tk.Button(label_error, text="Ok", command=self.check(error_window, True)).pack()
 
-    if unknown_extension:
-        var1 = tk.StringVar()
-        options = ["Biorbd file (.bioMod)", "OpenSim file (.osim)"]
-        list_file = tk.OptionMenu(l, var1, *options)
-        var1.set('Choose a file type')  # default value
-        list_file.pack()
-        button_quit = tk.Button(l, text="Ok", command=unknown_extension_check)
-        button_quit.pack(side=tk.BOTTOM)
-    else:
-        if file_exist:
-            button_quit = tk.Button(l, text="Ok", command=check(top))
-            button_quit.pack()
+    def check_path(self):
+        self.file_type = 'None'
+        self.original_path = self.entree.get()
+        if os.path.exists(self.original_path):
+            if self.original_path.find('.osim') > -1:
+                self.check_status = 'OpenSim file found'
+                self.file_exist = True
+                self.unknown_extension = False
+                self.file_type = 'OpenSim'
+            elif self.original_path.find('.bioMod') > -1:
+                self.check_status = 'Biorbd file found'
+                self.file_exist = True
+                self.unknown_extension = False
+                self.file_type = 'Biorbd'
+            elif self.original_path.find('.biomod') > -1:
+                self.check_status = 'Biorbd file found'
+                self.file_exist = True
+                self.unknown_extension = False
+                self.file_type = 'Biorbd'
+            else:
+                self.check_status = 'file found but extension is not recognized.\n' \
+                               'Please indicate the type of file : '
+                self.file_exist = True
+                self.unknown_extension = True
         else:
-            button_quit = tk.Button(l, text="Ok", command=check(top, True))
-            button_quit.pack()
-    if file_exist and is_checked:
-        status.config(text="File found : " + file_type)
+            self.check_status = 'file not found'
+            self.file_exist = False
+            self.unknown_extension = False
 
-# TODO create a button to launch conversion
+        # Message box
+        self.top = tk.Toplevel()
+        self.top.geometry("%dx%d%+d%+d" % (300, 160, 250, 125))
+        self.top.title("File checker")
+        label_top = tk.LabelFrame(self.top, text="Message", padx=20, pady=20)
+        label_top.pack(fill="both", expand="yes")
+        tk.Label(label_top, text=self.check_status).pack()
 
+        if self.unknown_extension:
+            var1 = tk.StringVar()
+            options = ["Biorbd file (.bioMod)", "OpenSim file (.osim)"]
+            list_file = tk.OptionMenu(label_top, var1, *options)
+            var1.set('Choose a file type')  # default value
+            list_file.pack()
+            button_quit = tk.Button(label_top, text="Ok", command=self.unknown_extension_check)
+            button_quit.pack(side=tk.BOTTOM)
+        else:
+            if self.file_exist:
+                button_quit = tk.Button(label_top, text="Ok", command=self.check(self.top))
+                button_quit.pack()
+            else:
+                button_quit = tk.Button(label_top, text="Ok", command=self.check(self.top, True))
+                button_quit.pack()
+        if self.file_exist and self.is_checked:
+            self.status.config(text="File found : " + self.file_type)
 
-def actualise_file():
-    print('***')
-    print(file_type)
-    if file_type == 'OpenSim':
-        biorbd_path = original_path[-2:]+'-converted.bioMod'
-        print('** opensim file')
-        try:
-            ConvertedFromOsim2Biorbd3(biorbd_path, original_path)
-            return BiorbdModel(biorbd_path)
+    def actualise_file(self):
+        print('***')
+        print(self.file_type)
+        if self.file_type == 'OpenSim':
+            self.biorbd_path = self.original_path[-2:]+'-converted.bioMod'
+            print('** opensim file')
+            try:
+                ConvertedFromOsim2Biorbd3(self.biorbd_path, self.original_path)
+                return BiorbdModel(self.biorbd_path)
 
-        except:
-            ConvertedFromOsim2Biorbd4(biorbd_path, original_path)
-            return BiorbdModel(biorbd_path)
-    elif file_type == 'Biorbd':
-        biorbd_path = original_path
-        print('** biorbd file')
-        try:
-            return BiorbdModel(biorbd_path)
-        except:
-            print('*')
+            except:
+                ConvertedFromOsim2Biorbd4(self.biorbd_path, self.original_path)
+                return BiorbdModel(self.biorbd_path)
+        elif self.file_type == 'Biorbd':
+            self.biorbd_path = self.original_path
+            print('** biorbd file')
+            try:
+                return BiorbdModel(self.biorbd_path)
+            except:
+                print('*')
 
+    def analyse(self):
+        self.model = self.actualise_file()
+        self.model.read()
+        # Frame for analyse
+        if not self.is_analyzed:
+            self.geometry("%dx%d%+d%+d" % (1000, 400, 350, 125))
+            self.frame_analyse.pack(side=tk.BOTTOM, fill=tk.BOTH, expand='yes')
+            self.label_analyse.pack()
+            self.is_analyzed = True
 
-def analyse():
-    print('analysed')
-    model = actualise_file()
-    model.read()
-    # Frame for analyse
-    window.geometry("%dx%d%+d%+d" % (1000, 400, 350, 125))
-    frame_analyse = tk.Frame(window, borderwidth=4, relief=tk.GROOVE)
-    frame_analyse.pack(side=tk.BOTTOM, fill=tk.BOTH, expand='yes')
-    label_analyse = tk.Label(frame_analyse, text="Analyse file", borderwidth=2, relief=tk.GROOVE)
-    label_analyse.pack()
-    tree = ttk.Treeview(frame_analyse)
-    index_model = tree.insert('', 'end', 'Model', text='Model')
-    index_segments = tree.insert(index_model, 0, 'Segments', text='Segments')
-    index_muscle_groups = tree.insert(index_model, 1, 'MuscleGroups', text='MuscleGroups')
-    segment_index = 0
-    for segment in model.get_segments():
-        tree.insert(index_segments, segment_index, segment.get_name(), text=segment.get_name())
-        marker_index = 0
-        for marker in segment.get_markers():
-            tree.insert(segment_index, marker_index, marker.get_name(), text=marker.get_name())
-            marker_index += 1
-        segment_index += 1
-    muscle_group_index = 0
-    for muscle_group in model.get_muscle_groups():
-        tree.insert(index_muscle_groups, muscle_group_index, muscle_group.get_name(), text=muscle_group.get_name())
-        muscle_index = 0
-        for muscle in muscle_group.get_muscles():
-            tree.insert(muscle_group_index, muscle_index, muscle.get_name(), text=muscle.get_name())
-            pathpoint_index = 0
-            for pathpoint in muscle.get_pathpoints():
-                tree.insert(muscle_index, pathpoint_index, pathpoint.get_name(), text=pathpoint.get_name())
-                pathpoint_index += 1
-            muscle_index += 1
-        muscle_group_index += 1
-    tree.pack()
+        index_model = self.tree.insert('', 'end', 'Model', text='Model')
+        index_segments = self.tree.insert(index_model, 0, 'Segments', text='Segments')
+        index_muscle_groups = self.tree.insert(index_model, 1, 'MuscleGroups', text='MuscleGroups')
 
-def state(boolean):
-    if boolean:
-        analyse_button.config(state=tk.NORMAL)
+        index = 3
+        for segment in self.model.get_segments():
+            print(index)
+            index_segment = self.tree.insert(index_segments, 'end', segment.get_name(),
+                                             text='segment '+segment.get_name())
+            for marker in segment.get_markers():
+                index = self.tree.insert(index_segment, 'end', marker.get_name(), text='marker '+marker.get_name())
+        for muscle_group in self.model.get_muscle_groups():
+            index_muscle_group = \
+                self.tree.insert(index_muscle_groups, 'end', muscle_group.get_name(),
+                                 text='muscle group '+muscle_group.get_name())
+            for muscle in muscle_group.get_muscles():
+                index_muscle = \
+                    self.tree.insert(index_muscle_group, 'end', muscle.get_name(), text='muscle '+muscle.get_name())
+                for pathpoint in muscle.get_pathpoints():
+                    index = self.tree.insert(index_muscle, 'end', pathpoint.get_name(),
+                                             text='pathpoint '+pathpoint.get_name())
+        self.tree.pack(side=tk.BOTTOM, fill=tk.BOTH, expand='yes')
 
-
-window = tk.Tk()
-window['bg']='white'
-window.title("Biorbd Model Converter")
-window.geometry("%dx%d%+d%+d" % (1000, 100, 350, 125))
-
-# Menu bar
-menu_bar = tk.Menu(window)
-menu1 = tk.Menu(menu_bar, tearoff=0)
-menu1.add_command(label="Create", command=fun('Create'))
-menu1.add_command(label="Edit", command=fun('Edit'))
-menu1.add_separator()
-menu1.add_command(label="Quit", command=window.quit)
-menu_bar.add_cascade(label="File", menu=menu1)
-
-menu2 = tk.Menu(menu_bar, tearoff=0)
-menu2.add_command(label="1", command=fun('*'))
-menu2.add_command(label="2", command=fun('*'))
-menu2.add_command(label="3", command=fun('*'))
-menu_bar.add_cascade(label="Analyse", menu=menu2)
-
-menu3 = tk.Menu(menu_bar, tearoff=0)
-menu3.add_command(label="About", command=fun('*'))
-menu_bar.add_cascade(label="Help", menu=menu3)
-
-window.config(menu=menu_bar)
+    def state(self, boolean):
+        if boolean:
+            self.analyse_button.config(state=tk.NORMAL)
 
 
-# General frame for file management
-general_frame = tk.Frame(window, height=100)
-general_frame.pack(fill=tk.BOTH)
+if __name__ == "__main__":
 
-# Frame for original model
-frame_original = tk.Frame(general_frame, borderwidth=4, relief=tk.GROOVE)
-frame_original.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-label_original = tk.Label(frame_original, text="Original Model", borderwidth=2, relief=tk.GROOVE)
-label_original.pack()
+    main_window = MainWindow()
+    main_window.mainloop()
 
-# Frame for converted model
-frame_converted = tk.Frame(general_frame, borderwidth=4, relief=tk.GROOVE)
-frame_converted.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-label_converted = tk.Label(frame_converted, text="Converted Model", borderwidth=2, relief=tk.GROOVE)
-label_converted.pack()
-
-# Frame for exportation
-frame_exportation = tk.Frame(general_frame, borderwidth=4, relief=tk.GROOVE)
-frame_exportation.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
-label_exportation = tk.Label(frame_exportation, text="Exportation", borderwidth=2, relief=tk.GROOVE)
-label_exportation.pack()
-
-# Quit button
-button = tk.Button(window, text="Quit", command=window.quit)
-button.pack(side=tk.BOTTOM)
-
-# entry
-value = tk.StringVar()
-value.set("Enter path of original model")
-entree = tk.Entry(frame_original, textvariable=value, width=20)
-entree.pack(side=tk.LEFT)
-entree.focus_set()
-
-# Find path
-path_to_find = tk.StringVar()
-find_path_button = tk.Button(frame_original, text='Find', width=5, command=find_path)
-find_path_button.pack(side=tk.LEFT)
-
-# Check path
-check_button = tk.Button(frame_original, text="Check path", width=10, command=check_path)
-check_button.pack(side=tk.LEFT)
-
-status = tk.Label(frame_original, text="File found : "+file_type)
-status.pack(side=tk.BOTTOM)
-
-analyse_button = tk.Button(frame_original, text='Analyse file', command=analyse, state=tk.DISABLED)
-analyse_button.pack(side=tk.BOTTOM)
-
-
-window.mainloop()
 
