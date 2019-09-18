@@ -48,8 +48,6 @@ class MainWindow(tk.Tk):
 
         self.menu2 = ToolMenu(self.main_menu_bar, tearoff=0)
         self.menu2.add_command(label="Read file", command=self.analyse, state=tk.DISABLED)
-        self.menu2.add_command(label="2", command=self.fun('*'))
-        self.menu2.add_command(label="3", command=self.fun('*'))
         self.main_menu_bar.add_cascade(label="Read", menu=self.menu2)
 
         self.menu3 = ToolMenu(self.main_menu_bar, tearoff=0)
@@ -82,25 +80,29 @@ class MainWindow(tk.Tk):
         self.tree.heading('type', text='Object type')
         self.tree.heading('value', text='Value')
 
-        # Frame for original model
+        # Frame for reader menu
         self.frame_original = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_original.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
         self.label_original = tk.Label(self.frame_original, text="Reader menu", borderwidth=2, relief=tk.GROOVE)
         self.label_original.pack()
 
-        # Frame for converted model
+        # Frame for converter menu
         self.frame_converted = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_converted.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
         self.label_converted = tk.Label(self.frame_converted, text="Converter menu", borderwidth=2, relief=tk.GROOVE)
         self.label_converted.pack()
 
-        # Frame for exportation
+        # Modify button
+        self.modify_button = tk.Button(self.frame_converted, text="Modify model", width=10, command=self.modify, state=tk.DISABLED)
+        self.modify_button.pack()
+
+        # Frame for writer menu
         self.frame_exportation = tk.Frame(self.general_frame, borderwidth=4, relief=tk.GROOVE)
         self.frame_exportation.pack(side=tk.LEFT, fill=tk.BOTH, expand='yes')
         self.label_exportation = tk.Label(self.frame_exportation, text="Writer menu", borderwidth=2, relief=tk.GROOVE)
         self.label_exportation.pack()
 
-        # Quit button
+        # Window quit button
         self.button_quit = tk.Button(self, text="Quit", command=self.quit)
         self.button_quit.pack(side=tk.BOTTOM)
 
@@ -145,11 +147,11 @@ class MainWindow(tk.Tk):
             self.status.config(text="File found : " + self.file_type)
             if is_error:
                 self.analyse_button.config(state=tk.DISABLED)
-                self.menu2.config(state=tk.DISABLED)
+                self.menu2.entryconfig(0, state=tk.DISABLED)
             else:
                 self.is_checked = True
                 self.analyse_button.config(state=tk.NORMAL)
-                self.menu2.config(state=tk.NORMAL)
+                self.menu2.entryconfig(0, state=tk.NORMAL)
         return _check
 
     def unknown_extension_check(self):
@@ -178,6 +180,7 @@ class MainWindow(tk.Tk):
             tk.Button(label_error, text="Ok", command=self.check(error_window, True)).pack()
 
     def check_path(self):
+        self.modify_button.config(state=tk.DISABLED)
         self.file_type = 'None'
         self.original_path = self.entree.get()
         if os.path.exists(self.original_path):
@@ -233,11 +236,8 @@ class MainWindow(tk.Tk):
             self.status.config(text="File found : " + self.file_type)
 
     def actualise_file(self):
-        print('***')
-        print(self.file_type)
         if self.file_type == 'OpenSim':
             self.biorbd_path = self.original_path[-2:]+'-converted.bioMod'
-            print('** opensim file')
             try:
                 ConvertedFromOsim2Biorbd3(self.biorbd_path, self.original_path)
                 self.model = BiorbdModel()
@@ -248,16 +248,24 @@ class MainWindow(tk.Tk):
                 self.model.read(self.biorbd_path)
         elif self.file_type == 'Biorbd':
             self.biorbd_path = self.original_path
-            print('** biorbd file')
             try:
                 self.model = BiorbdModel()
                 self.model.read(self.biorbd_path)
             except:
-                print('*')
+                assert "Biorbd model could not be read"
 
     def analyse(self):
         self.actualise_file()
+        self.modify_button.config(state=tk.NORMAL)
         # Frame for analyse
+        if self.is_analyzed:
+            self.frame_analyse.destroy()
+            self.frame_analyse = tk.Frame(self, borderwidth=4, relief=tk.GROOVE)
+            self.label_analyse = tk.Label(self.frame_analyse, text="Reader", borderwidth=2, relief=tk.GROOVE)
+            self.tree = ttk.Treeview(self.frame_analyse, columns=('type', 'value'))
+            self.tree.heading('type', text='Object type')
+            self.tree.heading('value', text='Value')
+            self.is_analyzed = False
         if not self.is_analyzed:
             self.geometry("%dx%d%+d%+d" % (1000, 400, 350, 125))
             self.frame_analyse.pack(side=tk.BOTTOM, fill=tk.BOTH, expand='yes')
@@ -339,6 +347,73 @@ class MainWindow(tk.Tk):
     def state(self, boolean):
         if boolean:
             self.analyse_button.config(state=tk.NORMAL)
+
+    def modify(self):
+        # Modify window
+        self.add = False
+        self.delete = False
+        self.modify = False
+        self.modify_window = tk.Toplevel()
+        self.modify_window.geometry("%dx%d%+d%+d" % (300, 400, 250, 125))
+        self.modify_window.title("Modify model")
+        # Label
+        self.label_modify = tk.LabelFrame(self.modify_window, text="Choose modification", padx=20, pady=20)
+        self.label_modify.pack(fill="both", expand="yes")
+        # Action choice button
+        self.var_action = tk.StringVar()
+        self.options_action = ["Add item", "Delete item", "Modify item"]
+        self.list_file_action = tk.OptionMenu(self.label_modify, self.var_action, *self.options_action, command=self.show_item_type)
+        self.var_action.set('Choose an action')  # default value
+        self.list_file_action.pack()
+        # Item choice button
+        self.var_item = tk.StringVar()
+        self.options_item = ["Segment", "MuscleGroup"]
+        self.list_file_item = tk.OptionMenu(self.label_modify, self.var_item, *self.options_item, command=self.show_item_names)
+        self.var_item.set('Choose an item type')  # default value
+        # Modify button
+        self.button_quit_modify = tk.Button(self.modify_window, text="Modify", command=self.modify_file)
+        self.button_quit_modify.pack()
+        # Quit Button
+        self.button_quit = tk.Button(self.modify_window, text="Quit", command=self.modify_window.destroy)
+        self.button_quit.pack()
+
+    def modify_file(self, value):
+        # warn if action not chosen
+        # re-load model in tree with analyse or read
+        pass
+
+    def show_item_type(self, value):
+        self.list_file_item.pack()
+        if self.var_action == "Add item":
+            self.add = True
+            self.delete = False
+            self.modify = False
+        elif self.var_action == "Delete item":
+            self.add = False
+            self.delete = True
+            self.modify = False
+        elif self.var_action == "Modify item":
+            self.add = False
+            self.delete = False
+            self.modify = True
+
+
+    def show_item_names(self, valu):
+        self.var_names = tk.StringVar()
+        self.options_names = []
+        if self.var_item == "Segment":
+            for segment in self.model.get_segments():
+                self.options_names.append(segment.get_name())
+        if self.var_item == "MuscleGroup":
+            for musclegroup in self.model.get_muscle_groups():
+                self.options_names.append(musclegroup.get_name())
+        self.list_file_names = tk.OptionMenu(self.label_modify, self.var_names, *self.options_names,
+                                            command=self.show_item_parameters)
+        self.var_names.set('Choose a '+self.var_item)
+
+    def show_item_parameters(self, val):
+        self.list_file_names.pack()
+
 
 
 if __name__ == "__main__":
