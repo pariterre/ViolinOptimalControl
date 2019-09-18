@@ -1,4 +1,5 @@
 # __init__.py
-from .ConvertModel import *
+from .Modelizer import *
 from .Model_Editor import *
 from .ConvertOsim2Biorbd import *
+from .Converter import *

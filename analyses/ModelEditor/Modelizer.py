@@ -318,6 +318,9 @@ class MuscleGroup:
         self.muscles.append(muscle)
         return self.muscles
 
+    def remove_muscle(self, muscle_index):
+        return self.muscles.pop(muscle_index)
+
     def get_muscles(self):
         return self.muscles
 
@@ -326,6 +329,14 @@ class MuscleGroup:
         for element in list_of_muscles:
             self.add_muscle(element)
         return list_of_muscles
+
+    def set_muscle(self, muscle_index, modified_muscle):
+        if type(modified_muscle) != Muscle:
+            assert 'wrong type of muscle'
+        if modified_muscle.get_muscle_group() != self.name:
+            assert 'this muscle does not belong to this muscle group'
+        self.muscles[muscle_index] = modified_muscle
+        return self.muscles[muscle_index]
 
 
 class Muscle:
@@ -439,6 +450,12 @@ class Muscle:
         for element in list_of_pathpoints:
             self.add_pathpoint(element)
         return list_of_pathpoints
+
+    def set_pathpoint(self, pathpoint_index, modified_pathpoint):
+        if type(modified_pathpoint) != Pathpoint:
+            assert 'wrong type of pathpoint'
+        self.pathpoints[pathpoint_index] = modified_pathpoint
+        return self.pathpoints[pathpoint_index]
 
 
 class Pathpoint:
@@ -810,6 +827,25 @@ class BiorbdModel:
         self.muscle_groups.append(new_muscle_group)
         return new_muscle_group
 
+    def remove_muscle_group(self, muscle_group_index):
+        return self.muscle_groups.pop(muscle_group_index)
+
+    def add_muscle(self, muscle_group_index, new_muscle):
+        return self.muscle_groups[muscle_group_index].add_muscle(new_muscle)
+
+    def remove_muscle(self, muscle_group_index, muscle_index):
+        return self.muscle_groups[muscle_group_index].remove_muscle(muscle_index)
+
+    def add_pathpoint(self, muscle_group_index, muscle_index, new_pathpoint):
+        muscle = self.muscle_groups[muscle_group_index].get_muscles()[muscle_index]
+        muscle.add_pathpoint(new_pathpoint)
+        return self.muscle_groups[muscle_group_index].set_muscle(muscle_index, muscle)
+
+    def remove_pathpoint(self, muscle_group_index, muscle_index, pathpoint_index):
+        muscle = self.muscle_groups[muscle_group_index].get_muscles()[muscle_index]
+        muscle.remove_pathpoint(pathpoint_index)
+        return self.muscle_groups[muscle_group_index].set_muscle(muscle_index, muscle)
+
     def get_number_of_muscle_groups(self):
         return len(self.muscle_groups)
 
@@ -824,6 +860,9 @@ class BiorbdModel:
             assert 'wrong type of segment'
         self.segments.append(new_segment)
         return new_segment
+
+    def remove_segment(self, segment_index):
+        return self.segments.pop(segment_index)
 
     def get_number_of_segments(self):
         return len(self.segments)
@@ -981,66 +1020,9 @@ class BiorbdModel:
         return 0
 
 
-class ConvertModel:
-    def __init__(self, model_to_convert, default_model=BiorbdModel('../models/Bras.bioMod')):
-        if type(model_to_convert) == str:
-            self.converted_model = BiorbdModel(model_to_convert)
-            self.converted_model.read()
-        else:
-            self.converted_model = model_to_convert
-        if type(default_model) == str:
-            self.default_model = BiorbdModel(default_model)
-            self.default_model.read()
-        else:
-            self.default_model = default_model
-
-    def get_converted_model(self):
-        return self.converted_model
-
-    def remodel(self, default_segment_name, segment_to_convert_name):
-        segment_to_convert_index = self.converted_model.get_segment_index(segment_to_convert_name)
-        segment = self.converted_model.get_segments()[segment_to_convert_index]
-        segment_default_index = self.default_model.get_segment_index(default_segment_name)
-        new_length = self.default_model.get_segments()[segment_default_index].length()
-        segment.set_length(new_length)
-        self.converted_model.set_segment(segment_to_convert_index, segment)
-        return self.converted_model
-
-
 def main():
-    model_to_convert = BiorbdModel()
-    model_to_convert.read('../models/model_Clara/AdaJef_1g_Model.s2mMod')
-    model_default = BiorbdModel()
-    model_default.read('../models/Bras.bioMod')
-
-    for segment in model_default.get_segments():
-        segment_name = segment.get_name()
-        print(segment_name, '-', segment.length())
-
-    conversion = ConvertModel(model_to_convert, model_default)
-    print('***')
-
-    conversion.remodel('Pelvis', 'Pelvis')
-    conversion.remodel('Thorax', 'Thorax')
-    conversion.remodel('Clavicle', 'ClaviculeRight')
-    conversion.remodel('Scapula', 'ScapulaRight')
-    conversion.remodel('Arm', 'ArmRight')
-    conversion.remodel('LowerArm1', 'LowerArm1Right')
-    conversion.remodel('LowerArm2', 'LowerArm2Right')
-    conversion.remodel('hand', 'HandRight')
-    conversion.remodel('Clavicle', 'ClaviculeLeft')
-    conversion.remodel('Scapula', 'ScapulaLeft')
-    conversion.remodel('Arm', 'ArmLeft')
-    conversion.remodel('LowerArm1', 'LowerArm1Left')
-    conversion.remodel('LowerArm2', 'LowerArm2Left')
-    conversion.remodel('hand', 'HandLeft')
-
-    converted_model = conversion.get_converted_model()
-    converted_model.write('../models/model_Clara/converted-AdaJef_1g_Model.bioMod')
-
-    for segment in model_to_convert.get_segments():
-        segment_name = segment.get_name()
-        print(segment_name, '-', segment.length())
+    model = BiorbdModel()
+    model.read('../models/model_Clara/AdaJef_1g_Model.s2mMod')
 
     return 0
 

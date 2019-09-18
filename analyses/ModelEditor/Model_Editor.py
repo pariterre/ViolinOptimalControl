@@ -1,18 +1,12 @@
 # coding: utf-8
 import os.path
-from ConvertModel import *
+from Modelizer import *
 from ConvertOsim2Biorbd import *
+from Converter import *
 
-try:
-    # Python 3
-    import tkinter as tk
-    from tkinter import ttk
-    from tkinter import filedialog
-except:
-    # Python 2
-    import Tkinter as tk
-    import ttk
-    import tkFileDialog as filedialog
+import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog
 
 
 class ToolMenu(tk.Menu):
@@ -30,7 +24,7 @@ class MainMenuBar(tk.Menu):
 
 class MainWindow(tk.Tk):
     def __init__(self, *args, ** kwargs):
-        # heritance of tk window
+        # inheritance of tk window
         tk.Tk.__init__(self, *args, **kwargs)
         # general window
         self.title("Biorbd Model Converter")
