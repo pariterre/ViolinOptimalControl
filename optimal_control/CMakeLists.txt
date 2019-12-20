@@ -27,6 +27,7 @@ add_library(utils SHARED
     includes/constraints.cpp
     includes/objectives.cpp
     includes/utils.cpp
+    includes/integrator.cpp
 )
 
 target_include_directories(utils PUBLIC
@@ -34,11 +35,14 @@ target_include_directories(utils PUBLIC
     ${Biorbd_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}
     ${RBDL_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS}
+    ${IPOPT_INCLUDE_DIR}
+)
 
 # Write down all files to include here
 set(source_files
     RepeatedUpAndDownBow.cpp
+    EocarNphases.cpp
 )
 
 # Setup each project
@@ -49,11 +53,21 @@ foreach(src_file ${source_files})
     ADD_EXECUTABLE (  ${filename}
         ${filename}.cpp
     )
-    target_link_libraries(${filename} 
+    target_include_directories(${filename} PUBLIC
+        ${ACADO_INCLUDE_DIRS} ${ACADO_INCLUDE_DIRS}/..
+        ${Biorbd_INCLUDE_DIR}
+        ${EIGEN3_INCLUDE_DIR}
+        ${RBDL_INCLUDE_DIR}
+        ${Boost_INCLUDE_DIRS}
+        ${IPOPT_INCLUDE_DIR}
+    )
+
+    target_link_libraries(${filename}
       utils
       ${Biorbd_LIBRARIES}
       ${RBDL_LIBRARY}
       ${ACADO_SHARED_LIBRARIES}
+      ${IPOPT_LIBRARY}
       )
 endforeach()
 

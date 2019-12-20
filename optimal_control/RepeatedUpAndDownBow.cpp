@@ -1,209 +1,444 @@
-#include <acado_optimal_control.hpp>
+#include <iostream>
+#include <fstream>
 #include <memory>
-#include <bindings/acado_gnuplot/gnuplot_window.hpp>
-#include "includes/dynamics.h"
-#include "includes/objectives.h"
-#include "includes/constraints.h"
-#include "includes/utils.h"
 #include <time.h>
+#include <acado_optimal_control.hpp>
+#include <bindings/acado_gnuplot/gnuplot_window.hpp>
 
-#ifndef PI
-#define PI 3.141592
-#endif
+#include "biorbd.h"
+#include "includes/utils.h"
+#include "includes/dynamics.h"
+#include "includes/constraints.h"
+#include "includes/objectives.h"
 
-using namespace std;
-USING_NAMESPACE_ACADO
+#include "includes/violinStringConfig.h"
 
+ #define USE_INIT_FILE
 biorbd::Model m("../../models/BrasViolon.bioMod");
+#include "includes/biorbd_initializer.h"
 
-unsigned int nQ(m.nbQ());               // states number
-unsigned int nQdot(m.nbQdot());         // derived states number
-unsigned int nTau(m.nbGeneralizedTorque());           // torques number
-unsigned int nMarkers(m.nMarkers());          // markers number
-unsigned int nMus(m.nbMuscleTotal());   // muscles number
-unsigned int nPhases(2);
-
-GeneralizedCoordinates Q(nQ), Qdot(nQdot), Qddot(nQdot);
-GeneralizedTorque Tau(nTau);
-std::vector<biorbd::muscles::StateDynamics> state(nMus);
-
-static int tagArchetPoucette = 16;
-static int tagArchetCOM = 17;
-static int tagArchetTete = 18;
-static int tagViolon = 34;
+static int idxSegmentBow = 8;
+static int tagBowFrog(16);
+static int tagBowTip(18);
+static int tagViolinBString(38);
+static int tagViolinEString(34);
+static int tagViolinAString(35);
+static int tagViolinDString(36);
+static int tagViolinGString(37);
+static int tagViolinCString(39);
 
 const double t_Start = 0.0;
 const double t_End = 0.5;
 const int nPoints(31);
 
+const ViolinStringNames stringName(ViolinStringNames::E);
+const bool useFileToInit(false);
+const int nBowing(1);
+const int nBowingInInitialization(1);
+
+const std::string resultsPath("../Results/");
+const std::string initializePath("../Initialisation/");
+const std::string optimizationName("RepeatedUpAndDownBow");
+
+const std::string diffStateResultsFileName(resultsPath + "States" + optimizationName + ".txt");
+const std::string controlResultsFileName(resultsPath + "Controls" + optimizationName + ".txt");
+const std::string diffStateWithoutBrackets(resultsPath + "StatesNo[]" + optimizationName + ".txt");
+const std::string controlWithoutBrackets(resultsPath + "ControlNo[]" + optimizationName + ".txt");
+
+
+
+USING_NAMESPACE_ACADO
 int  main ()
 {
-    std::string resultsPath("../Results/");
-
-    clock_t start,end;
-    double time_exec;
-    start=clock();
-
+    clock_t start = clock();
     std::cout << "nb de muscles: " << nMus << std::endl;
     std::cout << "nb de torques: " << nTau << std::endl;
     std::cout << "nb de marqueurs: " << nMarkers << std::endl;
+    initializeMuscleStates();
 
-    /* ---------- INITIALIZATION ---------- */
-    std::vector<DifferentialState> x;
-    std::vector<Control> u;
-    std::vector<IntermediateState> is;
-
-    /* ----------- DEFINE OCP ------------- */
+    // ----------- DEFINE OCP ------------- //
     OCP ocp(t_Start, t_End, nPoints);
-    CFunction lagrangeRT(1, lagrangeResidualTorques);
-    CFunction lagrangeA(1, lagrangeActivations);
-    CFunction F( nQ+nQdot, forwardDynamicsFromMuscleActivationAndTorque);
+    CFunction residualTorque(1, residualTorquesSquare);
+    CFunction muscleActivation(1, muscleActivationsSquare);
+    CFunction bowDirection(3, bowDirectionAgainstViolin);
+    CFunction F( nQ+nQdot, forwardDynamics_noContact);
     DifferentialEquation f ;
 
-    //Position constraints
-    CFunction markerArchetPoucette(3, markerPosition);
-    markerArchetPoucette.setUserData(static_cast<void*>(&tagArchetPoucette));
-    CFunction markerArchetCOM(3, markerPosition);
-    markerArchetCOM.setUserData(static_cast<void*>(&tagArchetCOM));
-    CFunction markerArchetTete(3, markerPosition);
-    markerArchetTete.setUserData(static_cast<void*>(&tagArchetTete));
-    CFunction markerViolon(3, markerPosition);
-    markerViolon.setUserData(static_cast<void*>(&tagViolon));
+    // --------- DEFINE SOME PATH CONSTRAINTS --------- //
+    CFunction markerBowFrog(3, markerPosition);
+    markerBowFrog.setUserData(static_cast<void*>(&tagBowFrog));
+    CFunction markerBowTip(3, markerPosition);
+    markerBowTip.setUserData(static_cast<void*>(&tagBowTip));
+    CFunction markerViolinString(3, markerPosition);
+    int bowAndViolinMarkersToAlign[4];
+    CFunction violinBridgeInBowRT(2, projectOnXzPlane);
+    int idxProjectViolinBridgeInBow[2];
 
-    for (unsigned int p=0; p<nPhases; ++p){
+    bowAndViolinMarkersToAlign[0] = tagBowFrog;
+    bowAndViolinMarkersToAlign[1] = tagBowTip;
+    switch (stringName) {
+    case ViolinStringNames::E:
+        markerViolinString.setUserData(static_cast<void*>(&tagViolinEString));
+        idxProjectViolinBridgeInBow[0] = tagViolinEString;
+        bowAndViolinMarkersToAlign[2] = tagViolinBString;
+        bowAndViolinMarkersToAlign[3] = tagViolinAString;
+        break;
+    case ViolinStringNames::A:
+        markerViolinString.setUserData(static_cast<void*>(&tagViolinAString));
+        idxProjectViolinBridgeInBow[0] = tagViolinAString;
+        bowAndViolinMarkersToAlign[2] = tagViolinEString;
+        bowAndViolinMarkersToAlign[3] = tagViolinDString;
+        break;
+    case ViolinStringNames::D:
+        markerViolinString.setUserData(static_cast<void*>(&tagViolinDString));
+        idxProjectViolinBridgeInBow[0] = tagViolinDString;
+        bowAndViolinMarkersToAlign[2] = tagViolinAString;
+        bowAndViolinMarkersToAlign[3] = tagViolinGString;
+        break;
+    case ViolinStringNames::G:
+        markerViolinString.setUserData(static_cast<void*>(&tagViolinGString));
+        idxProjectViolinBridgeInBow[0] = tagViolinGString;
+        bowAndViolinMarkersToAlign[2] = tagViolinDString;
+        bowAndViolinMarkersToAlign[3] = tagViolinCString;
+        break;
+    }
+    idxProjectViolinBridgeInBow[1] = idxSegmentBow;
+
+    violinBridgeInBowRT.setUserData(static_cast<void*>(idxProjectViolinBridgeInBow));
+    bowDirection.setUserData(static_cast<void*>(bowAndViolinMarkersToAlign));
+
+    // ---------- INITIALIZATION ---------- //
+    std::vector<DifferentialState> x;
+    std::vector<Control> control;
+    std::vector<IntermediateState> is;
+
+    // ---------- PHASES ---------- //
+    // Each phase is a up/down bow (hence the *2)
+    for (unsigned int p=0; p<nBowing*2; ++p){
         x.push_back(DifferentialState("",nQ+nQdot,1));
-        u.push_back(Control("", nMus+nTau, 1));
-        is.push_back(IntermediateState(nQ + nQdot + nMus + nTau));
+        control.push_back(Control("", nMus + nTau, 1));
+        is.push_back(IntermediateState("", nQ+nQdot+nMus+nTau, 1));
 
         for (unsigned int i = 0; i < nQ; ++i)
             is[p](i) = x[p](i);
         for (unsigned int i = 0; i < nQdot; ++i)
             is[p](i+nQ) = x[p](i+nQ);
         for (unsigned int i = 0; i < nMus; ++i)
-            is[p](i+nQ+nQdot) = u[p](i);
+            is[p](i+nQ+nQdot) = control[p](i);
         for (unsigned int i = 0; i < nTau; ++i)
-            is[p](i+nQ+nQdot+nMus) = u[p](i+nMus);
+            is[p](i+nQ+nQdot+nMus) = control[p](i+nMus);
 
-        /* ------------ CONSTRAINTS ----------- */
+        // ------------ CONSTRAINTS ----------- //
+        // Dynamics
         (f << dot(x[p])) == F(is[p]);
 
-        if(p==0){
-            ocp.subjectTo( AT_START, markerArchetPoucette(x[p]) - markerViolon(x[p]) == 0.0 );
-            ocp.subjectTo( AT_END, markerArchetTete(x[p]) - markerViolon(x[p]) == 0.0 );
+        // Controls constraints
+        for (unsigned int i=0; i<nMus; ++i){
+            ocp.subjectTo(0.01 <= control[p](i) <= 1);
         }
-        else{
+        for (unsigned int i=0; i<nTau; ++i){
+            ocp.subjectTo(-100 <= control[p](i+nMus) <= 100);
+        }
+
+        // Path constraints
+        if(p==0) {                            
+                ocp.subjectTo(
+                            AT_START, markerBowFrog(x[p]) - markerViolinString(x[p])
+                            == 0.0 );
+                ocp.subjectTo(
+                            AT_END, markerBowTip(x[p]) - markerViolinString(x[p])
+                            == 0.0 );
+                }
+        else {
             ocp.subjectTo( 0.0, x[p], -x[p-1], 0.0 );
             ocp.subjectTo( 0.0, x[p-1], -x[p], 0.0 );
         }
+        for (int i = 1; i < nPoints-1; ++i) {
+            ocp.subjectTo(i, violinBridgeInBowRT(x[p]) == 0.0);
+    //        ocp.subjectTo(i, bowDirection(x[p]) == 0.0);
+        }
 
-        //Controls constraints
-        for (unsigned int i=0; i<nMus; ++i)
-             ocp.subjectTo(0.01 <= u[p](i) <= 1);
-        for (unsigned int i=0; i<nTau; ++i)
-             ocp.subjectTo(-100 <= u[p](nMus+i) <= 100);
+        ocp.subjectTo(-M_PI/8 <= x[p](0) <= 0.1);
+        ocp.subjectTo(-M_PI/2 <= x[p](1) <= 0.1);
+        ocp.subjectTo(-M_PI/4 <= x[p](2) <= M_PI);
+        ocp.subjectTo(-M_PI/2 <= x[p](3) <= M_PI/2);
+        ocp.subjectTo(-0.1  <= x[p](4) <= M_PI);
+        ocp.subjectTo(-M_PI/4 <= x[p](5) <= M_PI/4);
+        ocp.subjectTo(-M_PI   <= x[p](6) <= M_PI);
+        ocp.subjectTo(-M_PI/4 <= x[p](7) <= M_PI/4);
 
-        // path constraints
-        ocp.subjectTo(-PI/8 <= x[p](0) <= 0.1);
-        ocp.subjectTo(-PI/2 <= x[p](1) <= 0.1);
-        ocp.subjectTo(-PI/4 <= x[p](2) <= PI);
-        ocp.subjectTo(-PI/2 <= x[p](3) <= PI/2);
-        ocp.subjectTo(-0.1  <= x[p](4) <= PI);
-        ocp.subjectTo(-PI   <= x[p](5) <= PI);
-        ocp.subjectTo(-PI   <= x[p](6) <= PI);
-
-        for (unsigned int j=0; j<nQdot; ++j)
+        for (unsigned int j=0; j<nQdot; ++j) {
             ocp.subjectTo(-50 <= x[p](nQ + j) <= 50);
+        }
 
-}
+    }
     ocp.subjectTo(f);
 
-    /* ------------ OBJECTIVE ----------- */
-    Expression sumLagrange = lagrangeRT(u[0])+ lagrangeA(u[0]);
-    for(unsigned int p=1; p<nPhases; ++p)
-        sumLagrange += lagrangeRT(u[p]) + lagrangeA(u[p]);
-    ocp.minimizeLagrangeTerm( sumLagrange ); // WARNING
+    // ------------ OBJECTIVE ----------- //
+    Expression sumLagrange = residualTorque(control[0])+ muscleActivation(control[0]) + bowDirection(x[0]);
+    for(unsigned int p=1; p<nBowing*2; ++p)
+        sumLagrange += residualTorque(control[p]) + muscleActivation(control[p]) + bowDirection(x[p]);
+    ocp.minimizeLagrangeTerm( sumLagrange );
 
-    /* ---------- OPTIMIZATION  ------------ */
-    OptimizationAlgorithm  algorithm( ocp ) ;
+    // ---------- OPTIMIZATION  ------------ //
+    OptimizationAlgorithm  algorithm(ocp) ;
     algorithm.set(MAX_NUM_ITERATIONS, 1000);
     algorithm.set(INTEGRATOR_TYPE, INT_RK45);
-    algorithm.set(HESSIAN_APPROXIMATION, FULL_BFGS_UPDATE);
+    algorithm.set(HESSIAN_APPROXIMATION, CONSTANT_HESSIAN);
     algorithm.set(KKT_TOLERANCE, 1e-4);
 
-    /* ---------- INITIAL SOLUTION ---------- */
-    VariablesGrid u_init(nPhases*(nTau + nMus), Grid(t_Start, t_End, 2));
-    for(unsigned int i=0; i<nPhases; ++i){
-        for(unsigned int j=0; j<nMus; ++j){
-            u_init(0, i*(nMus+nTau) + j ) = 0.2;
-            u_init(1, i*(nMus+nTau) + j ) = 0.2;
-        }
-        for(unsigned int j=0; j<nTau; ++j){
-            u_init(0, i*(nMus+nTau) + nMus + j ) = 0.01;
-            u_init(1, i*(nMus+nTau) + nMus + j ) = 0.01;
-        }
-    }
-    algorithm.initializeControls(u_init);
 
-    VariablesGrid x_init(nPhases*(nQ+nQdot), Grid(t_Start, t_End, 2));
-    for(unsigned int i=0; i<nPhases/2; ++i){
-        // poucette sur COM
-        x_init(0, 2*i*(nQ+nQdot)+0) = 0.09973;
-        x_init(0, 2*i*(nQ+nQdot)+1) = 0.09733;
-        x_init(0, 2*i*(nQ+nQdot)+2) = 1.05710;
-        x_init(0, 2*i*(nQ+nQdot)+3) = 1.56950;
-        x_init(0, 2*i*(nQ+nQdot)+4) = 1.07125;
-        x_init(0, 2*i*(nQ+nQdot)+5) = 0.95871;
-        x_init(0, 2*i*(nQ+nQdot)+6) = -1.7687;
+    // ---------- INITIAL SOLUTION ---------- //
 
-        // bouton sur COM
-        x_init(1, 2*i*(nQ+nQdot)+0) = -0.39107;
-        x_init(1, 2*i*(nQ+nQdot)+1) = -0.495383;
-        x_init(1, 2*i*(nQ+nQdot)+2) = -0.089030;
-        x_init(1, 2*i*(nQ+nQdot)+3) = 0.1485315;
-        x_init(1, 2*i*(nQ+nQdot)+4) = 0.8569764;
-        x_init(1, 2*i*(nQ+nQdot)+5) = 1.9126840;
-        x_init(1, 2*i*(nQ+nQdot)+6) = -0.490220;
+    VariablesGrid *u_init;
+    VariablesGrid *x_init;
 
-        // bouton sur COM
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+0) = -0.39107;
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+1) = -0.495383;
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+2) = -0.089030;
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+3) = 0.1485315;
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+4) = 0.8569764;
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+5) = 1.9126840;
-        x_init(0, ((2*i)+1)*(nQ+nQdot)+6) = -0.490220;
+    if (useFileToInit) {
+        u_init = new VariablesGrid(nBowingInInitialization*2*(nTau + nMus), Grid(t_Start, t_End, nPoints+1));
+        x_init = new VariablesGrid(nBowingInInitialization*2*(nQ+nQdot), Grid(t_Start, t_End, nPoints+1));
 
-        // poucette sur COM
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+0) = 0.09973;
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+1) = 0.09733;
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+2) = 1.05710;
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+3) = 1.56950;
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+4) = 1.07125;
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+5) = 0.95871;
-        x_init(1, ((2*i)+1)*(nQ+nQdot)+6) = -1.7687;
+        removeSquareBracketsInFile(controlResultsFileName, controlWithoutBrackets);
+        removeSquareBracketsInFile(diffStateResultsFileName, diffStateWithoutBrackets);
+
+        *u_init = readControls(controlWithoutBrackets, nPoints, nBowingInInitialization*2, t_Start, t_End);
+        *x_init = readStates(diffStateWithoutBrackets, nPoints, nBowingInInitialization*2, t_Start, t_End);
     }
 
+    else {
 
-    for(unsigned int i=0; i<nPhases; ++i){
-        for(unsigned int j=0; j<nQdot; ++j){
-             x_init(0, i*(nQ+nQdot) + nQ + j) = 0.01;
-             x_init(1, i*(nQ+nQdot) + nQ + j) = 0.01;
-        }
+        u_init = new VariablesGrid(nBowingInInitialization*2*(nTau + nMus), Grid(t_Start, t_End, 2));
+        x_init = new VariablesGrid(nBowingInInitialization*2*(nQ+nQdot), Grid(t_Start, t_End, 2));
+
+        for(unsigned int i=0; i<nBowingInInitialization*2; ++i){
+           for(unsigned int j=0; j<nMus; ++j){
+               (*u_init)(0, i*(nMus+nTau) + j ) = 0.2;
+               (*u_init)(1, i*(nMus+nTau) + j ) = 0.2;
+           }
+           for(unsigned int j=0; j<nTau; ++j){
+               (*u_init)(0, i*(nMus+nTau) + nMus + j ) = 0.01;
+               (*u_init)(1, i*(nMus+nTau) + nMus + j ) = 0.01;
+           }
+       }
+        switch (stringName) {
+        case ViolinStringNames::E:
+            for(unsigned int i=0; i < nBowingInInitialization; ++i){
+                // BowFrog on ViolinBridge
+                (*x_init)(0, 2*i*(nQ+nQdot)+0) = -0.2725;
+                (*x_init)(0, 2*i*(nQ+nQdot)+1) = -0.4238;
+                (*x_init)(0, 2*i*(nQ+nQdot)+2) = 1.2047;
+                (*x_init)(0, 2*i*(nQ+nQdot)+3) = 0.7291;
+                (*x_init)(0, 2*i*(nQ+nQdot)+4) = 1.4200;
+                (*x_init)(0, 2*i*(nQ+nQdot)+5) = -0.1819;
+                (*x_init)(0, 2*i*(nQ+nQdot)+6) = -1.7549;
+                (*x_init)(0, 2*i*(nQ+nQdot)+7) = -0.5246;
+
+                // BowTip on ViolinBridge
+                (*x_init)(1, 2*i*(nQ+nQdot)+0) = -0.0075;
+                (*x_init)(1, 2*i*(nQ+nQdot)+1) = -0.3963;
+                (*x_init)(1, 2*i*(nQ+nQdot)+2) = 0.8140;
+                (*x_init)(1, 2*i*(nQ+nQdot)+3) = 1.1841;
+                (*x_init)(1, 2*i*(nQ+nQdot)+4) = 0.2775;
+                (*x_init)(1, 2*i*(nQ+nQdot)+5) = -0.2605;
+                (*x_init)(1, 2*i*(nQ+nQdot)+6) = -1.7161;
+                (*x_init)(1, 2*i*(nQ+nQdot)+7) = 0.6331;
+
+                // BowTip on ViolinBridge
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+0) = -0.0075;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+1) = -0.3963;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+2) = 0.8140;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+3) = 1.1841;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+4) = 0.2775;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+5) = -0.2605;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+6) = -1.7161;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+7) = 0.6331;
+
+                // BowFrog on ViolinBridge
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+0) = -0.2725;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+1) = -0.4238;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+2) = 1.2047;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+3) = 0.7291;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+4) = 1.4200;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+5) = -0.1819;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+6) = -1.7549;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+7) = -0.5246;
+            }
+            break;
+
+        case ViolinStringNames::A:
+            for(unsigned int i=0; i < nBowingInInitialization; ++i){
+
+                // BowFrog on ViolinBridge
+                (*x_init)(0, 2*i*(nQ+nQdot)+0) = -0.1374;
+                (*x_init)(0, 2*i*(nQ+nQdot)+1) = -0.0546;
+                (*x_init)(0, 2*i*(nQ+nQdot)+2) = 1.0780;
+                (*x_init)(0, 2*i*(nQ+nQdot)+3) = 1.0717;
+                (*x_init)(0, 2*i*(nQ+nQdot)+4) = 1.3993;
+                (*x_init)(0, 2*i*(nQ+nQdot)+5) = -0.7248;
+                (*x_init)(0, 2*i*(nQ+nQdot)+6) = -0.7638;
+                (*x_init)(0, 2*i*(nQ+nQdot)+7) = -0.5774;
+
+                // BowTip on ViolinBridge
+                (*x_init)(1, 2*i*(nQ+nQdot)+0) = 0.1000;
+                (*x_init)(1, 2*i*(nQ+nQdot)+1) = -0.6409;
+                (*x_init)(1, 2*i*(nQ+nQdot)+2) = 0.9841;
+                (*x_init)(1, 2*i*(nQ+nQdot)+3) = 0.8485;
+                (*x_init)(1, 2*i*(nQ+nQdot)+4) = 0.1246;
+                (*x_init)(1, 2*i*(nQ+nQdot)+5) = 0.7308;
+                (*x_init)(1, 2*i*(nQ+nQdot)+6) = -0.8842;
+                (*x_init)(1, 2*i*(nQ+nQdot)+7) = 0.7854;
+
+                // BowTip on ViolinBridge
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+0) = 0.1000;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+1) = -0.6409;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+2) = 0.9841;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+3) = 0.8485;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+4) = 0.1246;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+5) = 0.7308;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+6) = -0.8842;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+7) = 0.7854;
+
+                // BowFrog on ViolinBridge
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+0) = -0.1374;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+1) = -0.0546;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+2) = 1.0780;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+3) = 1.0717;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+4) = 1.3993;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+5) = -0.7248;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+6) = -0.7638;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+7) = -0.5774;
+            }
+            break;
+
+        case ViolinStringNames::D:
+            for(unsigned int i=0; i < nBowingInInitialization; ++i){
+
+                // BowFrog on ViolinBridge
+                (*x_init)(0, 2*i*(nQ+nQdot)+0) = -0.2725;
+                (*x_init)(0, 2*i*(nQ+nQdot)+1) = -0.0221;
+                (*x_init)(0, 2*i*(nQ+nQdot)+2) = 1.2267;
+                (*x_init)(0, 2*i*(nQ+nQdot)+3) = 0.7916;
+                (*x_init)(0, 2*i*(nQ+nQdot)+4) = 1.3559;
+                (*x_init)(0, 2*i*(nQ+nQdot)+5) = 0.7579;
+                (*x_init)(0, 2*i*(nQ+nQdot)+6) = -1.7638;
+                (*x_init)(0, 2*i*(nQ+nQdot)+7) = -0.3637;
+
+                // BowTip on ViolinBridge
+                (*x_init)(1, 2*i*(nQ+nQdot)+0) = -0.1828;
+                (*x_init)(1, 2*i*(nQ+nQdot)+1) = 0.1000;
+                (*x_init)(1, 2*i*(nQ+nQdot)+2) = 0.9532;
+                (*x_init)(1, 2*i*(nQ+nQdot)+3) = 0.4593;
+                (*x_init)(1, 2*i*(nQ+nQdot)+4) = 0.0422;
+                (*x_init)(1, 2*i*(nQ+nQdot)+5) = -0.2124;
+                (*x_init)(1, 2*i*(nQ+nQdot)+6) = -0.5838;
+                (*x_init)(1, 2*i*(nQ+nQdot)+7) = 0.6979;
+
+                // BowTip on ViolinBridge
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+0) = -0.1828;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+1) = 0.1000;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+2) = 0.9532;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+3) = 0.4593;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+4) = 0.0422;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+5) = -0.2124;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+6) = -0.5838;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+7) = 0.6979;
+
+                // BowFrog on ViolinBridge
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+0) = -0.2725;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+1) = -0.0221;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+2) = 1.2267;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+3) = 0.7916;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+4) = 1.3559;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+5) = 0.7579;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+6) = -1.7638;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+7) = -0.3637;
+            }
+            break;
+
+        case ViolinStringNames::G:
+            for(unsigned int i=0; i < nBowingInInitialization; ++i){
+
+                // BowFrog on ViolinBridge               
+                (*x_init)(0, 2*i*(nQ+nQdot)+0) = 0.0611;
+                (*x_init)(0, 2*i*(nQ+nQdot)+1) = -0.5424;
+                (*x_init)(0, 2*i*(nQ+nQdot)+2) = 1.2640;
+                (*x_init)(0, 2*i*(nQ+nQdot)+3) = 0.5149;
+                (*x_init)(0, 2*i*(nQ+nQdot)+4) = 1.3547;
+                (*x_init)(0, 2*i*(nQ+nQdot)+5) = 0.7531;
+                (*x_init)(0, 2*i*(nQ+nQdot)+6) = -1.7864;
+                (*x_init)(0, 2*i*(nQ+nQdot)+7) = -0.4478;
+
+                // BowTip on ViolinBridge
+                (*x_init)(1, 2*i*(nQ+nQdot)+0) = 0.0096;
+                (*x_init)(1, 2*i*(nQ+nQdot)+1) = -0.5954;
+                (*x_init)(1, 2*i*(nQ+nQdot)+2) = 1.0852;
+                (*x_init)(1, 2*i*(nQ+nQdot)+3) = 0.4258;
+                (*x_init)(1, 2*i*(nQ+nQdot)+4) = 0.0566;
+                (*x_init)(1, 2*i*(nQ+nQdot)+5) = 0.5255;
+                (*x_init)(1, 2*i*(nQ+nQdot)+6) = -0.7440;
+                (*x_init)(1, 2*i*(nQ+nQdot)+7) = 0.6530;
+
+                // BowTip on ViolinBridge
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+0) = 0.0096;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+1) = -0.5954;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+2) = 1.0852;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+3) = 0.4258;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+4) = 0.0566;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+5) = 0.5255;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+6) = -0.7440;
+                (*x_init)(0, ((2*i)+1)*(nQ+nQdot)+7) = 0.6530;
+
+                // BowFrog on ViolinBridge
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+0) = 0.0611;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+1) = -0.5424;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+2) = 1.2640;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+3) = 0.5149;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+4) = 1.3547;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+5) = 0.7531;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+6) = -1.7864;
+                (*x_init)(1, ((2*i)+1)*(nQ+nQdot)+7) = -0.4478;
+            }
+            break;
+         }
+
+       for(unsigned int i=0; i<nBowingInInitialization*2; ++i){
+           for(unsigned int j=0; j<nQdot; ++j){
+                (*x_init)(0, i*(nQ+nQdot) + nQ + j) = 0.01;
+                (*x_init)(1, i*(nQ+nQdot) + nQ + j) = 0.01;
+           }
+       }
     }
-    algorithm.initializeDifferentialStates(x_init);
 
-    /* ---------- SOLVING THE PROBLEM ---------- */
+    if (nBowing > nBowingInInitialization) {
+        VariablesGrid x_init_expanded, u_init_expanded, copy_init_1;
+
+
+        duplicateElements(nBowing*2, nBowingInInitialization*2, (nQ + nQdot) * 2, 0,
+                          *x_init, copy_init_1, x_init_expanded);
+        duplicateElements(nBowing*2, nBowingInInitialization*2, (nMus + nTau) * 2, 1,
+                          *u_init, copy_init_1, u_init_expanded);
+
+        algorithm.initializeControls(u_init_expanded);
+        algorithm.initializeDifferentialStates(x_init_expanded);
+    }
+
+    else {
+        algorithm.initializeControls(*u_init);
+        algorithm.initializeDifferentialStates(*x_init);
+    }
+
+    // ---------- SOLVING THE PROBLEM ---------- //
     algorithm.solve();
 
-    /* ---------- STORING THE RESULTS ---------- */
+    // ---------- STORING THE RESULTS ---------- //
     createTreePath(resultsPath);
-    algorithm.getDifferentialStates((resultsPath + "StatesAvNPhases.txt").c_str());
-    algorithm.getControls((resultsPath + "ControlsAvNPhases.txt").c_str());
+    algorithm.getDifferentialStates(diffStateResultsFileName.c_str());
+    algorithm.getControls(controlResultsFileName.c_str());
 
-    end=clock();
-    time_exec = double(end - start)/CLOCKS_PER_SEC;
-    std::cout<<"Execution time: "<<time_exec<<std::endl;
+    // ---------- PLOTING ---------- //
+    clock_t end=clock();
+    double time_exec(double(end - start)/CLOCKS_PER_SEC);
+    std::cout << "Execution time: " << time_exec << std::endl;
 
-
+    // ---------- EXIT ---------- //
     return 0;
 }
