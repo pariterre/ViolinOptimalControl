@@ -29,6 +29,7 @@ link_directories(
 set(source_files
 #    eocar.cpp
     eocarAllCasadi.cpp
+#    eocarTest.cpp
 #    eocarBiorbd.cpp
 #    eocarBiorbdKinConstraint.cpp
 #    UpAndDownBow.cpp
@@ -52,7 +53,7 @@ set(source_files
 #    # Forward dynamics library
 #    add_library(${library_name} SHARED src/${library_name}.cpp)
 #    target_link_libraries(${library_name}
-#        ${Biorbd_LIBRARIES}
+#        ${biorbd_LIBRARIES}
 #        ${RBDL_LIBRARY}
 #        ${Qt5Core_LIBRARIES}
 #        ${Qt5Widgets_LIBRARIES}
@@ -61,7 +62,7 @@ set(source_files
 #    target_include_directories(${library_name}
 #        include
 #        ${CMAKE_INSTALL_PREFIX}/include
-#        ${Biorbd_INCLUDE_DIR}
+#        ${biorbd_INCLUDE_DIR}
 #        ${EIGEN3_INCLUDE_DIR}
 #        ${RBDL_INCLUDE_DIR}
 #        ${Boost_INCLUDE_DIRS}
@@ -86,7 +87,7 @@ foreach(src_file ${source_files})
     target_include_directories(${filename} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${Casadi_INCLUDE_DIR}
-        ${Biorbd_INCLUDE_DIR}
+        ${biorbd_INCLUDE_DIR}
         ${Casadi_INCLUDE_DIR}
         ${Casadi_INCLUDE_DIR}/..
         ${RBDL_INCLUDE_DIR}
@@ -97,7 +98,7 @@ foreach(src_file ${source_files})
 
     target_link_libraries(${filename}
         ${library_names}
-        ${Biorbd_LIBRARIES}
+        ${biorbd_LIBRARIES}
         ${RBDL_LIBRARY}
         ${Casadi_LIBRARY}
         ${Qt5Core_LIBRARIES}
