@@ -157,7 +157,7 @@ class ViolinOcp:
                 first_marker=self.bow.contact_marker,
                 second_marker=self.violin.bridge_marker,
                 list_index=6,
-                weight=1000,
+                weight=10000,
             )
 
     def _set_bounds(self):
@@ -272,7 +272,7 @@ class ViolinOcp:
             mf = param[2]
             c = if_else(lt(ma, TL), if_else(gt(mr, TL - ma), LD * (TL - ma), LD * mr), LR * (TL - ma))
             madot = c - F * ma
-            mrdot = -c + R * mf + 100 * (1 - (ma + mr + mf))
+            mrdot = -c + R * mf + 10 * (1 - (ma + mr + mf))
             mfdot = F * ma - R * mf
             return vertcat(madot, mrdot, mfdot)
 
